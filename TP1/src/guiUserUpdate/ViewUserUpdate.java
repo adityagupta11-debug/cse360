@@ -12,6 +12,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import entityClasses.User;
+import passwordPopUpWindow.PasswordPopupWindow;
 
 /*******
  * <p> Title: ViewUserUpdate Class. </p>
@@ -101,6 +102,11 @@ public class ViewUserUpdate {
 	private static TextInputDialog dialogUpdateLastName;
 	private static TextInputDialog dialogUpdatePreferredFirstName;
 	private static TextInputDialog dialogUpdateEmailAddresss;
+	
+	//add new TextInoutDialogs for Password and Username: Joshua Luther
+	private static TextInputDialog dialogUpdateUsername;
+	private static TextInputDialog dialogUpdatePassword;
+	
 	
 	// These attributes are used to configure the page and populate it with this user's information
 	private static ViewUserUpdate theView;	// Used to determine if instantiation of the class
@@ -220,6 +226,9 @@ public class ViewUserUpdate {
 		dialogUpdateLastName = new TextInputDialog("");
 		dialogUpdatePreferredFirstName = new TextInputDialog("");
 		dialogUpdateEmailAddresss = new TextInputDialog("");
+		
+		dialogUpdateUsername = new TextInputDialog("");
+		dialogUpdatePassword = new TextInputDialog("");
 
 		// Establish the label for each of the dialogs.
 		dialogUpdateFirstName.setTitle("Update First Name");
@@ -236,6 +245,13 @@ public class ViewUserUpdate {
 		
 		dialogUpdateEmailAddresss.setTitle("Update Email Address");
 		dialogUpdateEmailAddresss.setHeaderText("Update your Email Address");
+		
+		//add corresponding title and headerText for password and username, may implement password differently in future
+		dialogUpdateUsername.setTitle("Update Username");
+		dialogUpdateUsername.setHeaderText("Update your Username");
+		
+		dialogUpdatePassword.setTitle("Update password");
+		dialogUpdatePassword.setHeaderText("Update your Password");
 
 		// Label theScene with the name of the startup screen, centered at the top of the pane
 		setupLabelUI(label_ApplicationTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
@@ -250,11 +266,37 @@ public class ViewUserUpdate {
         setupLabelUI(label_Username, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 100);
         setupLabelUI(label_CurrentUsername, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 100);
         setupButtonUI(button_UpdateUsername, "Dialog", 18, 275, Pos.CENTER, 500, 93);
+        //Joshua Luther: handling for changing username
+        
+        button_UpdateUsername.setOnAction((_) -> {result = dialogUpdateUsername.showAndWait();
+    	result.ifPresent(_ -> {
+    		boolean success = theDatabase.updateUserName(theUser.getUserName(), result.get());
+    		if (!success) {
+    			label_CurrentUsername.setText(label_CurrentUsername.getText() + " (username taken!)");
+    			return;
+    		}
+    		theDatabase.getUserAccountDetails(theDatabase.getCurrentUsername());
+    		String newName = theDatabase.getCurrentUsername();
+    		theUser.setUserName(newName);
+    		label_CurrentUsername.setText(newName);
+    	});
+    });
        
         // password
         setupLabelUI(label_Password, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 150);
         setupLabelUI(label_CurrentPassword, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 150);
         setupButtonUI(button_UpdatePassword, "Dialog", 18, 275, Pos.CENTER, 500, 143);
+        //Joshua Luther: handling for changing password
+        
+        button_UpdatePassword.setOnAction((_) -> {
+        	String newPassword = PasswordPopupWindow.show();
+        	if (newPassword != null && !newPassword.isEmpty()) {
+        		theDatabase.updatePassword(theUser.getUserName(), newPassword);
+        		theDatabase.getUserAccountDetails(theUser.getUserName());
+        		theUser.setPassword(newPassword);
+        		label_CurrentPassword.setText(newPassword);
+        	}
+        });
         
         // First Name
         setupLabelUI(label_FirstName, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 200);
@@ -335,6 +377,7 @@ public class ViewUserUpdate {
         theRootPane.getChildren().addAll(
         		label_ApplicationTitle, label_Purpose, label_Username,
         		label_CurrentUsername, 
+        		button_UpdateUsername,
         		label_Password, label_CurrentPassword, 
         		button_UpdatePassword, 
         		label_FirstName, label_CurrentFirstName, button_UpdateFirstName,

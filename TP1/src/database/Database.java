@@ -713,7 +713,61 @@ public class Database {
 		return;
 	}
 	
+	/*******
+	 * <p> Method: void updatePassword(String username, String password) </p>
+	 * 
+	 * <p> Description: Update the password of a user given that user's username and the new
+	 * 		password.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param password is the new password for the user
+	 *  
+	 */
+	// update the password: Joshua Luther
+	public void updatePassword(String username, String password) {
+	    String query = "UPDATE userDB SET password = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, password);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentPassword = password;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
 	
+	/*******
+	 * <p> Method: boolean updateUserName(String oldUsername, String newUsername) </p>
+	 * 
+	 * <p> Description: Update a user's username given the user's current username and the new
+	 * 		username. Since userName is unique, this checks the new username is not already taken
+	 * 		before attempting the update.</p>
+	 * 
+	 * @param oldUsername is the current username of the user
+	 *  
+	 * @param newUsername is the new username for the user
+	 * 
+	 * @return true if the update was successful, else false (e.g., the new username is already taken)
+	 *  
+	 */
+	// update the username: Joshua Luther
+	public boolean updateUserName(String oldUsername, String newUsername) {
+	    // Refuse the update if the new username is already in use by someone else
+	    if (doesUserExist(newUsername)) return false;
+	    
+	    String query = "UPDATE userDB SET userName = ? WHERE userName = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, newUsername);
+	        pstmt.setString(2, oldUsername);
+	        pstmt.executeUpdate();
+	        currentUsername = newUsername;
+	        return true;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
 	/*******
 	 * <p> Method: String getFirstName(String username) </p>
 	 * 
