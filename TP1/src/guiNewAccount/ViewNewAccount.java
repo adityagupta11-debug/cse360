@@ -54,7 +54,8 @@ public class ViewNewAccount {
     protected static PasswordField text_Password1 = new PasswordField();
     protected static PasswordField text_Password2 = new PasswordField();
     protected static Button button_UserSetup = new Button("User Setup");
-    protected static TextField text_Invitation = new TextField();
+    // The invitation code is supplied by the login page and held in theInvitationCode below;
+    // this page does not ask the user to type it again.
 
 	// This alert is used should the invitation code be invalid
     protected static Alert alertInvitationCodeIsInvalid = new Alert(AlertType.INFORMATION);
@@ -64,6 +65,7 @@ public class ViewNewAccount {
 
 	// This alert is used should the user enter two passwords that do not match
 	protected static Alert alertUsernamePasswordError = new Alert(AlertType.INFORMATION);
+	protected static Alert alertPasswordError = new Alert(AlertType.INFORMATION);
 
 	// This alert explains why a proposed UserName does not satisfy the UserName FSM
 	protected static Alert alertUserNameError = new Alert(AlertType.INFORMATION);
@@ -213,6 +215,9 @@ public class ViewNewAccount {
 				"Ask an Admin to send a new invitation and try again.");
 
 		// If the passwords do not match, this alert dialog will tell the user
+		alertPasswordError.setTitle("Password Requirements");
+		alertPasswordError.setHeaderText("The password does not satisfy the requirements.");
+		
 		alertUsernamePasswordError.setTitle("Passwords Do Not Match");
 		alertUsernamePasswordError.setHeaderText("The two passwords must be identical.");
 		alertUsernamePasswordError.setContentText("Correct the passwords and try again.");

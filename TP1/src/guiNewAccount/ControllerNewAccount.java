@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import database.Database;
 import entityClasses.User;
+import passwordPopUpWindow.Model;
 import userNameRecognizer.UserNameRecognizer;
 
 /*******
@@ -26,6 +27,8 @@ import userNameRecognizer.UserNameRecognizer;
  * 
  * @version 1.00		2025-08-17 Initial version
  * @version 1.01		2026-09-02 Validate a new UserName before database use
+ * @version 1.02		2026-09-17 Validate the new password with the password evaluator, and remove
+ * 							the invitation actually used so a code cannot be reused (A.G., agupt545)
  *  
  */
 
@@ -79,6 +82,18 @@ public class ControllerNewAccount {
 			return;
 		}
 		
+		// Apply the password requirements (upper case, lower case, digit, special character, and
+		// a length of 8 to 20 characters) before the password is stored
+		String passwordError = Model.evaluatePassword(password);
+		if (!passwordError.isEmpty()) {
+			ViewNewAccount.text_Password1.setText("");
+			ViewNewAccount.text_Password2.setText("");
+			ViewNewAccount.alertPasswordError.setContentText(
+					"The password is not acceptable: " + passwordError);
+			ViewNewAccount.alertPasswordError.showAndWait();
+			return;
+		}
+		
 		// Display key information to the log
 		System.out.println("** Account for Username: " + username + "; theInvitationCode: "+
 				ViewNewAccount.theInvitationCode + "; email address: " + 
@@ -129,8 +144,7 @@ public class ControllerNewAccount {
             }
             
             // The account has been set, so remove the invitation from the system
-            theDatabase.removeInvitationAfterUse(
-            		ViewNewAccount.text_Invitation.getText());
+            theDatabase.removeInvitationAfterUse(ViewNewAccount.theInvitationCode);
             
             // Set the database so it has this user and the current user
             theDatabase.getUserAccountDetails(username);

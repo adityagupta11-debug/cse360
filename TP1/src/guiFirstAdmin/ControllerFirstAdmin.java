@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import database.Database;
 import entityClasses.User;
 import javafx.stage.Stage;
+import passwordPopUpWindow.Model;
 import userNameRecognizer.UserNameRecognizer;
 
 /*******
@@ -27,6 +28,8 @@ import userNameRecognizer.UserNameRecognizer;
  * 
  * @version 1.00		2025-08-17 Initial version
  * @version 1.01		2026-09-02 Validate a new Admin UserName before database use
+ * @version 1.02		2026-09-17 Validate the new Admin password with the password evaluator
+ * 							before it is stored (A.G., agupt545)
  *  
  */
 
@@ -112,6 +115,17 @@ public class ControllerFirstAdmin {
 			ViewFirstAdmin.alertUserNameError.setContentText(
 					formatUserNameError(userNameError, adminUsername));
 			ViewFirstAdmin.alertUserNameError.showAndWait();
+			return;
+		}
+		
+		// Apply the password requirements (upper case, lower case, digit, special character, and
+		// a length of 8 to 20 characters) before the password is stored
+		String passwordError = Model.evaluatePassword(adminPassword1);
+		if (!passwordError.isEmpty()) {
+			ViewFirstAdmin.text_AdminPassword1.setText("");
+			ViewFirstAdmin.text_AdminPassword2.setText("");
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
+					"The password is not acceptable: " + passwordError);
 			return;
 		}
 		

@@ -54,8 +54,9 @@ public class Controller {
 	 */
 	//removed reliance on password testbed and created new file, passwordPopupWindow
 	static protected void handleButtonPress() {
+	    PasswordPopupWindow.finished = true;	// Record that a password really was chosen
 	    PasswordPopupWindow.theStage.hide();
 	    String thePassword = View.text_Password.getText();
-	    System.out.println("The password returned was: " + thePassword);
+	    System.out.println("A password of " + thePassword.length() + " characters was accepted.");
 	}
 }

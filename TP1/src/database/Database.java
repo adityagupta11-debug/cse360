@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import entityClasses.Invitation;
 import entityClasses.User;
 
 /*******
@@ -29,6 +30,9 @@ import entityClasses.User;
  * @version 2.00		2025-04-29 Updated and expanded from the version produce by Pravalika 
  * 							Mukkiri and Ishwarya Hidkimath Basavaraj
  * @version 2.01		2025-12-17 Minor updates for Spring 2026
+ * @version 2.02		2026-09-16 Named roles, invitation deadlines, last-Admin guard (A.G., agupt515)
+ * @version 2.03		2026-09-17 One-time passwords, delete user, list users, manage invitations
+ * 							(A.G., agupt545)
  */
 
 /*
@@ -42,7 +46,7 @@ public class Database {
 	static final String JDBC_DRIVER = "org.h2.Driver";   
 	static final String DB_URL = "jdbc:h2:~/FoundationDatabase";  
 	
-	// The default number of hours an invitation remains valid when no explicit deadline is given
+	/** The default number of hours an invitation remains valid when no explicit deadline is given */
 	public static final int DEFAULT_INVITATION_HOURS = 24;
 
 	// The URL actually used by this instance (the default is DB_URL; automated tests may use an
@@ -162,6 +166,11 @@ public class Database {
 	    statement.execute("ALTER TABLE InvitationCodes ADD COLUMN IF NOT EXISTS deadline TIMESTAMP");
 	    // Role names such as "Contributor" exceed the original VARCHAR(10) width
 	    statement.execute("ALTER TABLE InvitationCodes ALTER COLUMN role SET DATA TYPE VARCHAR(20)");
+
+	    // The Admin "one-time password" user story stores a temporary password and the deadline
+	    // after which it can no longer be used.  Both are NULL when no one-time password is set.
+	    statement.execute("ALTER TABLE userDB ADD COLUMN IF NOT EXISTS oneTimePassword VARCHAR(255)");
+	    statement.execute("ALTER TABLE userDB ADD COLUMN IF NOT EXISTS oneTimePasswordDeadline TIMESTAMP");
 	}
 
 
@@ -266,7 +275,7 @@ public class Database {
  *  <p> Method: List getUserList() </p>
  *  
  *  <P> Description: Generate an List of Strings, one for each user in the database,
- *  starting with "<Select User>" at the start of the list. </p>
+ *  starting with "&lt;Select a User&gt;" at the start of the list. </p>
  *  
  *  @return a list of userNames found in the database.
  */
@@ -1237,6 +1246,278 @@ public class Database {
 	}
 	
 	
+	/*******
+	 * <p> Method: {@code List<User> getAllUsers()} </p>
+	 *
+	 * <p> Description: Build a list of every user in the database so the Admin "List Users" page
+	 * can display each user's username, name, email address, and roles.  Passwords are never
+	 * copied into the returned objects.</p>
+	 *
+	 * @return a list of User objects, one per row in userDB, in username order (empty on error)
+	 *
+	 */
+	// Build a list of all users for the Admin
+	public List<User> getAllUsers() {
+		List<User> users = new ArrayList<User>();
+		String query = "SELECT * FROM userDB ORDER BY userName";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				users.add(new User(rs.getString("userName"), "", rs.getString("firstName"),
+						rs.getString("middleName"), rs.getString("lastName"),
+						rs.getString("preferredFirstName"), rs.getString("emailAddress"),
+						rs.getBoolean("adminRole"), rs.getBoolean("contributorRole"),
+						rs.getBoolean("viewerRole"), rs.getBoolean("curatorRole")));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return users;
+	}
+
+
+	/*******
+	 * <p> Method: boolean deleteUser(String username) </p>
+	 *
+	 * <p> Description: Remove a user from the database.  The request is refused (false is
+	 * returned) when the user does not exist or when the user is the only remaining Admin, since
+	 * the system must always keep at least one Admin.  The caller (the GUI) is responsible for
+	 * asking the Admin "Are you sure?" before invoking this method.</p>
+	 *
+	 * @param username is the username of the user to be deleted
+	 *
+	 * @return true if the user was deleted, else false
+	 *
+	 */
+	// Delete a user, protecting the last Admin
+	public boolean deleteUser(String username) {
+		if (username == null || !doesUserExist(username)) return false;
+		if (userIsAdmin(username) && getNumberOfAdmins() <= 1) return false;
+		String query = "DELETE FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			return pstmt.executeUpdate() == 1;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+
+	/*******
+	 * <p> Method: boolean setOneTimePassword(String username, String oneTimePassword,
+	 * 		LocalDateTime deadline) </p>
+	 *
+	 * <p> Description: Store a one-time password for a user together with the deadline after
+	 * which it can no longer be used.  The request is refused when the user does not exist, the
+	 * password is empty, or the deadline is missing or not in the future.  Setting a new one-time
+	 * password replaces any earlier one.</p>
+	 *
+	 * @param username is the username of the user
+	 *
+	 * @param oneTimePassword is the temporary password the Admin will give the user
+	 *
+	 * @param deadline is the date and time after which the one-time password is no longer valid
+	 *
+	 * @return true if the one-time password was stored, else false
+	 *
+	 */
+	// Store a one-time password and its deadline for a user
+	public boolean setOneTimePassword(String username, String oneTimePassword,
+			LocalDateTime deadline) {
+		if (username == null || oneTimePassword == null || oneTimePassword.isEmpty()) return false;
+		if (deadline == null || !deadline.isAfter(LocalDateTime.now())) return false;
+		if (!doesUserExist(username)) return false;
+		String query = "UPDATE userDB SET oneTimePassword = ?, oneTimePasswordDeadline = ? "
+				+ "WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, oneTimePassword);
+			pstmt.setTimestamp(2, Timestamp.valueOf(deadline));
+			pstmt.setString(3, username);
+			return pstmt.executeUpdate() == 1;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+
+	/*******
+	 * <p> Method: LocalDateTime getOneTimePasswordDeadline(String username) </p>
+	 *
+	 * <p> Description: Get the deadline of the user's one-time password.</p>
+	 *
+	 * @param username is the username of the user
+	 *
+	 * @return the deadline, or null when the user has no one-time password
+	 *
+	 */
+	// Obtain the deadline of a user's one-time password
+	public LocalDateTime getOneTimePasswordDeadline(String username) {
+		String query = "SELECT oneTimePasswordDeadline FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				Timestamp ts = rs.getTimestamp("oneTimePasswordDeadline");
+				if (ts != null) return ts.toLocalDateTime();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	/*******
+	 * <p> Method: boolean hasActiveOneTimePassword(String username) </p>
+	 *
+	 * <p> Description: Determine whether the user currently has a one-time password whose
+	 * deadline has not yet passed.</p>
+	 *
+	 * @param username is the username of the user
+	 *
+	 * @return true if an unexpired one-time password is stored for this user, else false
+	 *
+	 */
+	// Determine whether a user has a live one-time password
+	public boolean hasActiveOneTimePassword(String username) {
+		String query = "SELECT oneTimePassword, oneTimePasswordDeadline FROM userDB "
+				+ "WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				String otp = rs.getString("oneTimePassword");
+				Timestamp ts = rs.getTimestamp("oneTimePasswordDeadline");
+				if (otp == null || otp.isEmpty() || ts == null) return false;
+				return ts.toLocalDateTime().isAfter(LocalDateTime.now());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+
+	/*******
+	 * <p> Method: boolean loginWithOneTimePassword(String username, String oneTimePassword) </p>
+	 *
+	 * <p> Description: Check whether the supplied text matches the user's stored one-time
+	 * password and that the deadline has not passed.  A match does not clear the one-time
+	 * password; the caller must force the user to set a new password and then call
+	 * clearOneTimePassword so the temporary password can never be used again.  An expired
+	 * one-time password is removed from the database as a side effect.</p>
+	 *
+	 * @param username is the username of the user
+	 *
+	 * @param oneTimePassword is the text the user typed into the password field
+	 *
+	 * @return true if the one-time password matches and is still valid, else false
+	 *
+	 */
+	// Check a one-time password at login time
+	public boolean loginWithOneTimePassword(String username, String oneTimePassword) {
+		if (username == null || oneTimePassword == null || oneTimePassword.isEmpty()) return false;
+		String query = "SELECT oneTimePassword, oneTimePasswordDeadline FROM userDB "
+				+ "WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				String otp = rs.getString("oneTimePassword");
+				Timestamp ts = rs.getTimestamp("oneTimePasswordDeadline");
+				if (otp == null || otp.isEmpty() || ts == null) return false;
+				if (!ts.toLocalDateTime().isAfter(LocalDateTime.now())) {
+					clearOneTimePassword(username);		// Expired: purge it and refuse
+					return false;
+				}
+				return otp.compareTo(oneTimePassword) == 0;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+
+	/*******
+	 * <p> Method: void clearOneTimePassword(String username) </p>
+	 *
+	 * <p> Description: Remove the one-time password (and its deadline) from the user's record so
+	 * it cannot be used again.  This is called after the user has set a new permanent password
+	 * and when an expired one-time password is discovered.</p>
+	 *
+	 * @param username is the username of the user
+	 *
+	 */
+	// Remove a user's one-time password
+	public void clearOneTimePassword(String username) {
+		String query = "UPDATE userDB SET oneTimePassword = NULL, oneTimePasswordDeadline = NULL "
+				+ "WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	/*******
+	 * <p> Method: {@code List<Invitation> getInvitationList()} </p>
+	 *
+	 * <p> Description: Build a list of every invitation currently in the InvitationCodes table
+	 * (including any that have expired but not yet been purged) so the Admin "Manage
+	 * Invitations" page can display them.</p>
+	 *
+	 * @return a list of Invitation objects in deadline order (empty on error)
+	 *
+	 */
+	// Build a list of all invitations for the Admin
+	public List<Invitation> getInvitationList() {
+		List<Invitation> invitations = new ArrayList<Invitation>();
+		String query = "SELECT code, emailAddress, role, deadline FROM InvitationCodes "
+				+ "ORDER BY deadline";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Timestamp ts = rs.getTimestamp("deadline");
+				invitations.add(new Invitation(rs.getString("code"), rs.getString("emailAddress"),
+						rs.getString("role"), ts == null ? null : ts.toLocalDateTime()));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return invitations;
+	}
+
+
+	/*******
+	 * <p> Method: boolean removeInvitation(String code) </p>
+	 *
+	 * <p> Description: Revoke an invitation before it is used or expires.  Once removed, the code
+	 * can no longer be used to set up an account and the email address may be invited again.</p>
+	 *
+	 * @param code is the six character invitation code to be revoked
+	 *
+	 * @return true if an invitation was removed, else false (e.g., no such code)
+	 *
+	 */
+	// Revoke an outstanding invitation
+	public boolean removeInvitation(String code) {
+		if (code == null || code.isEmpty()) return false;
+		String query = "DELETE FROM InvitationCodes WHERE code = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, code);
+			return pstmt.executeUpdate() == 1;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+
 	// Attribute getters for the current user
 	/*******
 	 * <p> Method: String getCurrentUsername() </p>

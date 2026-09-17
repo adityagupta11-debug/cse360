@@ -1,0 +1,71 @@
+@startuml
+' CSE 360 Team Project - TP1 State Diagram: Email Address Recognizer
+' Author: A.G. (agupt545) - Design Documents and Architecture
+' Version 1.00, 2026-09-17
+' This is the directed graph implemented by emailAddressRecognizer.EmailAddressRecognizer,
+' drawn in the same manner as the provided "Directed Graph - Password Evaluator" diagram.
+
+title TP1 State Diagram - Email Address Recognizer
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+[*] --> SizeCheck
+
+SizeCheck : Check the size of the input
+SizeCheck : BEFORE examining it
+SizeCheck --> Rejected : empty input
+SizeCheck --> Rejected : length > 254
+SizeCheck --> LocalPart : length is acceptable
+
+LocalPart : The mailbox name, before the "@"
+LocalPart : letters, digits, and . _ % + -
+LocalPart --> Rejected : empty, or longer than 64
+LocalPart --> Rejected : a character outside the allowed set
+LocalPart --> Rejected : a leading or trailing period
+LocalPart --> Rejected : two periods in a row
+LocalPart --> AtSign : the mailbox name is well formed
+
+AtSign : Exactly one "@"
+AtSign --> Rejected : no "@" found
+AtSign --> Rejected : a second "@" found
+AtSign --> DomainLabel : one "@" found
+
+DomainLabel : One domain label
+DomainLabel : letters, digits, and hyphens
+DomainLabel --> Rejected : an empty label (two periods in a row)
+DomainLabel --> Rejected : a leading or trailing hyphen
+DomainLabel --> Rejected : a character outside the allowed set
+DomainLabel --> DomainLabel : a period starts the next label
+DomainLabel --> TopLevel : the end of the domain is reached
+
+TopLevel : The last label (the top-level domain)
+TopLevel --> Rejected : fewer than two characters
+TopLevel --> Rejected : a character that is not a letter
+TopLevel --> Accepted : at least two letters
+
+Accepted : checkForValidEmailAddress returns ""
+Rejected : returns a message, and
+Rejected : emailAddressIndexofError points at
+Rejected : the character that caused it
+
+Accepted --> [*]
+Rejected --> [*]
+
+note right of SizeCheck
+  The size check comes first, before any other
+  work, so that a very long string dropped into
+  the field cannot slow the application down or
+  make it fail.  The same pattern is used by the
+  UserName recognizer and the password evaluator.
+end note
+
+note bottom of Accepted
+  What this diagram does NOT test: whether the
+  mailbox actually exists.  That cannot be
+  determined syntactically and is out of scope
+  for TP1.
+end note
+
+@enduml

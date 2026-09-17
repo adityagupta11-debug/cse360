@@ -1,0 +1,195 @@
+@startuml
+' CSE 360 Team Project - TP1 Detailed Design (class diagram)
+' Author: A.G. (agupt545) - Design Documents and Architecture
+' Version 1.00, 2026-09-17
+' This source may be recreated in Astah for TP2 and TP3.
+
+title TP1 Detailed Design - Class Diagram (classes changed or added in TP1)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+package entityClasses {
+  class User {
+    - userName : String
+    - password : String
+    - firstName : String
+    - middleName : String
+    - lastName : String
+    - preferredFirstName : String
+    - emailAddress : String
+    - adminRole : boolean
+    - contributorRole : boolean
+    - viewerRole : boolean
+    - curatorRole : boolean
+    + getUserName() : String
+    + getEmailAddress() : String
+    + getAdminRole() : boolean
+    + getContributorRole() : boolean
+    + getViewerRole() : boolean
+    + getCuratorRole() : boolean
+    + getNumRoles() : int
+  }
+
+  class Invitation <<new in TP1>> {
+    - code : String
+    - emailAddress : String
+    - role : String
+    - deadline : LocalDateTime
+    + getCode() : String
+    + getEmailAddress() : String
+    + getRole() : String
+    + getDeadline() : LocalDateTime
+    + getDeadlineText() : String
+    + isExpired() : boolean
+    + getStatus() : String
+  }
+}
+
+package database {
+  class Database {
+    + {static} DEFAULT_INVITATION_HOURS : int
+    - connection : Connection
+    --  users --
+    + register(user : User) : void
+    + getUserAccountDetails(username : String) : boolean
+    + getUserList() : List<String>
+    + getAllUsers() : List<User> <<new>>
+    + deleteUser(username : String) : boolean <<new>>
+    + updateUserRole(username, role, value) : boolean
+    + getNumberOfAdmins() : int
+    + userIsAdmin(username : String) : boolean
+    -- one-time passwords (new in TP1) --
+    + setOneTimePassword(username, otp, deadline) : boolean
+    + getOneTimePasswordDeadline(username) : LocalDateTime
+    + hasActiveOneTimePassword(username) : boolean
+    + loginWithOneTimePassword(username, otp) : boolean
+    + clearOneTimePassword(username) : void
+    -- invitations --
+    + generateInvitationCode(email, role, deadline) : String
+    + getInvitationDeadline(code) : LocalDateTime
+    + isInvitationExpired(code) : boolean
+    + removeExpiredInvitations() : int
+    + getInvitationList() : List<Invitation> <<new>>
+    + removeInvitation(code) : boolean <<new>>
+  }
+}
+
+package "Input Validation" {
+  class UserNameRecognizer {
+    + {static} checkForValidUserName(input : String) : String
+  }
+  class EmailAddressRecognizer <<new in TP1>> {
+    + {static} MAX_LENGTH : int = 254
+    + {static} MAX_LOCAL_PART_LENGTH : int = 64
+    + {static} emailAddressIndexofError : int
+    + {static} checkForValidEmailAddress(input : String) : String
+  }
+  class "passwordPopUpWindow.Model" as PwModel {
+    + {static} MAX_PASSWORD_LENGTH : int = 20 <<new>>
+    + {static} evaluatePassword(input : String) : String
+  }
+  class "passwordPopUpWindow.PasswordPopupWindow" as PwWindow {
+    + {static} show() : String
+  }
+}
+
+package "guiAdminHome" {
+  class ControllerAdminHome {
+    + {static} MAX_INVITATION_DAYS : int = 30
+    + {static} parseInvitationDeadline(date, time) : LocalDateTime
+    + {static} validateInvitationDeadline(deadline) : String
+    # {static} performInvitation() : void
+    # {static} invalidEmailAddress(email) : boolean
+    # {static} manageInvitations() : void
+    # {static} setOnetimePassword() : void
+    # {static} deleteUser() : void
+    # {static} listUsers() : void
+    # {static} addRemoveRoles() : void
+  }
+  class ViewAdminHome
+}
+
+package "guiListUsers" <<new in TP1>> {
+  class ViewListUsers
+  class ControllerListUsers {
+    + {static} fullName(u : User) : String
+    + {static} rolesAsText(u : User) : String
+    + {static} blankIfNull(s : String) : String
+    # {static} refreshUserList() : void
+  }
+  class ModelListUsers
+}
+
+package "guiDeleteUser" <<new in TP1>> {
+  class ViewDeleteUser
+  class ControllerDeleteUser {
+    + {static} checkDeletePolicy(db, requester, target) : String
+    # {static} doSelectUser() : void
+    # {static} performDelete() : void
+  }
+  class ModelDeleteUser
+}
+
+package "guiOneTimePassword" <<new in TP1>> {
+  class ViewOneTimePassword
+  class ControllerOneTimePassword {
+    + {static} ONE_TIME_PASSWORD_LENGTH : int = 12
+    + {static} generateOneTimePassword() : String
+    # {static} performGenerate() : void
+  }
+  class ModelOneTimePassword
+}
+
+package "guiManageInvitations" <<new in TP1>> {
+  class ViewManageInvitations
+  class ControllerManageInvitations {
+    # {static} refreshInvitationList() : void
+    # {static} performRevoke() : void
+    # {static} performPurge() : void
+  }
+  class ModelManageInvitations
+}
+
+package "guiUserLogin" {
+  class ControllerUserLogin {
+    # {static} doLogin(ts : Stage) : void
+    - {static} forcePasswordReset(username) : boolean <<new>>
+  }
+}
+
+package "guiUserUpdate" {
+  class ControllerUserUpdate {
+    + {static} MAX_NAME_LENGTH : int = 50
+    + {static} checkName(value) : String <<new>>
+    + {static} checkUserName(value) : String <<new>>
+    + {static} checkEmailAddress(value) : String <<new>>
+  }
+}
+
+Database ..> User : creates
+Database ..> Invitation : creates
+ViewAdminHome --> ControllerAdminHome
+ControllerAdminHome ..> EmailAddressRecognizer : validates the invitation email
+ControllerAdminHome ..> ViewListUsers : listUsers()
+ControllerAdminHome ..> ViewDeleteUser : deleteUser()
+ControllerAdminHome ..> ViewOneTimePassword : setOnetimePassword()
+ControllerAdminHome ..> ViewManageInvitations : manageInvitations()
+ViewListUsers --> ControllerListUsers
+ViewDeleteUser --> ControllerDeleteUser
+ViewOneTimePassword --> ControllerOneTimePassword
+ViewManageInvitations --> ControllerManageInvitations
+ControllerListUsers ..> Database
+ControllerDeleteUser ..> Database
+ControllerOneTimePassword ..> Database
+ControllerOneTimePassword ..> ControllerAdminHome : reuses the deadline rules
+ControllerManageInvitations ..> Database
+ControllerUserLogin ..> Database
+ControllerUserLogin ..> PwWindow : forces a new password
+ControllerUserUpdate ..> UserNameRecognizer
+ControllerUserUpdate ..> EmailAddressRecognizer
+PwWindow --> PwModel
+
+@enduml

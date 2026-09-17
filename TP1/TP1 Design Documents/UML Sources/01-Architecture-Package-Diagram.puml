@@ -1,0 +1,74 @@
+@startuml
+' CSE 360 Team Project - TP1 Architecture (package diagram)
+' Author: A.G. (agupt545) - Design Documents and Architecture
+' Version 1.01, 2026-09-17
+' This source may be recreated in Astah for TP2 and TP3.
+
+title TP1 Architecture - Layers and Packages
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam componentStyle rectangle
+
+package "Application Layer" as APP {
+  [applicationMain\n(FoundationsMain)] as MAIN
+}
+
+package "Presentation Layer - MVC pages" as PRES {
+  [guiUserLogin] as P1
+  [guiFirstAdmin] as P2
+  [guiNewAccount] as P3
+  [guiUserUpdate] as P4
+  [guiAdminHome] as P5
+  [guiListUsers\n(new in TP1)] as P6
+  [guiDeleteUser\n(new in TP1)] as P7
+  [guiOneTimePassword\n(new in TP1)] as P8
+  [guiManageInvitations\n(new in TP1)] as P9
+  [guiAddRemoveRoles] as P10
+  [guiMultipleRoleDispatch] as P11
+  [guiContributor / guiViewer / guiCurator] as P12
+  [guiTools] as P13
+}
+
+package "Input Validation Layer" as VAL {
+  [userNameRecognizer] as V1
+  [emailAddressRecognizer\n(new in TP1)] as V2
+  [passwordPopUpWindow] as V3
+}
+
+package "Entity Layer" as ENT {
+  [entityClasses.User] as E1
+  [entityClasses.Invitation\n(new in TP1)] as E2
+}
+
+package "Persistence Layer" as DB {
+  [database.Database\n(H2 in-memory)] as D1
+}
+
+package "Verification" as TEST {
+  [testingAutomation\n(6 classes + TP1RegressionSuite)] as T1
+}
+
+MAIN --> PRES : launches the first page
+PRES --> VAL : validates every text input before it is used
+PRES --> DB : reads and writes
+PRES --> ENT : passes User and Invitation objects
+DB --> ENT : constructs
+T1 --> DB : exercises through the same methods the GUI uses
+T1 --> VAL : exercises every validator
+T1 --> PRES : exercises the policy methods
+
+note bottom of VAL
+  Every input field is validated before the input
+  is used, and every textual field is bounded in
+  size first.
+end note
+
+note bottom of DB
+  The automated tests use a private in-memory
+  JDBC URL, so the production database file is
+  never touched.
+end note
+
+@enduml

@@ -1,0 +1,67 @@
+@startuml
+' CSE 360 Team Project - TP1 Sequence Diagram: Delete a User / Manage Invitations
+' Author: A.G. (agupt545) - Design Documents and Architecture
+' Version 1.00, 2026-09-17
+
+title TP1 Sequence - Delete a user, and revoke an invitation
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+actor Admin
+participant "ViewAdminHome" as VAH
+participant "ControllerAdminHome" as CAH
+participant "ViewDeleteUser" as VDU
+participant "ControllerDeleteUser" as CDU
+participant "ViewManageInvitations" as VMI
+participant "ControllerManageInvitations" as CMI
+participant "Database" as DB
+
+== Delete a user ==
+Admin -> VAH : press "Delete a User"
+VAH -> CAH : deleteUser()
+CAH -> VDU : displayDeleteUser(stage, admin)
+VDU -> CDU : reloadUserList()
+CDU -> DB : getUserList()
+DB --> CDU : list of usernames
+Admin -> VDU : select a user
+VDU -> CDU : doSelectUser()
+CDU -> DB : getAllUsers()
+DB --> CDU : List<User>
+CDU --> Admin : show the selected user's name, email, and roles
+Admin -> VDU : press "Delete This User"
+VDU -> CDU : performDelete()
+CDU -> CDU : checkDeletePolicy(db, requester, target)
+alt policy refuses (own account, unknown user, or last Admin)
+  CDU --> Admin : alert explaining why the user was not deleted
+else policy allows
+  CDU --> Admin : "Are you sure?" confirmation dialog
+  alt Admin answers No
+    CDU --> Admin : nothing is changed
+  else Admin answers Yes
+    CDU -> DB : deleteUser(target)
+    DB -> DB : refuse if the target is the last Admin
+    DB --> CDU : true
+    CDU --> Admin : "The user has been deleted"
+    CDU -> CDU : reloadUserList()
+  end
+end
+
+== Revoke an invitation ==
+Admin -> VAH : press "Manage Invitations"
+VAH -> CAH : manageInvitations()
+CAH -> VMI : displayManageInvitations(stage, admin)
+VMI -> CMI : refreshInvitationList()
+CMI -> DB : getInvitationList()
+DB --> CMI : List<Invitation> (code, email, role, deadline, status)
+Admin -> VMI : select a row, press "Revoke Selected Invitation"
+VMI -> CMI : performRevoke()
+CMI --> Admin : "Are you sure?" confirmation dialog
+Admin -> CMI : Yes
+CMI -> DB : removeInvitation(code)
+DB --> CMI : true
+CMI --> Admin : "The invitation has been revoked"
+CMI -> CMI : refreshInvitationList()
+
+@enduml

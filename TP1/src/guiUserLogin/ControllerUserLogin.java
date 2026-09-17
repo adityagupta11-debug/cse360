@@ -2,7 +2,10 @@ package guiUserLogin;
 
 import database.Database;
 import entityClasses.User;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
+import passwordPopUpWindow.PasswordPopupWindow;
 
 /*******
  * <p> Title: ControllerUserLogin Class. </p>
@@ -27,6 +30,8 @@ import javafx.stage.Stage;
  * @version 1.00		2025-08-17 Initial version
  * @version 1.01		2025-09-16 Update Javadoc documentation *  
  * @version 1.02		2026-09-02 Bound login UserName input before database use
+ * @version 1.03		2026-09-17 Accept an Admin-issued one-time password once and require the
+ * 							user to choose a new password before continuing (A.G., agupt545)
  */
 
 public class ControllerUserLogin {
@@ -52,6 +57,14 @@ public class ControllerUserLogin {
 
 	private static Stage theStage;	
 	
+	// The longest password the login page will examine.  Anything longer cannot match a stored
+	// password, so it is rejected before the database is used.
+	private static final int MAX_PASSWORD_INPUT = 64;
+	
+	// Alerts used by the one-time password flow
+	private static Alert alertOneTimePassword = new Alert(AlertType.INFORMATION);
+	
+	
 	/**********
 	 * <p> Method: public doLogin() </p>
 	 * 
@@ -62,6 +75,8 @@ public class ControllerUserLogin {
 	 * The method reaches batch to the view page and to fetch the information needed rather than
 	 * passing that information as parameters.
 	 * 
+	 * @param ts specifies the JavaFX Stage on which the next page will be displayed
+	 * 
 	 */	
 	protected static void doLogin(Stage ts) {
 		theStage = ts;
@@ -70,9 +85,9 @@ public class ControllerUserLogin {
     	boolean loginResult = false;
 
 		// The login page references an existing UserName rather than creating a new one.  Bound
-		// the input before database use, but retain the generic credential error so the page does
-		// not reveal whether a specific UserName exists.
-		if (username.length() > 32) {
+		// both inputs before database use, but retain the generic credential error so the page
+		// does not reveal whether a specific UserName exists.
+		if (username.length() > 32 || password.length() > MAX_PASSWORD_INPUT) {
 			ViewUserLogin.alertUsernamePasswordError.setContentText(
 					"Incorrect username/password. Try again!");
 			ViewUserLogin.alertUsernamePasswordError.showAndWait();
@@ -90,14 +105,24 @@ public class ControllerUserLogin {
     	}
 		// System.out.println("*** Username is valid");
 		
-		// Check to see that the login password matches the account password
+		// Check to see that the login password matches the account password.  If it does not, the
+		// user may be logging in with a one-time password issued by an Admin, so that is checked
+		// before the credentials are rejected.
     	String actualPassword = theDatabase.getCurrentPassword();
     	
     	if (password.compareTo(actualPassword) != 0) {
-    		ViewUserLogin.alertUsernamePasswordError.setContentText(
-    				"Incorrect username/password. Try again!");
-    		ViewUserLogin.alertUsernamePasswordError.showAndWait();
-    		return;
+    		if (!theDatabase.loginWithOneTimePassword(username, password)) {
+    			ViewUserLogin.alertUsernamePasswordError.setContentText(
+    					"Incorrect username/password. Try again!");
+    			ViewUserLogin.alertUsernamePasswordError.showAndWait();
+    			return;
+    		}
+    		
+    		// The one-time password was accepted.  The user must replace it with a password of
+    		// their own before they are allowed any further, and the one-time password is then
+    		// removed so it can never be used a second time.
+    		if (!forcePasswordReset(username)) return;
+    		password = theDatabase.getCurrentPassword();
     	}
 		// System.out.println("*** Password is valid for this user");
 		
@@ -148,12 +173,65 @@ public class ControllerUserLogin {
 		}
 	}
 	
+	
+	/**********
+	 * <p> Method: boolean forcePasswordReset(String username) </p>
+	 * 
+	 * <p> Description: This method is called when a user has logged in with a one-time password
+	 * issued by an Admin.  It explains what is required, opens the dynamic password evaluator so
+	 * the user can choose a password that satisfies every requirement, saves that password, and
+	 * clears the one-time password so it can never be used again.
+	 * 
+	 * If the user closes the password window without choosing a password, nothing is changed,
+	 * the login does not proceed, and the one-time password remains usable until its deadline.
+	 * </p>
+	 * 
+	 * @param username is the username of the user who used the one-time password
+	 * 
+	 * @return true when a new password was saved and the login may continue, else false
+	 * 
+	 */	
+	private static boolean forcePasswordReset(String username) {
+		alertOneTimePassword.setTitle("One-Time Password Accepted");
+		alertOneTimePassword.setHeaderText("Choose a new password");
+		alertOneTimePassword.setContentText("This password can only be used once. "
+				+ "Please set a new password now.");
+		alertOneTimePassword.showAndWait();
+		
+		String newPassword = PasswordPopupWindow.show();
+		if (newPassword == null || newPassword.isEmpty()) {
+			// The user closed the window without choosing a password, so nothing changes
+			alertOneTimePassword.setTitle("Password Not Changed");
+			alertOneTimePassword.setHeaderText("You must set a new password");
+			alertOneTimePassword.setContentText("Log in with the one-time password again and "
+					+ "choose a new password to continue.");
+			alertOneTimePassword.showAndWait();
+			return false;
+		}
+		
+		theDatabase.updatePassword(username, newPassword);
+		theDatabase.clearOneTimePassword(username);		// It can never be used again
+		theDatabase.getUserAccountDetails(username);	// Refresh the cached current user
+		System.out.println("** A new password was set for " + username + 
+				" after a one-time password login.");
+		
+		alertOneTimePassword.setTitle("Password Changed");
+		alertOneTimePassword.setHeaderText("Your new password has been saved");
+		alertOneTimePassword.setContentText("Use it the next time you log in.");
+		alertOneTimePassword.showAndWait();
+		return true;
+	}
+	
 		
 	/**********
 	 * <p> Method: setup() </p>
 	 * 
 	 * <p> Description: This method is called to reset the page and then populate it with new
 	 * content for the new user.</p>
+	 * 
+	 * @param theStage specifies the JavaFX Stage on which the New Account page will be displayed
+	 * 
+	 * @param invitationCode specifies the invitation code the potential user typed
 	 * 
 	 */
 	protected static void doSetupAccount(Stage theStage, String invitationCode) {

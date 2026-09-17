@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import database.Database;
+import emailAddressRecognizer.EmailAddressRecognizer;
 
 /*******
  * <p> Title: GUIAdminHomePage Class. </p>
@@ -14,10 +15,9 @@ import database.Database;
  * <p> Description: The Java/FX-based Admin Home Page.  This class provides the controller actions
  * basic on the user's use of the JavaFX GUI widgets defined by the View class.
  * 
- * This page contains a number of buttons that have not yet been implemented.  WHen those buttons
- * are pressed, an alert pops up to tell the user that the function associated with the button has
- * not been implemented. Also, be aware that What has been implemented may not work the way the
- * final product requires and there maybe defects in this code.
+ * Every button on this page is now implemented.  The invitation is created on this page; the
+ * other Admin functions (Manage Invitations, One-Time Password, Delete User, List Users, and
+ * Add/Remove Roles) each dispatch to a dedicated page in its own MVC package.
  * 
  * The class has been written assuming that the View or the Model are the only class methods that
  * can invoke these methods.  This is why each has been declared at "protected".  Do not change any
@@ -28,7 +28,11 @@ import database.Database;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-08-17 Initial version
- * @version 1.01		2025-09-16 Update Javadoc documentation *  
+ * @version 1.01		2025-09-16 Update Javadoc documentation
+ * @version 1.02		2026-09-16 Invitation deadline and named roles (A.G., agupt515)
+ * @version 1.03		2026-09-17 Manage Invitations, One-Time Password, Delete User, and List
+ * 							Users now dispatch to their own pages; email addresses are validated
+ * 							syntactically (A.G., agupt545)
  */
 
 public class ControllerAdminHome {
@@ -55,7 +59,7 @@ public class ControllerAdminHome {
 	// The format used for the time-of-day portion of an invitation deadline
 	private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 	
-	// Upper bound on how far into the future an invitation deadline may be set (in days)
+	/** Upper bound on how far into the future an invitation deadline may be set, in days */
 	public static final int MAX_INVITATION_DAYS = 30;
 
 	/**********
@@ -188,15 +192,12 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: manageInvitations () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that displays the Manage Invitations page, where the Admin
+	 * can review every outstanding invitation, revoke one, or purge those that have expired. </p>
 	 */
 	protected static void manageInvitations () {
-		System.out.println("\n*** WARNING ***: Manage Invitations Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("Manage Invitations Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("Manage Invitations Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+		guiManageInvitations.ViewManageInvitations.displayManageInvitations(
+				ViewAdminHome.theStage, ViewAdminHome.theUser);
 	}
 	
 	/**********
@@ -204,15 +205,13 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: setOnetimePassword () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that displays the One-Time Password page, where the Admin
+	 * selects a user and a deadline and the system generates a temporary password that the
+	 * user must replace at their next login. </p>
 	 */
 	protected static void setOnetimePassword () {
-		System.out.println("\n*** WARNING ***: One-Time Password Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("One-Time Password Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("One-Time Password Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+		guiOneTimePassword.ViewOneTimePassword.displayOneTimePassword(
+				ViewAdminHome.theStage, ViewAdminHome.theUser);
 	}
 	
 	/**********
@@ -220,15 +219,12 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: deleteUser () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that displays the Delete User page, where the Admin selects
+	 * a user, confirms "Are you sure?", and the user is removed (the last Admin is protected). </p>
 	 */
-	protected static void deleteUser() {
-		System.out.println("\n*** WARNING ***: Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("Delete User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+	protected static void deleteUser () {
+		guiDeleteUser.ViewDeleteUser.displayDeleteUser(ViewAdminHome.theStage,
+				ViewAdminHome.theUser);
 	}
 	
 	/**********
@@ -236,15 +232,12 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: listUsers () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that displays the List Users page, a table of every user's
+	 * username, name, email address, and roles. </p>
 	 */
-	protected static void listUsers() {
-		System.out.println("\n*** WARNING ***: List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("List User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+	protected static void listUsers () {
+		guiListUsers.ViewListUsers.displayListUsers(ViewAdminHome.theStage,
+				ViewAdminHome.theUser);
 	}
 	
 	/**********
@@ -267,17 +260,21 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: invalidEmailAddress () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is intended to check an email address before it is
-	 * used to reduce errors.  The code currently only checks to see that the email address is not
-	 * empty.  In the future, a syntactic check must be performed and maybe there is a way to check
-	 * if a properly email address is active.</p>
+	 * <p> Description: Protected method that checks an email address before it is used.  The
+	 * input is first bounded in size and then checked syntactically by the EmailAddressRecognizer
+	 * (exactly one "@", a well-formed mailbox name, and a domain with a top-level domain).  When
+	 * the check fails, an alert explains the problem and true is returned so the caller stops.
+	 * Whether the mailbox actually exists cannot be determined here.</p>
 	 * 
 	 * @param emailAddress	This String holds what is expected to be an email address
+	 * 
+	 * @return true if the email address is NOT acceptable, else false
 	 */
 	protected static boolean invalidEmailAddress(String emailAddress) {
-		if (emailAddress.length() == 0) {
-			ViewAdminHome.alertEmailError.setContentText(
-					"Correct the email address and try again.");
+		String error = EmailAddressRecognizer.checkForValidEmailAddress(emailAddress);
+		if (!error.isEmpty()) {
+			ViewAdminHome.alertEmailError.setContentText(error + 
+					"\nCorrect the email address and try again.");
 			ViewAdminHome.alertEmailError.showAndWait();
 			return true;
 		}

@@ -107,6 +107,13 @@ public class Model {
 	 * 
 	 */
 
+	/**
+	 * The largest password the evaluator will examine.  Any longer input is rejected at once,
+	 * before the directed graph is run, so a very long string pasted into the field (a standard
+	 * hacking tactic) cannot slow the application down or make it fail.
+	 */
+	public static final int MAX_PASSWORD_LENGTH = 20;
+	
 	public static String passwordErrorMessage = "";		// The error message text
 	public static String passwordInput = "";			// The input being processed
 	public static int passwordIndexofError = -1;		// The index where the error was located
@@ -206,6 +213,14 @@ public class Model {
 		
 		if(input.length() <= 0) {
 			return "*** Error *** The password is empty!";
+		}
+		
+		// Check the size of the input before doing anything else with it.  Walking a very long
+		// string one character at a time would waste time on input that can never be valid.
+		if(input.length() > MAX_PASSWORD_LENGTH) {
+			passwordIndexofError = MAX_PASSWORD_LENGTH;
+			return "*** Error *** The password may not exceed " + MAX_PASSWORD_LENGTH + 
+					" characters!";
 		}
 		
 		// The input is not empty, so we can access the first character

@@ -25,9 +25,8 @@ import guiUserUpdate.ViewUserUpdate;
  * <p> Title: ViewAdminHome Class. </p>
  * 
  * <p> Description: The Java/FX-based Admin Home Page.  This class provides the JavaFX GUI widgets
- * that enable an admin to perform admin functions.  This page contains a number of buttons that
- * have not yet been implemented.  What has been implemented may not work the way the final product
- * requires and there maybe defects in this code.
+ * that enable an admin to perform admin functions.  Every button on this page is implemented:
+ * invitations are sent from this page, and the remaining functions each open a dedicated page.
  * 
  * The class has been written using a singleton design pattern and is the View portion of the 
  * Model, View, Controller pattern.  The pattern is designed that the all accesses to this page and
@@ -44,6 +43,8 @@ import guiUserUpdate.ViewUserUpdate;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-08-17 Initial version
+ * @version 1.01		2026-09-16 Invitation deadline widgets and named roles (A.G., agupt515)
+ * @version 1.02		2026-09-17 All Admin buttons dispatch to implemented pages (A.G., agupt545)
  *  
  */
 
@@ -102,14 +103,13 @@ public class ViewAdminHome {
 	private static Line line_Separator3 = new Line(20, 290, width-20, 290);
 	
 	// GUI Area 4: This is the second of the two action item areas.  This provides a set of other
-	// admin buttons to use to perform other roles.  Many of these buttons are just stubs and an
-	// alert pops up to inform the admin of this fact.
+	// admin buttons to use to perform other roles.  Each button dispatches to a dedicated page
+	// (its own MVC package) and that page returns here when the Admin is done.
 	protected static Button button_ManageInvitations = new Button("Manage Invitations");
 	protected static Button button_SetOnetimePassword = new Button("Set a One-Time Password");
 	protected static Button button_DeleteUser = new Button("Delete a User");
 	protected static Button button_ListUsers = new Button("List All Users");
 	protected static Button button_AddRemoveRoles = new Button("Add/Remove Roles");
-	protected static Alert alertNotImplemented = new Alert(AlertType.INFORMATION);
 
 	// This is a separator and it is used to partition the GUI for various tasks
 	private static Line line_Separator4 = new Line(20, 545, width-20,545);

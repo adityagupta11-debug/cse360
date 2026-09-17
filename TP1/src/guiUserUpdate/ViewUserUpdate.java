@@ -5,6 +5,8 @@ import java.util.Optional;
 import database.Database;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
@@ -34,6 +36,8 @@ import passwordPopUpWindow.PasswordPopupWindow;
  * @author Lynn Robert Carter
  * 
  * @version 1.01		2025-08-19 Initial version plus new internal documentation
+ * @version 1.02		2026-09-17 Every field is validated before use and the password is shown
+ * 							masked rather than in clear text (A.G., agupt545)
  *  
  */
 
@@ -73,6 +77,12 @@ public class ViewUserUpdate {
 	// These are dynamic labels and they change based on the user and user interactions.
 	private static Label label_CurrentUsername = new Label();
 	private static Label label_CurrentPassword = new Label();
+	
+	// The password is never displayed; this stands in for a password that has been set
+	private static final String MASKED_PASSWORD = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022 (hidden)";
+	
+	// Used to explain to the user why a value they entered was not accepted
+	private static Alert alertInputError = new Alert(AlertType.INFORMATION);
 	private static Label label_CurrentFirstName = new Label();
 	private static Label label_CurrentMiddleName = new Label();
 	private static Label label_CurrentLastName = new Label();
@@ -171,9 +181,10 @@ public class ViewUserUpdate {
     	if (s == null || s.length() < 1)label_CurrentUsername.setText("<none>");
     	else label_CurrentUsername.setText(s);
 		
+		// The password itself is never displayed; the page only reports whether one is set
 		s = theUser.getPassword();
     	if (s == null || s.length() < 1)label_CurrentPassword.setText("<none>");
-    	else label_CurrentPassword.setText(s);
+    	else label_CurrentPassword.setText(MASKED_PASSWORD);
     	
 		s = theUser.getFirstName();
     	if (s == null || s.length() < 1)label_CurrentFirstName.setText("<none>");
@@ -270,9 +281,15 @@ public class ViewUserUpdate {
         
         button_UpdateUsername.setOnAction((_) -> {result = dialogUpdateUsername.showAndWait();
     	result.ifPresent(_ -> {
+    		// Validate the new UserName before it reaches the database
+    		String error = ControllerUserUpdate.checkUserName(result.get());
+    		if (!error.isEmpty()) {
+    			showInputError("UserName", error);
+    			return;
+    		}
     		boolean success = theDatabase.updateUserName(theUser.getUserName(), result.get());
     		if (!success) {
-    			label_CurrentUsername.setText(label_CurrentUsername.getText() + " (username taken!)");
+    			showInputError("UserName", "That UserName is already taken. Choose another.");
     			return;
     		}
     		theDatabase.getUserAccountDetails(theDatabase.getCurrentUsername());
@@ -294,7 +311,7 @@ public class ViewUserUpdate {
         		theDatabase.updatePassword(theUser.getUserName(), newPassword);
         		theDatabase.getUserAccountDetails(theUser.getUserName());
         		theUser.setPassword(newPassword);
-        		label_CurrentPassword.setText(newPassword);
+        		label_CurrentPassword.setText(MASKED_PASSWORD);
         	}
         });
         
@@ -303,7 +320,11 @@ public class ViewUserUpdate {
         setupLabelUI(label_CurrentFirstName, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 200);
         setupButtonUI(button_UpdateFirstName, "Dialog", 18, 275, Pos.CENTER, 500, 193);
         button_UpdateFirstName.setOnAction((_) -> {result = dialogUpdateFirstName.showAndWait();
-        	result.ifPresent(_ -> theDatabase.updateFirstName(theUser.getUserName(), result.get()));
+        	result.ifPresent(_ -> {
+        		// Validate the name before it reaches the database
+        		String error = ControllerUserUpdate.checkName(result.get());
+        		if (!error.isEmpty()) { showInputError("Name", error); return; }
+        		theDatabase.updateFirstName(theUser.getUserName(), result.get()); });
         	theDatabase.getUserAccountDetails(theUser.getUserName());
          	String newName = theDatabase.getCurrentFirstName();
            	theUser.setFirstName(newName);
@@ -316,7 +337,11 @@ public class ViewUserUpdate {
         setupLabelUI(label_CurrentMiddleName, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 250);
         setupButtonUI(button_UpdateMiddleName, "Dialog", 18, 275, Pos.CENTER, 500, 243);
         button_UpdateMiddleName.setOnAction((_) -> {result = dialogUpdateMiddleName.showAndWait();
-    		result.ifPresent(_ -> theDatabase.updateMiddleName(theUser.getUserName(), result.get()));
+    		result.ifPresent(_ -> {
+        		// Validate the name before it reaches the database
+        		String error = ControllerUserUpdate.checkName(result.get());
+        		if (!error.isEmpty()) { showInputError("Name", error); return; }
+        		theDatabase.updateMiddleName(theUser.getUserName(), result.get()); });
     		theDatabase.getUserAccountDetails(theUser.getUserName());
     		String newName = theDatabase.getCurrentMiddleName();
            	theUser.setMiddleName(newName);
@@ -329,7 +354,11 @@ public class ViewUserUpdate {
         setupLabelUI(label_CurrentLastName, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 300);
         setupButtonUI(button_UpdateLastName, "Dialog", 18, 275, Pos.CENTER, 500, 293);
         button_UpdateLastName.setOnAction((_) -> {result = dialogUpdateLastName.showAndWait();
-    		result.ifPresent(_ -> theDatabase.updateLastName(theUser.getUserName(), result.get()));
+    		result.ifPresent(_ -> {
+        		// Validate the name before it reaches the database
+        		String error = ControllerUserUpdate.checkName(result.get());
+        		if (!error.isEmpty()) { showInputError("Name", error); return; }
+        		theDatabase.updateLastName(theUser.getUserName(), result.get()); });
     		theDatabase.getUserAccountDetails(theUser.getUserName());
     		String newName = theDatabase.getCurrentLastName();
            	theUser.setLastName(newName);
@@ -345,8 +374,11 @@ public class ViewUserUpdate {
         setupButtonUI(button_UpdatePreferredFirstName, "Dialog", 18, 275, Pos.CENTER, 500, 343);
         button_UpdatePreferredFirstName.setOnAction((_) -> 
         	{result = dialogUpdatePreferredFirstName.showAndWait();
-    		result.ifPresent(_ -> 
-    		theDatabase.updatePreferredFirstName(theUser.getUserName(), result.get()));
+    		result.ifPresent(_ -> {
+        		// Validate the name before it reaches the database
+        		String error = ControllerUserUpdate.checkName(result.get());
+        		if (!error.isEmpty()) { showInputError("Name", error); return; }
+        		theDatabase.updatePreferredFirstName(theUser.getUserName(), result.get()); });
     		theDatabase.getUserAccountDetails(theUser.getUserName());
     		String newName = theDatabase.getCurrentPreferredFirstName();
            	theUser.setPreferredFirstName(newName);
@@ -359,7 +391,11 @@ public class ViewUserUpdate {
         setupLabelUI(label_CurrentEmailAddress, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 400);
         setupButtonUI(button_UpdateEmailAddress, "Dialog", 18, 275, Pos.CENTER, 500, 393);
         button_UpdateEmailAddress.setOnAction((_) -> {result = dialogUpdateEmailAddresss.showAndWait();
-    		result.ifPresent(_ -> theDatabase.updateEmailAddress(theUser.getUserName(), result.get()));
+    		result.ifPresent(_ -> {
+    			// Validate the email address before it reaches the database
+    			String error = ControllerUserUpdate.checkEmailAddress(result.get());
+    			if (!error.isEmpty()) { showInputError("Email Address", error); return; }
+    			theDatabase.updateEmailAddress(theUser.getUserName(), result.get()); });
     		theDatabase.getUserAccountDetails(theUser.getUserName());
     		String newEmail = theDatabase.getCurrentEmailAddress();
            	theUser.setEmailAddress(newEmail);
@@ -395,6 +431,24 @@ public class ViewUserUpdate {
 	Helper methods to reduce code length
 
 	 */
+	
+	/**********
+	 * <p> Method: showInputError(String field, String message) </p>
+	 * 
+	 * <p> Description: Tell the user why the value they typed was not accepted, naming the field
+	 * and explaining the problem, so they can correct it and try again.  Nothing is written to
+	 * the database when this method is used.</p>
+	 * 
+	 * @param field		the name of the field being updated
+	 * @param message	the explanation produced by the validation method
+	 */
+	private static void showInputError(String field, String message) {
+		alertInputError.setTitle("Invalid " + field);
+		alertInputError.setHeaderText("The " + field + " was not updated");
+		alertInputError.setContentText(message);
+		alertInputError.showAndWait();
+	}
+	
 	
 	/**********
 	 * Private local method to initialize the standard fields for a label
