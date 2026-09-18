@@ -54,6 +54,10 @@ public class UserManagementTestingAutomation {
 
 		/************** Start of the test cases **************/
 
+		// Authenticate the requester for the secured deletion API.
+		if (!theDatabase.authenticateSession("adminOne", "Aa!15678"))
+			throw new AssertionError("Admin test setup failed");
+
 		// Test 1: The list contains every user that was registered
 		List<User> users = theDatabase.getAllUsers();
 		performTestCase(1, "getAllUsers returns all four registered users",

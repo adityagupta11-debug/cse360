@@ -80,6 +80,7 @@ public class ControllerUserLogin {
 	 */	
 	protected static void doLogin(Stage ts) {
 		theStage = ts;
+		theDatabase.clearAuthenticatedSession();
 		String username = ViewUserLogin.text_Username.getText();
 		String password = ViewUserLogin.text_Password.getText();
     	boolean loginResult = false;
@@ -126,7 +127,13 @@ public class ControllerUserLogin {
     	}
 		// System.out.println("*** Password is valid for this user");
 		
-		// Establish this user's details
+		// Establish a stable authenticated identity after the normal/OTP path validates credentials.
+        if (!theDatabase.authenticateSession(username, password)) {
+            ViewUserLogin.alertUsernamePasswordError.setContentText("Incorrect username/password. Try again!");
+            ViewUserLogin.alertUsernamePasswordError.showAndWait();
+            return;
+        }
+        // Establish this user's details
     	User user = new User(username, password, theDatabase.getCurrentFirstName(), 
     			theDatabase.getCurrentMiddleName(), theDatabase.getCurrentLastName(), 
     			theDatabase.getCurrentPreferredFirstName(), theDatabase.getCurrentEmailAddress(), 
@@ -235,7 +242,12 @@ public class ControllerUserLogin {
 	 * 
 	 */
 	protected static void doSetupAccount(Stage theStage, String invitationCode) {
-		guiNewAccount.ViewNewAccount.displayNewAccount(theStage, invitationCode);
+		if (!validInvitationInput(invitationCode)) {
+            ViewUserLogin.alertUsernamePasswordError.setContentText("Enter an invitation code between 1 and 10 characters.");
+            ViewUserLogin.alertUsernamePasswordError.showAndWait();
+            return;
+        }
+        guiNewAccount.ViewNewAccount.displayNewAccount(theStage, invitationCode);
 	}
 
 	
@@ -248,6 +260,10 @@ public class ControllerUserLogin {
 	 * of crashed.)
 	 * 
 	 */	
+	static boolean validInvitationInput(String code) {
+        return code != null && code.length() <= 10 && !code.isBlank();
+    }
+
 	protected static void performQuit() {
 		System.out.println("Perform Quit");
 		System.exit(0);

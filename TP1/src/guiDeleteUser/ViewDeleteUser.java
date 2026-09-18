@@ -34,6 +34,7 @@ import entityClasses.User;
  * <p> Copyright: CSE 360 Team Project © 2026 </p>
  *
  * @author A.G. (agupt545)
+ * @author Kanish Garg - shared layout and confirmation defaults
  *
  * @version 1.00		2026-09-17 Initial version
  *
@@ -129,54 +130,57 @@ public class ViewDeleteUser {
 	 * <p> Description: This private constructor initializes all the elements of the graphical
 	 * user interface.  It is a singleton and is only performed once.</p>
 	 */
-	private ViewDeleteUser() {
-		theRootPane = new Pane();
-		theDeleteUserScene = new Scene(theRootPane, width, height);
-
-		// GUI Area 1
-		label_PageTitle.setText("Delete a User");
-		setupLabelUI(label_PageTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
-		setupLabelUI(label_UserDetails, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 55);
-
-		// GUI Area 2
-		setupLabelUI(label_SelectUser, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 120);
-		setupComboBoxUI(combobox_SelectUser, "Dialog", 16, 250, 20, 160);
-		combobox_SelectUser.setOnAction((_) -> {ControllerDeleteUser.doSelectUser(); });
-
-		setupLabelUI(label_SelectedDetails, "Arial", 16, width-40, Pos.TOP_LEFT, 20, 215);
-		label_SelectedDetails.setWrapText(true);
-
-		setupButtonUI(button_Delete, "Dialog", 18, 250, Pos.CENTER, 20, 380);
-		button_Delete.setStyle("-fx-text-fill: #b00020;");	// Red text warns this is destructive
-		button_Delete.setOnAction((_) -> {ControllerDeleteUser.performDelete(); });
-		button_Delete.setDisable(true);						// Enabled once a user is chosen
-
-		alertConfirmDelete.setTitle("Confirm Deletion");
-		alertConfirmDelete.setHeaderText("Are you sure?");
-		alertConfirmDelete.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-
-		alertDeleteRefused.setTitle("Deletion Refused");
-		alertDeleteRefused.setHeaderText("The user was not deleted");
-
-		alertDeleteDone.setTitle("User Deleted");
-		alertDeleteDone.setHeaderText("The user has been deleted");
-
-		// GUI Area 3
-		setupButtonUI(button_Return, "Dialog", 18, 210, Pos.CENTER, 20, 540);
-		button_Return.setOnAction((_) -> {ControllerDeleteUser.performReturn(); });
-
-		setupButtonUI(button_Logout, "Dialog", 18, 210, Pos.CENTER, 300, 540);
-		button_Logout.setOnAction((_) -> {ControllerDeleteUser.performLogout(); });
-
-		setupButtonUI(button_Quit, "Dialog", 18, 210, Pos.CENTER, 570, 540);
-		button_Quit.setOnAction((_) -> {ControllerDeleteUser.performQuit(); });
-
-		// Place all of the widget items into the Root Pane's list of children
-		theRootPane.getChildren().addAll(
-				label_PageTitle, label_UserDetails, line_Separator1,
-				label_SelectUser, combobox_SelectUser, label_SelectedDetails, button_Delete,
-				line_Separator4, button_Return, button_Logout, button_Quit);
-	}
+    private ViewDeleteUser() {
+        theRootPane = new Pane();
+        theDeleteUserScene = new Scene(theRootPane, width, height);
+        guiTools.TeamTheme.apply(theDeleteUserScene);
+        Label brand = new Label("TEAM 53 / ACCOUNT ADMINISTRATION");
+        brand.getStyleClass().add("eyebrow");
+        label_PageTitle.setText("Delete an account");
+        label_PageTitle.getStyleClass().add("page-title");
+        label_UserDetails.getStyleClass().add("help-label");
+        label_SelectUser.setText("Account to delete");
+        label_SelectUser.setLabelFor(combobox_SelectUser);
+        combobox_SelectUser.setEditable(false);
+        combobox_SelectUser.setMaxWidth(Double.MAX_VALUE);
+        combobox_SelectUser.setOnAction(event -> ControllerDeleteUser.doSelectUser());
+        label_SelectedDetails.setWrapText(true);
+        label_SelectedDetails.setMinHeight(90);
+        Label warning = new Label("Deletion is permanent. You cannot delete your own account.");
+        warning.setWrapText(true);
+        warning.getStyleClass().add("error-label");
+        button_Delete.setText("Delete account");
+        button_Delete.getStyleClass().add("danger-button");
+        button_Delete.setOnAction(event -> ControllerDeleteUser.performDelete());
+        button_Delete.setDisable(true);
+        alertConfirmDelete.setTitle("Confirm Deletion");
+        alertConfirmDelete.setHeaderText("Are you sure?");
+        alertConfirmDelete.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        Button yes = (Button) alertConfirmDelete.getDialogPane().lookupButton(ButtonType.YES);
+        Button no = (Button) alertConfirmDelete.getDialogPane().lookupButton(ButtonType.NO);
+        yes.setDefaultButton(false);
+        no.setDefaultButton(true);
+        no.setCancelButton(true);
+        yes.getStyleClass().add("danger-button");
+        alertConfirmDelete.setOnShown(event -> no.requestFocus());
+        alertConfirmDelete.getDialogPane().getStylesheets().add(guiTools.TeamTheme.stylesheet());
+        alertDeleteRefused.setTitle("Deletion Refused");
+        alertDeleteRefused.setHeaderText("The user was not deleted");
+        alertDeleteDone.setTitle("User Deleted");
+        alertDeleteDone.setHeaderText("The user has been deleted");
+        button_Return.setText("Back to admin home");
+        button_Return.setOnAction(event -> ControllerDeleteUser.performReturn());
+        button_Logout.setOnAction(event -> ControllerDeleteUser.performLogout());
+        button_Quit.setOnAction(event -> ControllerDeleteUser.performQuit());
+        javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(12, label_SelectUser,
+                combobox_SelectUser, label_SelectedDetails, warning, button_Delete);
+        card.getStyleClass().add("card");
+        javafx.scene.layout.VBox layout = new javafx.scene.layout.VBox(14, brand, label_PageTitle,
+                label_UserDetails, card, new javafx.scene.layout.HBox(12, button_Return, button_Logout, button_Quit));
+        layout.setPadding(new javafx.geometry.Insets(28));
+        layout.prefWidthProperty().bind(theRootPane.widthProperty());
+        theRootPane.getChildren().add(layout);
+    }
 
 
 	/**********

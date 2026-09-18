@@ -137,6 +137,8 @@ public class ControllerNewAccount {
             try {
             	// Create a new User object with the pre-set role and register in the database
             	theDatabase.register(user);
+                if (!theDatabase.authenticateSession(user.getUserName(), user.getPassword()))
+                    throw new SQLException("Unable to start the new account session");
             } catch (SQLException e) {
                 System.err.println("*** ERROR *** Database error: " + e.getMessage());
                 e.printStackTrace();

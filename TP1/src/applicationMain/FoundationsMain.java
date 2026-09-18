@@ -81,6 +81,7 @@ public class FoundationsMain extends Application {
 												// Role 0 is the admin role number
 	@Override
 	public void start(Stage theStage) {
+		guiTools.TeamTheme.install(theStage);
 		
 		// Connect to the in-memory database
 		try {

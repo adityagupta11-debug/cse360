@@ -53,3 +53,8 @@ RUNNING THE TESTS
 The suite runs all six test classes and prints one summary. It exits non-zero if anything fails.
 It uses private in-memory H2 databases, so it never alters the ~/FoundationDatabase file the
 application itself uses.
+
+K.G. DELETION INTEGRATION (17 September 2026)
+KG Account Deletion Design.pdf describes the revised deletion flow and stable authenticated identity.
+Class and deletion sequence diagram sources and PNGs are updated. The earlier architecture PDF embeds the previous figures; consult the updated standalone diagrams and addendum.
+Run ../test.ps1 for 61 additional feature checks plus all 132 existing team checks (193 total).

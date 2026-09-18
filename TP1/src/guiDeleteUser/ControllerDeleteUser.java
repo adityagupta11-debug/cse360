@@ -2,6 +2,10 @@ package guiDeleteUser;
 
 import java.util.List;
 import java.util.Optional;
+import java.sql.SQLException;
+import java.util.function.Predicate;
+import database.Database.DeletionCandidate;
+import database.Database.DeletionResult;
 
 import javafx.scene.control.ButtonType;
 import database.Database;
@@ -19,6 +23,7 @@ import guiListUsers.ControllerListUsers;
  * <p> Copyright: CSE 360 Team Project © 2026 </p>
  *
  * @author A.G. (agupt545)
+ * @author Kanish Garg - transactional deletion integration
  *
  * @version 1.00		2026-09-17 Initial version
  *
@@ -34,6 +39,8 @@ public class ControllerDeleteUser {
 
 	// Reference for the in-memory database so this package has access
 	private static Database theDatabase = applicationMain.FoundationsMain.database;
+    private static DeletionCandidate selectedIdentity;
+    private static final ModelDeleteUser model = new ModelDeleteUser(theDatabase);
 
 
 	/**********
@@ -43,8 +50,16 @@ public class ControllerDeleteUser {
 	 * them into the ComboBox with the placeholder entry selected.</p>
 	 */
 	protected static void reloadUserList() {
-		List<String> users = theDatabase.getUserList();
-		ViewDeleteUser.setUserList(users);
+		selectedIdentity = null;
+        try {
+            List<String> users = new java.util.ArrayList<>();
+            users.add("<Select a User>");
+            for (DeletionCandidate candidate : model.choices()) users.add(candidate.username());
+            ViewDeleteUser.setUserList(users);
+        } catch (SQLException failure) {
+            ViewDeleteUser.setUserList(java.util.List.of("<Select a User>"));
+            ViewDeleteUser.label_SelectedDetails.setText("An active administrator session is required. Log in again.");
+        }
 	}
 
 
@@ -56,6 +71,7 @@ public class ControllerDeleteUser {
 	 * chosen, and the Delete button is enabled only for a real user.</p>
 	 */
 	protected static void doSelectUser() {
+		selectedIdentity = null;
 		String selected = ViewDeleteUser.combobox_SelectUser.getValue();
 		if (selected == null || selected.startsWith("<")) {
 			ViewDeleteUser.theSelectedUser = "";
@@ -81,7 +97,10 @@ public class ControllerDeleteUser {
 				"Name: " + (name.isEmpty() ? "(not set)" : name) + "\n" +
 				"Email address: " + ControllerListUsers.blankIfNull(found.getEmailAddress()) + "\n" +
 				"Roles: " + ControllerListUsers.rolesAsText(found));
-		ViewDeleteUser.button_Delete.setDisable(false);
+		try {
+            selectedIdentity = model.choices().stream().filter(item -> item.username().equals(selected)).findFirst().orElse(null);
+        } catch (SQLException failure) { selectedIdentity = null; }
+        ViewDeleteUser.button_Delete.setDisable(selectedIdentity == null);
 	}
 
 
@@ -100,10 +119,12 @@ public class ControllerDeleteUser {
 	 * @return an empty string if the deletion may proceed, else a message for the Admin
 	 */
 	public static String checkDeletePolicy(Database db, String requester, String target) {
-		if (target == null || target.isEmpty() || target.startsWith("<"))
+		if (target == null || target.isEmpty() || target.length() > 32 || target.startsWith("<"))
 			return "Select a user first.";
 		if (requester != null && target.compareTo(requester) == 0)
 			return "You cannot delete the account you are currently using.";
+		if (requester == null || !db.userIsAdmin(requester))
+            return "An administrator is required.";
 		if (!db.doesUserExist(target))
 			return "There is no user with that username.";
 		if (db.userIsAdmin(target) && db.getNumberOfAdmins() <= 1)
@@ -118,34 +139,37 @@ public class ControllerDeleteUser {
 	 * <p> Description: Protected method invoked by the Delete button.  It applies the policy,
 	 * asks "Are you sure?", and on Yes removes the user and refreshes the page.</p>
 	 */
-	protected static void performDelete() {
-		String target = ViewDeleteUser.theSelectedUser;
-		String problem = checkDeletePolicy(theDatabase, ViewDeleteUser.theUser.getUserName(),
-				target);
-		if (!problem.isEmpty()) {
-			ViewDeleteUser.alertDeleteRefused.setContentText(problem);
-			ViewDeleteUser.alertDeleteRefused.showAndWait();
-			return;
-		}
+    /** Captures the stable selection before confirmation and delegates to the model. */
+    protected static DeletionResult request(ModelDeleteUser model, DeletionCandidate selected,
+            Predicate<DeletionCandidate> confirm) throws SQLException {
+        if (selected == null) return DeletionResult.NO_SELECTION;
+        return model.remove(selected, confirm.test(selected));
+    }
 
-		// Ask the Admin to confirm before doing anything irreversible
-		ViewDeleteUser.alertConfirmDelete.setContentText("Delete the user \"" + target +
-				"\"? This cannot be undone.");
-		Optional<ButtonType> answer = ViewDeleteUser.alertConfirmDelete.showAndWait();
-		if (answer.isEmpty() || answer.get() != ButtonType.YES) return;
-
-		if (theDatabase.deleteUser(target)) {
-			System.out.println("** User deleted: " + target);
-			ViewDeleteUser.alertDeleteDone.setContentText("The user \"" + target +
-					"\" has been removed from the system.");
-			ViewDeleteUser.alertDeleteDone.showAndWait();
-		} else {
-			ViewDeleteUser.alertDeleteRefused.setContentText(
-					"The database refused to delete \"" + target + "\".");
-			ViewDeleteUser.alertDeleteRefused.showAndWait();
-		}
-		reloadUserList();
-	}
+    protected static void performDelete() {
+        DeletionCandidate captured = selectedIdentity;
+        try {
+            DeletionResult result = request(model, captured, candidate -> {
+                ViewDeleteUser.alertConfirmDelete.setContentText("Delete account \"" + candidate.username()
+                        + "\" (ID " + candidate.id() + ")? This permanently removes access.");
+                Optional<ButtonType> answer = ViewDeleteUser.alertConfirmDelete.showAndWait();
+                return answer.isPresent() && answer.get() == ButtonType.YES;
+            });
+            if (result == DeletionResult.CANCELLED) return;
+            if (result == DeletionResult.DELETED) {
+                ViewDeleteUser.alertDeleteDone.setContentText(ModelDeleteUser.message(result));
+                ViewDeleteUser.alertDeleteDone.showAndWait();
+                reloadUserList();
+            } else {
+                ViewDeleteUser.alertDeleteRefused.setContentText(ModelDeleteUser.message(result));
+                ViewDeleteUser.alertDeleteRefused.showAndWait();
+                if (result == DeletionResult.NOT_FOUND) reloadUserList();
+            }
+        } catch (SQLException failure) {
+            ViewDeleteUser.alertDeleteRefused.setContentText("Unable to delete the account. Reload the page and try again.");
+            ViewDeleteUser.alertDeleteRefused.showAndWait();
+        }
+    }
 
 
 	/**********

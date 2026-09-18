@@ -51,13 +51,14 @@ public class Database {
 
 	// The URL actually used by this instance (the default is DB_URL; automated tests may use an
 	// in-memory database so they never touch the production database file)
-	private String dbUrl = DB_URL;
+	private String dbUrl = System.getProperty("cse360.db.url", DB_URL);
 
 	//  Database credentials 
 	static final String USER = "sa"; 
 	static final String PASS = ""; 
 
 	//  Shared variables used within this class
+	private Integer authenticatedUserId; // Independent of the account-details cache.
 	private Connection connection = null;		// Singleton to access the database 
 	private Statement statement = null;			// The H2 Statement is used to construct queries
 	
@@ -122,7 +123,7 @@ public class Database {
 			createTables();  // Create the necessary tables if they don't exist
 			removeExpiredInvitations();	// Purge any invitations whose deadline has passed
 		} catch (ClassNotFoundException e) {
-			System.err.println("JDBC Driver not found: " + e.getMessage());
+			throw new SQLException("H2 JDBC driver is missing", e);
 		}
 	}
 
@@ -1281,7 +1282,7 @@ public class Database {
 	 *
 	 * <p> Description: Remove a user from the database.  The request is refused (false is
 	 * returned) when the user does not exist or when the user is the only remaining Admin, since
-	 * the system must always keep at least one Admin.  The caller (the GUI) is responsible for
+	 * the system must always keep at least one Admin.  An authenticated Admin session is also required. The caller (the GUI) is responsible for
 	 * asking the Admin "Are you sure?" before invoking this method.</p>
 	 *
 	 * @param username is the username of the user to be deleted
@@ -1291,17 +1292,16 @@ public class Database {
 	 */
 	// Delete a user, protecting the last Admin
 	public boolean deleteUser(String username) {
-		if (username == null || !doesUserExist(username)) return false;
-		if (userIsAdmin(username) && getNumberOfAdmins() <= 1) return false;
-		String query = "DELETE FROM userDB WHERE userName = ?";
-		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-			pstmt.setString(1, username);
-			return pstmt.executeUpdate() == 1;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
+        // Compatibility entry point for existing callers. Authorization is enforced in the
+        // same transaction as the new ID-based path; callers must first authenticate.
+        if (username == null || username.isBlank() || username.length() > 32) return false;
+        try (PreparedStatement query = connection.prepareStatement("SELECT id FROM userDB WHERE userName = ?")) {
+            query.setString(1, username);
+            try (ResultSet row = query.executeQuery()) {
+                return row.next() && deleteUserAccount(row.getInt(1), true) == DeletionResult.DELETED;
+            }
+        } catch (SQLException failure) { return false; }
+    }
 
 
 	/*******
@@ -1518,6 +1518,126 @@ public class Database {
 	}
 
 
+	/** K.G. deletion outcomes; the GUI never reports success after a database error. */
+	public enum DeletionResult {
+		DELETED, CANCELLED, NO_SELECTION, UNAUTHORIZED, SELF_PROTECTED,
+		NOT_FOUND, LAST_ADMIN_PROTECTED
+	}
+
+	/** Stable record identity prevents a stale selection from deleting a replacement user. */
+	public record DeletionCandidate(int id, String username) {
+		@Override public String toString() { return username; }
+	}
+
+	/**
+	 * Authenticates this single-user application session. Merely fetching another
+	 * user's details never changes this identity. Existing password storage is retained.
+	 * @return true only for a matching, existing account
+	 */
+	public synchronized boolean authenticateSession(String username, String password) {
+		authenticatedUserId = null;
+		// Match the existing username limit and shared password limit before SQL use.
+		if (username == null || password == null || username.isEmpty()
+				|| username.length() > 32 || password.length() > 64) return false;
+		try (PreparedStatement query = connection.prepareStatement(
+				"SELECT id FROM userDB WHERE userName = ? AND password = ?")) {
+			query.setString(1, username);
+			query.setString(2, password);
+			try (ResultSet result = query.executeQuery()) {
+				if (!result.next()) return false;
+				authenticatedUserId = result.getInt("id");
+				return true;
+			}
+		} catch (SQLException failure) { return false; }
+	}
+
+	/** Clears authorization when the login screen is shown or the connection closes. */
+	public synchronized void clearAuthenticatedSession() { authenticatedUserId = null; }
+
+	/** Checks the stored role, not role flags supplied by a view or an editable User object. */
+	public synchronized boolean isAuthenticatedAdmin() throws SQLException {
+		if (authenticatedUserId == null) return false;
+		try (PreparedStatement query = connection.prepareStatement(
+				"SELECT adminRole FROM userDB WHERE id = ?")) {
+			query.setInt(1, authenticatedUserId);
+			try (ResultSet result = query.executeQuery()) {
+				return result.next() && result.getBoolean(1);
+			}
+		}
+	}
+
+	/** Retrieves account choices for deletion without changing the account-details cache. */
+	public synchronized List<DeletionCandidate> getDeletionCandidates() throws SQLException {
+		if (!isAuthenticatedAdmin()) throw new SQLException("An administrator session is required");
+		List<DeletionCandidate> users = new ArrayList<>();
+		try (PreparedStatement query = connection.prepareStatement(
+				"SELECT id, userName FROM userDB ORDER BY userName");
+				ResultSet result = query.executeQuery()) {
+			while (result.next()) users.add(new DeletionCandidate(result.getInt(1), result.getString(2)));
+		}
+		return users;
+	}
+
+	/**
+	 * Removes an account only after explicit Yes. No/cancel performs no database work.
+	 * This implementation uses hard deletion, matching the supplied schema (no active flag).
+	 * All admin rows are locked in ID order before checking authorization and the target.
+	 * Therefore two administrators cannot concurrently delete one another and leave no admin.
+	 * The operation commits only its own transaction; failures roll back and propagate.
+	 *
+	 * @param targetId database identity captured when the account was selected
+	 * @param confirmed true only when the confirmation dialog returned Yes
+	 * @return the precise outcome for display and automated testing
+	 * @throws SQLException if persistence fails; no success should be displayed
+	 */
+	public synchronized DeletionResult deleteUserAccount(int targetId, boolean confirmed)
+			throws SQLException {
+		if (!confirmed) return DeletionResult.CANCELLED;
+		if (targetId <= 0) return DeletionResult.NO_SELECTION;
+		if (authenticatedUserId == null) return DeletionResult.UNAUTHORIZED;
+		if (!connection.getAutoCommit()) throw new SQLException("Deletion requires its own transaction");
+		connection.setAutoCommit(false);
+		try {
+			int adminCount = 0;
+			boolean actorIsAdmin = false;
+			try (PreparedStatement lock = connection.prepareStatement(
+					"SELECT id FROM userDB WHERE adminRole = TRUE ORDER BY id FOR UPDATE");
+					ResultSet admins = lock.executeQuery()) {
+				while (admins.next()) {
+					adminCount++;
+					if (admins.getInt(1) == authenticatedUserId) actorIsAdmin = true;
+				}
+			}
+			DeletionResult outcome;
+			if (!actorIsAdmin) outcome = DeletionResult.UNAUTHORIZED;
+			else if (targetId == authenticatedUserId) outcome = DeletionResult.SELF_PROTECTED;
+			else {
+				try (PreparedStatement target = connection.prepareStatement(
+						"SELECT adminRole FROM userDB WHERE id = ? FOR UPDATE")) {
+					target.setInt(1, targetId);
+					try (ResultSet row = target.executeQuery()) {
+						if (!row.next()) outcome = DeletionResult.NOT_FOUND;
+						else if (row.getBoolean(1) && adminCount <= 1)
+							outcome = DeletionResult.LAST_ADMIN_PROTECTED;
+						else {
+							try (PreparedStatement remove = connection.prepareStatement(
+									"DELETE FROM userDB WHERE id = ?")) {
+								remove.setInt(1, targetId);
+								outcome = remove.executeUpdate() == 1
+										? DeletionResult.DELETED : DeletionResult.NOT_FOUND;
+							}
+						}
+					}
+				}
+			}
+			connection.commit();
+			return outcome;
+		} catch (SQLException | RuntimeException failure) {
+			try { connection.rollback(); } catch (SQLException rollback) { failure.addSuppressed(rollback); }
+			throw failure;
+		} finally { connection.setAutoCommit(true); }
+	}
+
 	// Attribute getters for the current user
 	/*******
 	 * <p> Method: String getCurrentUsername() </p>
@@ -1673,6 +1793,7 @@ public class Database {
 	 */
 	// Closes the database statement and connection.
 	public void closeConnection() {
+		clearAuthenticatedSession();
 		try{ 
 			if(statement!=null) statement.close(); 
 		} catch(SQLException se2) { 

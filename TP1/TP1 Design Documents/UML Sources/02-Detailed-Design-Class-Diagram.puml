@@ -1,7 +1,8 @@
 @startuml
 ' CSE 360 Team Project - TP1 Detailed Design (class diagram)
 ' Author: A.G. (agupt545) - Design Documents and Architecture
-' Version 1.00, 2026-09-17
+' Deletion integration: Kanish Garg
+' Version 1.01, 2026-09-17
 ' This source may be recreated in Astah for TP2 and TP3.
 
 title TP1 Detailed Design - Class Diagram (classes changed or added in TP1)
@@ -51,6 +52,11 @@ package entityClasses {
 package database {
   class Database {
     + {static} DEFAULT_INVITATION_HOURS : int
+    - authenticatedUserId : Integer
+    + authenticateSession(username, password) : boolean
+    + clearAuthenticatedSession() : void
+    + getDeletionCandidates() : List<DeletionCandidate>
+    + deleteUserAccount(id, confirmed) : DeletionResult
     - connection : Connection
     --  users --
     + register(user : User) : void
@@ -130,7 +136,11 @@ package "guiDeleteUser" <<new in TP1>> {
     # {static} doSelectUser() : void
     # {static} performDelete() : void
   }
-  class ModelDeleteUser
+  class ModelDeleteUser {
+    + choices() : List<DeletionCandidate>
+    + remove(selected, confirmed) : DeletionResult
+    + {static} message(result) : String
+  }
 }
 
 package "guiOneTimePassword" <<new in TP1>> {
@@ -183,6 +193,8 @@ ViewOneTimePassword --> ControllerOneTimePassword
 ViewManageInvitations --> ControllerManageInvitations
 ControllerListUsers ..> Database
 ControllerDeleteUser ..> Database
+ControllerDeleteUser --> ModelDeleteUser
+ModelDeleteUser --> Database
 ControllerOneTimePassword ..> Database
 ControllerOneTimePassword ..> ControllerAdminHome : reuses the deadline rules
 ControllerManageInvitations ..> Database

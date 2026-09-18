@@ -75,6 +75,7 @@ public class ViewUserLogin {
 	 *********************************************************************************************/
 
 	public static void displayUserLogin(Stage ps) {
+		applicationMain.FoundationsMain.database.clearAuthenticatedSession();
 		
 		// Establish the references to the GUI. There is no current user yet.
 		theStage = ps;
@@ -117,64 +118,46 @@ public class ViewUserLogin {
 	 * 
 	 */
 	private ViewUserLogin() {
-
-		// Create the Pane for the list of widgets and the Scene for the window
-		theRootPane = new Pane();
-		theUserLoginScene = new Scene(theRootPane, width, height);
-		
-		// Populate the window with the title and other common widgets and set their static state
-		setupLabelUI(label_ApplicationTitle, "Arial", 32, width, Pos.CENTER, 0, 10);
-
-		setupLabelUI(label_OperationalStartTitle, "Arial", 24, width, Pos.CENTER, 0, 60);
-
-
-		// Existing user log in portion of the page
-
-		setupLabelUI(label_LogInInsrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 120);
-
-		// Establish the text input operand field for the username
-		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
-		text_Username.setPromptText("Enter Username");
-
-		// Establish the text input operand field for the password
-		setupTextUI(text_Password, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
-		text_Password.setPromptText("Enter Password");
-
-		// Set up the Log In button
-		setupButtonUI(button_Login, "Dialog", 18, 200, Pos.CENTER, 475, 180);
-		button_Login.setOnAction((_) -> {ControllerUserLogin.doLogin(theStage); });
-
-		alertUsernamePasswordError.setTitle("Invalid username/password!");
+		// K.G.: labeled form groups and a single primary action, inspired by GitHub settings.
+		javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(14);
+		content.setPadding(new javafx.geometry.Insets(28, 80, 28, 80));
+		Label brand = new Label("TEAM 53  /  CSE 360");
+		brand.getStyleClass().add("eyebrow");
+		Label title = new Label("Welcome back");
+		title.getStyleClass().add("page-title");
+		Label subtitle = new Label("Sign in to manage your account.");
+		subtitle.getStyleClass().add("help-label");
+		Label username = new Label("Username");
+		username.setLabelFor(text_Username);
+		Label password = new Label("Password");
+		password.setLabelFor(text_Password);
+		text_Username.setPromptText("Enter your username");
+		text_Password.setPromptText("Enter your password");
+		button_Login.setText("Sign in");
+		button_Login.getStyleClass().add("primary-button");
+		button_Login.setDefaultButton(true);
+		button_Login.setMaxWidth(Double.MAX_VALUE);
+		button_Login.setOnAction(event -> ControllerUserLogin.doLogin(theStage));
+		javafx.scene.layout.VBox signIn = new javafx.scene.layout.VBox(8,
+				username, text_Username, password, text_Password, button_Login);
+		signIn.getStyleClass().add("card");
+		Label invitation = new Label("Invited to join?");
+		Label invitationLabel = new Label("Invitation code");
+		invitationLabel.setLabelFor(text_Invitation);
+		text_Invitation.setPromptText("Enter your invitation code");
+		button_SetupAccount.setText("Create account");
+		button_SetupAccount.setOnAction(event ->
+				ControllerUserLogin.doSetupAccount(theStage, text_Invitation.getText()));
+		javafx.scene.layout.HBox inviteRow = new javafx.scene.layout.HBox(12, text_Invitation, button_SetupAccount);
+		javafx.scene.layout.HBox.setHgrow(text_Invitation, javafx.scene.layout.Priority.ALWAYS);
+		javafx.scene.layout.VBox invite = new javafx.scene.layout.VBox(8, invitation, invitationLabel, inviteRow);
+		invite.getStyleClass().add("card");
+		button_Quit.setOnAction(event -> ControllerUserLogin.performQuit());
+		content.getChildren().addAll(brand, title, subtitle, signIn, invite, button_Quit);
+		theUserLoginScene = new Scene(content, width, height);
+		guiTools.TeamTheme.apply(theUserLoginScene);
+		alertUsernamePasswordError.setTitle("Unable to sign in");
 		alertUsernamePasswordError.setHeaderText(null);
-
-
-		// The invitation to setup an account portion of the page
-
-		setupLabelUI(label_AccountSetupInsrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 300);
-
-		// Establish the text input operand field for the password
-		setupTextUI(text_Invitation, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 340, true);
-		text_Invitation.setPromptText("Enter Invitation Code");
-
-		// Set up the setup button
-		setupButtonUI(button_SetupAccount, "Dialog", 18, 200, Pos.CENTER, 475, 340);
-		button_SetupAccount.setOnAction((_) -> {
-			System.out.println("**** Calling doSetupAccount");
-			ControllerUserLogin.doSetupAccount(theStage, text_Invitation.getText());
-		});
-
-		// Set up the Quit button  
-		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 520);
-		button_Quit.setOnAction((_) -> {ControllerUserLogin.performQuit(); });
-
-		//		theRootPane.getChildren().clear();
-
-		theRootPane.getChildren().addAll(
-				label_ApplicationTitle, 
-				label_OperationalStartTitle,
-				label_LogInInsrtuctions, label_AccountSetupInsrtuctions, text_Username,
-				button_Login, text_Password, text_Invitation, button_SetupAccount,
-				button_Quit);
 	}
 
 

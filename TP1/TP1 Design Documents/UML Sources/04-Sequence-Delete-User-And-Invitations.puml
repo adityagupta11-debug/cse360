@@ -1,7 +1,8 @@
 @startuml
 ' CSE 360 Team Project - TP1 Sequence Diagram: Delete a User / Manage Invitations
 ' Author: A.G. (agupt545) - Design Documents and Architecture
-' Version 1.00, 2026-09-17
+' Deletion integration: Kanish Garg
+' Version 1.01, 2026-09-17
 
 title TP1 Sequence - Delete a user, and revoke an invitation
 
@@ -16,6 +17,7 @@ participant "ViewDeleteUser" as VDU
 participant "ControllerDeleteUser" as CDU
 participant "ViewManageInvitations" as VMI
 participant "ControllerManageInvitations" as CMI
+participant "ModelDeleteUser" as MDU
 participant "Database" as DB
 
 == Delete a user ==
@@ -23,29 +25,26 @@ Admin -> VAH : press "Delete a User"
 VAH -> CAH : deleteUser()
 CAH -> VDU : displayDeleteUser(stage, admin)
 VDU -> CDU : reloadUserList()
-CDU -> DB : getUserList()
-DB --> CDU : list of usernames
+CDU -> MDU : choices()
+MDU -> DB : getDeletionCandidates()
+DB --> CDU : authorized choices (stable IDs)
 Admin -> VDU : select a user
 VDU -> CDU : doSelectUser()
 CDU -> DB : getAllUsers()
-DB --> CDU : List<User>
-CDU --> Admin : show the selected user's name, email, and roles
-Admin -> VDU : press "Delete This User"
+CDU --> Admin : show account details; capture target ID
+Admin -> VDU : press Delete account
 VDU -> CDU : performDelete()
-CDU -> CDU : checkDeletePolicy(db, requester, target)
-alt policy refuses (own account, unknown user, or last Admin)
-  CDU --> Admin : alert explaining why the user was not deleted
-else policy allows
-  CDU --> Admin : "Are you sure?" confirmation dialog
-  alt Admin answers No
-    CDU --> Admin : nothing is changed
-  else Admin answers Yes
-    CDU -> DB : deleteUser(target)
-    DB -> DB : refuse if the target is the last Admin
-    DB --> CDU : true
-    CDU --> Admin : "The user has been deleted"
-    CDU -> CDU : reloadUserList()
-  end
+CDU --> Admin : Are you sure? (username and ID; default No)
+alt No, Escape or close
+  CDU --> Admin : unchanged
+else explicit Yes
+  CDU -> MDU : remove(selected, true)
+  MDU -> DB : deleteUserAccount(id, true)
+  DB -> DB : lock admin rows; recheck authenticated ID and role
+  DB -> DB : reject self; lock target; DELETE and commit or rollback
+  DB --> CDU : DeletionResult
+  CDU --> Admin : result message
+  CDU -> CDU : reloadUserList()
 end
 
 == Revoke an invitation ==
