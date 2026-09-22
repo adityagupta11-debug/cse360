@@ -161,7 +161,7 @@ public class ViewFirstAdmin {
 		setupTextUI(text_AdminUsername, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, 
 				true);
 		text_AdminUsername.setPromptText("Enter Admin Username");
-		text_AdminUsername.textProperty().addListener((_, _, _) 
+        text_AdminUsername.textProperty().addListener((observable, oldValue, newValue)
 				-> {ControllerFirstAdmin.setAdminUsername(); });
 
 		// Configure the alert used when the UserName recognizer rejects the input
@@ -172,19 +172,19 @@ public class ViewFirstAdmin {
 		setupTextUI(text_AdminPassword1, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, 
 				true);
 		text_AdminPassword1.setPromptText("Enter Admin Password");
-		text_AdminPassword1.textProperty().addListener((_, _, _)
+        text_AdminPassword1.textProperty().addListener((observable, oldValue, newValue)
 				-> {ControllerFirstAdmin.setAdminPassword1(); });
 
 		// Establish the text input operand field for the password
 		setupTextUI(text_AdminPassword2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, 
 				true);
 		text_AdminPassword2.setPromptText("Enter Admin Password Again");
-		text_AdminPassword2.textProperty().addListener((_, _, _) 
+        text_AdminPassword2.textProperty().addListener((observable, oldValue, newValue)
 				-> {ControllerFirstAdmin.setAdminPassword2(); });
 
 		// Set up the Log In button
 		setupButtonUI(button_AdminSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);
-		button_AdminSetup.setOnAction((_) -> {
+        button_AdminSetup.setOnAction((ignoredEvent) -> {
 			ControllerFirstAdmin.doSetupAdmin(theStage,1); 
 			});
 
@@ -192,7 +192,7 @@ public class ViewFirstAdmin {
 		setupLabelUI(label_PasswordsDoNotMatch, "Arial", 18, width, Pos.CENTER, 0, 300);
 
 		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 520);
-		button_Quit.setOnAction((_) -> {ControllerFirstAdmin.performQuit(); });
+        button_Quit.setOnAction((ignoredEvent) -> {ControllerFirstAdmin.performQuit(); });
 
 		// Place all of the just-initialized GUI elements into the pane
 		theRootPane.getChildren().addAll(label_ApplicationTitle, label_TitleLine1,

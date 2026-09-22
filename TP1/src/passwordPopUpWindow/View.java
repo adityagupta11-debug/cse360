@@ -152,7 +152,7 @@ public class View {
 		// the code will process the entire input to ensure that it is valid or in error.
 		setupTextWidget(text_Password, 10, 30, "Arial", 18, windowWidth-20, Pos.BASELINE_LEFT, 
 				true);
-		text_Password.textProperty().addListener((observable, oldValue, newValue) 
+        text_Password.textProperty().addListener((observable, oldValue, newValue)
 				-> {Model.updatePassword(); });
 		
 		// Establish an error message for when there is no input

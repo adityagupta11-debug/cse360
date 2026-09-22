@@ -144,7 +144,7 @@ public class ViewOneTimePassword {
 		// GUI Area 2
 		setupLabelUI(label_SelectUser, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 120);
 		setupComboBoxUI(combobox_SelectUser, "Dialog", 16, 250, 20, 160);
-		combobox_SelectUser.setOnAction((_) -> {ControllerOneTimePassword.doSelectUser(); });
+        combobox_SelectUser.setOnAction((ignoredEvent) -> {ControllerOneTimePassword.doSelectUser(); });
 
 		setupLabelUI(label_Status, "Arial", 16, width-40, Pos.TOP_LEFT, 20, 210);
 		label_Status.setWrapText(true);
@@ -161,7 +161,7 @@ public class ViewOneTimePassword {
 		text_DeadlineTime.setPromptText("HH:mm");
 
 		setupButtonUI(button_Generate, "Dialog", 18, 300, Pos.CENTER, 20, 340);
-		button_Generate.setOnAction((_) -> {ControllerOneTimePassword.performGenerate(); });
+        button_Generate.setOnAction((ignoredEvent) -> {ControllerOneTimePassword.performGenerate(); });
 		button_Generate.setDisable(true);					// Enabled once a user is chosen
 
 		alertError.setTitle("One-Time Password");
@@ -172,13 +172,13 @@ public class ViewOneTimePassword {
 
 		// GUI Area 3
 		setupButtonUI(button_Return, "Dialog", 18, 210, Pos.CENTER, 20, 540);
-		button_Return.setOnAction((_) -> {ControllerOneTimePassword.performReturn(); });
+        button_Return.setOnAction((ignoredEvent) -> {ControllerOneTimePassword.performReturn(); });
 
 		setupButtonUI(button_Logout, "Dialog", 18, 210, Pos.CENTER, 300, 540);
-		button_Logout.setOnAction((_) -> {ControllerOneTimePassword.performLogout(); });
+        button_Logout.setOnAction((ignoredEvent) -> {ControllerOneTimePassword.performLogout(); });
 
 		setupButtonUI(button_Quit, "Dialog", 18, 210, Pos.CENTER, 570, 540);
-		button_Quit.setOnAction((_) -> {ControllerOneTimePassword.performQuit(); });
+        button_Quit.setOnAction((ignoredEvent) -> {ControllerOneTimePassword.performQuit(); });
 
 		// Place all of the widget items into the Root Pane's list of children
 		theRootPane.getChildren().addAll(

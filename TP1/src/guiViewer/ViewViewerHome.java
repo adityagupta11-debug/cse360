@@ -160,7 +160,7 @@ public class ViewViewerHome {
 		setupLabelUI(label_UserDetails, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 55);
 		
 		setupButtonUI(button_UpdateThisUser, "Dialog", 18, 170, Pos.CENTER, 610, 45);
-		button_UpdateThisUser.setOnAction((_) -> {ControllerViewerHome.performUpdate(); });
+        button_UpdateThisUser.setOnAction((ignoredEvent) -> {ControllerViewerHome.performUpdate(); });
 		
 		// GUI Area 2
 		
@@ -169,10 +169,10 @@ public class ViewViewerHome {
 		
 		// GUI Area 3
         setupButtonUI(button_Logout, "Dialog", 18, 250, Pos.CENTER, 20, 540);
-        button_Logout.setOnAction((_) -> {ControllerViewerHome.performLogout(); });
+        button_Logout.setOnAction((ignoredEvent) -> {ControllerViewerHome.performLogout(); });
         
         setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 540);
-        button_Quit.setOnAction((_) -> {ControllerViewerHome.performQuit(); });
+        button_Quit.setOnAction((ignoredEvent) -> {ControllerViewerHome.performQuit(); });
 
 		// This is the end of the GUI initialization code
 		

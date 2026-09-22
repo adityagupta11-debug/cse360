@@ -176,10 +176,10 @@ public class ViewManageInvitations {
 		table_Invitations.setItems(FXCollections.observableArrayList());
 
 		setupButtonUI(button_Revoke, "Dialog", 16, 300, Pos.CENTER, 20, 470);
-		button_Revoke.setOnAction((_) -> {ControllerManageInvitations.performRevoke(); });
+        button_Revoke.setOnAction((ignoredEvent) -> {ControllerManageInvitations.performRevoke(); });
 
 		setupButtonUI(button_PurgeExpired, "Dialog", 16, 300, Pos.CENTER, 480, 470);
-		button_PurgeExpired.setOnAction((_) -> {ControllerManageInvitations.performPurge(); });
+        button_PurgeExpired.setOnAction((ignoredEvent) -> {ControllerManageInvitations.performPurge(); });
 
 		alertConfirmRevoke.setTitle("Confirm Revocation");
 		alertConfirmRevoke.setHeaderText("Are you sure?");
@@ -190,13 +190,13 @@ public class ViewManageInvitations {
 
 		// GUI Area 3
 		setupButtonUI(button_Return, "Dialog", 18, 210, Pos.CENTER, 20, 540);
-		button_Return.setOnAction((_) -> {ControllerManageInvitations.performReturn(); });
+        button_Return.setOnAction((ignoredEvent) -> {ControllerManageInvitations.performReturn(); });
 
 		setupButtonUI(button_Logout, "Dialog", 18, 210, Pos.CENTER, 300, 540);
-		button_Logout.setOnAction((_) -> {ControllerManageInvitations.performLogout(); });
+        button_Logout.setOnAction((ignoredEvent) -> {ControllerManageInvitations.performLogout(); });
 
 		setupButtonUI(button_Quit, "Dialog", 18, 210, Pos.CENTER, 570, 540);
-		button_Quit.setOnAction((_) -> {ControllerManageInvitations.performQuit(); });
+        button_Quit.setOnAction((ignoredEvent) -> {ControllerManageInvitations.performQuit(); });
 
 		// Place all of the widget items into the Root Pane's list of children
 		theRootPane.getChildren().addAll(

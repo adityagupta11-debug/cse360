@@ -169,13 +169,13 @@ public class ViewListUsers {
 
 		// GUI Area 3
 		setupButtonUI(button_Return, "Dialog", 18, 210, Pos.CENTER, 20, 540);
-		button_Return.setOnAction((_) -> {ControllerListUsers.performReturn(); });
+        button_Return.setOnAction((ignoredEvent) -> {ControllerListUsers.performReturn(); });
 
 		setupButtonUI(button_Logout, "Dialog", 18, 210, Pos.CENTER, 300, 540);
-		button_Logout.setOnAction((_) -> {ControllerListUsers.performLogout(); });
+        button_Logout.setOnAction((ignoredEvent) -> {ControllerListUsers.performLogout(); });
 
 		setupButtonUI(button_Quit, "Dialog", 18, 210, Pos.CENTER, 570, 540);
-		button_Quit.setOnAction((_) -> {ControllerListUsers.performQuit(); });
+        button_Quit.setOnAction((ignoredEvent) -> {ControllerListUsers.performQuit(); });
 
 		// Place all of the widget items into the Root Pane's list of children
 		theRootPane.getChildren().addAll(

@@ -155,17 +155,17 @@ public class ViewMultipleRoleDispatch {
 		setupComboBoxUI(combobox_SelectRole, "Dialog", 16, 100, 305, 105);
 
 		setupButtonUI(button_PerformRole, "Dialog", 16, 100, Pos.CENTER, 495, 105);
-		button_PerformRole.setOnAction((_) -> 
+        button_PerformRole.setOnAction((ignoredEvent) ->
 		{guiMultipleRoleDispatch.ControllerMultipleRoleDispatch.performRole(); });
 
 		
 		// GUI Area 3		
 		setupButtonUI(button_Logout, "Dialog", 18, 250, Pos.CENTER, 20, 540);
-		button_Logout.setOnAction((_) -> 
+        button_Logout.setOnAction((ignoredEvent) ->
 		{guiMultipleRoleDispatch.ControllerMultipleRoleDispatch.performLogout(); });
 
 		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 540);
-		button_Quit.setOnAction((_) -> 
+        button_Quit.setOnAction((ignoredEvent) ->
 		{guiMultipleRoleDispatch.ControllerMultipleRoleDispatch.performQuit(); });
 		
 		// This is the end of the GUI Widgets for the page
