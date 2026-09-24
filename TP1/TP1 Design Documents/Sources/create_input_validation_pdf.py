@@ -25,16 +25,16 @@ from reportlab.platypus import (
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_PATH = SCRIPT_DIR.parents[1] / "InputValidation.pdf"
 
-NAVY = colors.HexColor("#17365D")
-BLUE = colors.HexColor("#2F75B5")
-PALE_BLUE = colors.HexColor("#EAF2F8")
-PALE_GREEN = colors.HexColor("#E9F5EC")
-GREEN = colors.HexColor("#2E7D32")
-PALE_GOLD = colors.HexColor("#FFF4CC")
-GOLD = colors.HexColor("#D29A00")
-INK = colors.HexColor("#1F2933")
-MUTED = colors.HexColor("#52606D")
-GRID = colors.HexColor("#CBD5E1")
+NAVY = colors.black
+BLUE = colors.black
+PALE_BLUE = colors.white
+PALE_GREEN = colors.white
+GREEN = colors.black
+PALE_GOLD = colors.white
+GOLD = colors.black
+INK = colors.black
+MUTED = colors.black
+GRID = colors.HexColor("#A6A6A6")
 WHITE = colors.white
 
 
@@ -340,7 +340,7 @@ def build_story():
         ),
         field_inventory_table(),
         PageBreak(),
-        Paragraph("3 - Constrained controls that are not free text", styles["SectionTitle"]),
+        Paragraph("3 - Non-text controls and remaining checks", styles["SectionTitle"]),
         Paragraph(
             "Not every control needs a text recognizer. The two deadline DatePickers are explicitly "
             "noneditable; users select a date. User, role, deletion target, and multi-role ComboBoxes "
