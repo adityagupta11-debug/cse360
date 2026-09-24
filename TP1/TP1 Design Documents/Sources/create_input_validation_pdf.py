@@ -21,7 +21,7 @@ from reportlab.platypus import (
 )
 
 
-# Vishwam, write the assignment's exact required filename at the TP1 archive root.
+# Vishwam, keep the published validation artifact at the TP1 archive root.
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_PATH = SCRIPT_DIR.parents[1] / "InputValidation.pdf"
 
@@ -95,7 +95,7 @@ def P(text, style="TableCell"):
     return Paragraph(text, styles[style])
 
 
-# Vishwam, every content page carries the artifact name, source branch, and page number.
+# Vishwam, every content page carries the artifact name and page number.
 def draw_page(canvas, doc):
     canvas.saveState()
     width, height = letter
@@ -109,7 +109,7 @@ def draw_page(canvas, doc):
     canvas.setFillColor(MUTED)
     canvas.drawRightString(width - 0.48 * inch, height - 0.30 * inch, "InputValidation.pdf")
     canvas.line(0.48 * inch, 0.43 * inch, width - 0.48 * inch, 0.43 * inch)
-    canvas.drawString(0.48 * inch, 0.27 * inch, "Local branch: vishwam-integration · 21 Sep 2026")
+    canvas.drawString(0.48 * inch, 0.27 * inch, "CSE 360 · Team 53")
     canvas.drawRightString(width - 0.48 * inch, 0.27 * inch, f"Page {doc.page}")
     canvas.restoreState()
 
@@ -263,7 +263,7 @@ def build_story():
     story = []
     story.extend([
         Spacer(1, 0.55 * inch),
-        Paragraph("CSE 360 · TEAM PROJECT PHASE 1", styles["CoverEyebrow"]),
+        Paragraph("CSE 360 - TEAM PROJECT PHASE 1", styles["CoverEyebrow"]),
         Paragraph("Input Validation", styles["CoverTitle"]),
         Paragraph("Complete TP1 text-input inventory, rules, user feedback, and verification", styles["CoverSubtitle"]),
         Spacer(1, 0.08 * inch),
@@ -271,9 +271,6 @@ def build_story():
         Spacer(1, 0.28 * inch),
         Table([
             [P("Prepared by", "Footer"), P("Vishwam (V.G.)", "Body")],
-            [P("Source", "Footer"), P("Local integration branch <b>vishwam-integration</b>", "Body")],
-            [P("Implementation date", "Footer"), P("21 September 2026", "Body")],
-            [P("Required filename", "Footer"), P("<b>InputValidation.pdf</b>", "Body")],
         ], colWidths=[1.55 * inch, 5.25 * inch], style=TableStyle([
             ("BACKGROUND", (0, 0), (0, -1), PALE_BLUE),
             ("GRID", (0, 0), (-1, -1), 0.45, GRID),
@@ -303,7 +300,7 @@ def build_story():
                   ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
               ])),
         PageBreak(),
-        Paragraph("1 · Validation design and shared rules", styles["SectionTitle"]),
+        Paragraph("1 - Validation design and shared rules", styles["SectionTitle"]),
         Paragraph(
             "Validation follows one consistent order: <b>(1)</b> null/blank and reasonable length "
             "checks, <b>(2)</b> syntax or finite-state-machine checks, <b>(3)</b> cross-field or "
@@ -333,7 +330,7 @@ def build_story():
             styles["Body"],
         ),
         PageBreak(),
-        Paragraph("2 · Complete text-input inventory", styles["SectionTitle"]),
+        Paragraph("2 - Complete text-input inventory", styles["SectionTitle"]),
         Paragraph(
             "The table below accounts for every <font name='Courier'>TextField</font>, "
             "<font name='Courier'>PasswordField</font>, and <font name='Courier'>TextInputDialog</font> "
@@ -343,7 +340,7 @@ def build_story():
         ),
         field_inventory_table(),
         PageBreak(),
-        Paragraph("3 · Constrained controls that are not free text", styles["SectionTitle"]),
+        Paragraph("3 - Constrained controls that are not free text", styles["SectionTitle"]),
         Paragraph(
             "Not every control needs a text recognizer. The two deadline DatePickers are explicitly "
             "noneditable; users select a date. User, role, deletion target, and multi-role ComboBoxes "
@@ -359,7 +356,7 @@ def build_story():
             [P("Confirmation Alerts"), P("Fixed Yes/No or OK choices rather than typed text."), P("Destructive operation proceeds only after explicit Yes.")],
         ], colWidths=[1.45 * inch, 3.28 * inch, 2.36 * inch], style=standard_table_style()),
         Spacer(1, 0.16 * inch),
-        Table([[P("Reasonable-size defense", "Callout"), P("All reachable typed values are bounded before database use. Validators short-circuit excessive text, including the 10,000-character attack cases required by the assignment.", "BodySmall")]],
+        Table([[P("Reasonable-size defense", "Callout"), P("All reachable typed values are bounded before database use. Validators short-circuit excessive text, including 10,000-character attack cases.", "BodySmall")]],
               colWidths=[1.6 * inch, 5.2 * inch], style=TableStyle([
                   ("BACKGROUND", (0, 0), (-1, -1), PALE_GOLD),
                   ("BOX", (0, 0), (-1, -1), 0.8, GOLD),
@@ -370,21 +367,10 @@ def build_story():
                   ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
               ])),
         Spacer(1, 0.18 * inch),
-        Paragraph("4 · Verification evidence", styles["SectionTitle"]),
+        Paragraph("4 - Verification evidence", styles["SectionTitle"]),
         evidence_table(),
-        Spacer(1, 0.15 * inch),
-        Paragraph("Manual screencast checkpoints", styles["SubTitle"]),
-        Paragraph(
-            "Show: (1) live requirement colors, (2) Finish disabled for empty and 21-character input, "
-            "(3) masked password text, (4) confirmation mismatch rejection, (5) duplicate invited "
-            "UserName rejection without application exit, (6) accepted OTP immediately failing on "
-            "reuse, (7) reset cancellation requiring a newly issued OTP, (8) successful reset "
-            "returning to login instead of a role home page, and (9) first-user account completion "
-            "also returning to a cleared login session.",
-            styles["Body"],
-        ),
-        Spacer(1, 0.1 * inch),
-        Paragraph("5 · Code traceability", styles["SectionTitle"]),
+        Spacer(1, 0.2 * inch),
+        Paragraph("5 - Code traceability", styles["SectionTitle"]),
         Table([
             [P("Concern", "TableHead"), P("Primary implementation", "TableHead"), P("Executable evidence", "TableHead")],
             [P("Identity + passwords", "TableCellSmall"), P("UserNameRecognizer; password popup Model/View; FirstAdmin, NewAccount, Login, and UserUpdate controllers", "TableCellSmall"), P("InputValidation 1–11, 35, 37–46; Dynamic UI P01–P06", "TableCellSmall")],
