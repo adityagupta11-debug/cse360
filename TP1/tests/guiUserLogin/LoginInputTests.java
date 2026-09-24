@@ -1,6 +1,12 @@
 package guiUserLogin;
 
-/** Boundary tests for the invitation field redesigned in K.G.'s login UI. */
+/**
+ * Boundary tests for the invitation field redesigned in K.G.'s login UI.
+ *
+ * @author Kanish Garg (K.G.) - invitation-field boundary tests
+ * @version 1.00 2026-09-17 Initial version (K.G.)
+ * @version 1.01 2026-09-23 Attribution documented only; no behavior changed (Vishwam)
+ */
 public final class LoginInputTests {
     public static void main(String[] args) throws Exception {
         var done = new java.util.concurrent.CompletableFuture<Void>();

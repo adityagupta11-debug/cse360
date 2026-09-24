@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -32,6 +33,8 @@ import javafx.scene.text.TextFlow;
  *
  * @version 2.00	2025-07-30 Rewrite of this application for the Fall 2025 offering of CSE 360
  * and other ASU courses.
+ * @version 2.01	2026-09-21 Mask password entry and reliably reset reusable popup state
+ * 						(Vishwam)
  */
 
 public class View {
@@ -46,7 +49,8 @@ public class View {
 	 * 
 	 */
 	static private Label label_Password = new Label("Enter the password here");
-	static protected TextField text_Password = new TextField();
+	// Vishwam, password characters stay masked while the dynamic rules update on every edit.
+	static protected PasswordField text_Password = new PasswordField();
 
 	/* 
 	 * Feedback labels to show the user where the error is located.  For this application, the
@@ -167,7 +171,8 @@ public class View {
 				Pos.BASELINE_LEFT);		
 				
 		// Error Message components for the Password
-		errPasswordPart1.setFill(Color.BLACK);		// The user input is copied for this part
+		// Vishwam, this segment contains only bullet-position markers, never the password text.
+		errPasswordPart1.setFill(Color.BLACK);
 	    errPasswordPart1.setFont(Font.font("Arial", FontPosture.REGULAR, 18));
 	    
 	    errPasswordPart2.setFill(Color.RED);		// A red up arrow is added next
@@ -276,6 +281,18 @@ public class View {
 	    
 	    label_ShortEnough.setText("At most 20 characters - Not yet satisfied");
 	    label_ShortEnough.setTextFill(Color.RED);
+	}
+
+	// Vishwam, make each popup begin empty, with no stale success, error, or enabled button.
+	static protected void resetForShow() {
+		text_Password.setText("");
+		resetAssessments();
+		noInputFound.setText("No input text found!");
+		errPasswordPart1.setText("");
+		errPasswordPart2.setText("");
+		errPasswordPart3.setText("");
+		validPassword.setText("");
+		button_Finish.setDisable(true);
 	}
 
 	

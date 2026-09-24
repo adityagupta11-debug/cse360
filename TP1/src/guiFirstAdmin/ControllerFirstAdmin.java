@@ -5,6 +5,7 @@ import database.Database;
 import entityClasses.User;
 import javafx.stage.Stage;
 import passwordPopUpWindow.Model;
+import passwordPopUpWindow.PasswordPopupWindow;
 import userNameRecognizer.UserNameRecognizer;
 
 /*******
@@ -30,6 +31,10 @@ import userNameRecognizer.UserNameRecognizer;
  * @version 1.01		2026-09-02 Validate a new Admin UserName before database use
  * @version 1.02		2026-09-17 Validate the new Admin password with the password evaluator
  * 							before it is stored (A.G., agupt545)
+ * @version 1.03		2026-09-21 Add shared dynamic password selection before confirmation
+ * 							(Vishwam)
+ * @version 1.04		2026-09-21 Bound confirmation input and require a fresh login after
+ * 							first-user account setup (Vishwam)
  *  
  */
 
@@ -97,6 +102,28 @@ public class ControllerFirstAdmin {
 		adminPassword2 = ViewFirstAdmin.text_AdminPassword2.getText();		
 		ViewFirstAdmin.label_PasswordsDoNotMatch.setText("");
 	}
+
+
+	/**********
+	 * Open the shared live password checker and retain only a password that satisfies every rule.
+	 */
+	// Vishwam, First Admin now receives the same dynamic help as password update and OTP reset.
+	protected static void chooseAdminPassword() {
+		String chosenPassword = PasswordPopupWindow.show();
+		if (chosenPassword == null || chosenPassword.isEmpty()) {
+			if (adminPassword1.isEmpty()) {
+				ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
+						"Choose a valid password before setting up the account.");
+			}
+			return;
+		}
+
+		ViewFirstAdmin.text_AdminPassword1.setText(chosenPassword);
+		ViewFirstAdmin.text_AdminPassword2.setText("");
+		ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
+				"Password chosen. Re-enter it below to confirm.");
+		ViewFirstAdmin.text_AdminPassword2.requestFocus();
+	}
 	
 	
 	/**********
@@ -128,6 +155,14 @@ public class ControllerFirstAdmin {
 					"The password is not acceptable: " + passwordError);
 			return;
 		}
+
+		// Vishwam, the confirmation field is independently bounded before equality comparison.
+		String confirmationError = Model.checkPasswordConfirmation(adminPassword2);
+		if (!confirmationError.isEmpty()) {
+			ViewFirstAdmin.text_AdminPassword2.setText("");
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText(confirmationError);
+			return;
+		}
 		
 		// Make sure the two passwords are the same
 		if (adminPassword1.compareTo(adminPassword2) == 0) {
@@ -147,8 +182,9 @@ public class ControllerFirstAdmin {
                 System.exit(0);
             }
             
-            // User was established in the database, so navigate to the User Update Page
-        	guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewFirstAdmin.theStage, user);
+			// Vishwam, mark this as first-user onboarding so finishing account information
+			// returns to login, exactly as the Initial User Story requires.
+			guiUserUpdate.ViewUserUpdate.displayFirstUserUpdate(ViewFirstAdmin.theStage, user);
 		}
 		else {
 			// The two passwords are NOT the same, so clear the passwords, explain the passwords

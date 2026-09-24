@@ -20,6 +20,7 @@ import userNameRecognizer.UserNameRecognizer;
  * @version 1.00		2025-08-17 Initial version
  * @version 1.01		2026-09-17 Input validation for every account update field, and the
  * 							password is no longer displayed in clear text (A.G., agupt545)
+ * @version 1.02		2026-09-21 Return first-user onboarding to a fresh login (Vishwam)
  *
  */
 public class ControllerUserUpdate {
@@ -149,5 +150,20 @@ public class ControllerUserUpdate {
 					theRole);
 			System.exit(0);
 		}
- 	}
+	}
+
+	/**********
+	 * Complete the account-information page. First-user onboarding has a stricter security boundary:
+	 * it must end at the login page, while ordinary account updates continue to the selected role.
+	 */
+	// Vishwam, make the Initial User Story's fresh-login rule explicit instead of inferring it from
+	// user count or incomplete account fields.
+	protected static void completeAccountUpdate(Stage theStage, User theUser,
+			boolean requireFreshLogin) {
+		if (requireFreshLogin) {
+			guiUserLogin.ViewUserLogin.displayUserLogin(theStage);
+			return;
+		}
+		goToUserHomePage(theStage, theUser);
+	}
 }

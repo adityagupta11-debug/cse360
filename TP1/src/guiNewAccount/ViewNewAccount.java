@@ -27,6 +27,8 @@ import entityClasses.User;
  * 
  * @version 1.00		2025-08-19 Initial version
  * @version 1.01		2026-09-02 Add an alert for detailed UserName validation errors
+ * @version 1.02		2026-09-21 Require the dynamic password chooser for invited users
+ * 							(Vishwam)
  *  
  */
 
@@ -53,6 +55,8 @@ public class ViewNewAccount {
     protected static TextField text_Username = new TextField();
     protected static PasswordField text_Password1 = new PasswordField();
     protected static PasswordField text_Password2 = new PasswordField();
+    // Vishwam, this launches the shared live requirement checker before confirmation.
+    protected static Button button_ChoosePassword = new Button("Choose / Change Password");
     protected static Button button_UserSetup = new Button("User Setup");
     // The invitation code is supplied by the login page and held in theInvitationCode below;
     // this page does not ask the user to type it again.
@@ -130,6 +134,9 @@ public class ViewNewAccount {
 		text_Username.setText("");	// Clear the input fields so previously entered values do not
 		text_Password1.setText("");	// appear for a new user
 		text_Password2.setText("");
+		// Vishwam, reset reusable alert text so one invitation cannot leak state into the next.
+		alertPasswordError.setHeaderText("The password does not satisfy the requirements.");
+		alertPasswordError.setContentText("");
 		
 		// Purge any invitations whose deadline has passed, then fetch the role for this user
 		theDatabase.removeExpiredInvitations();
@@ -152,9 +159,10 @@ public class ViewNewAccount {
 		emailAddress = theDatabase.getEmailAddressUsingCode(theInvitationCode);
 		
     	// Place all of the established GUI elements into the pane
-    	theRootPane.getChildren().clear();
-    	theRootPane.getChildren().addAll(label_NewUserCreation, label_NewUserLine, text_Username,
-    			text_Password1, text_Password2, button_UserSetup, button_Quit);    	
+		theRootPane.getChildren().clear();
+		theRootPane.getChildren().addAll(label_NewUserCreation, label_NewUserLine, text_Username,
+				text_Password1, text_Password2, button_ChoosePassword, button_UserSetup,
+				button_Quit);
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundation Code: New User Account Setup");	
@@ -195,9 +203,13 @@ public class ViewNewAccount {
 		alertUserNameError.setTitle("Invalid UserName");
 		alertUserNameError.setHeaderText("The new UserName is not valid.");
 		
-		// Establish the text input operand field for the password
-		setupTextUI(text_Password1, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
-		text_Password1.setPromptText("Enter the Password");
+		// Vishwam, the chosen value is masked and read-only; all edits go through live validation.
+		setupTextUI(text_Password1, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, false);
+		text_Password1.setPromptText("Choose a password with the button");
+
+		setupButtonUI(button_ChoosePassword, "Dialog", 16, 250, Pos.CENTER, 375, 210);
+		button_ChoosePassword.setOnAction((ignoredEvent) ->
+				ControllerNewAccount.choosePassword());
 		
 		// Establish the text input operand field to confirm the password
 		setupTextUI(text_Password2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, true);
@@ -223,7 +235,7 @@ public class ViewNewAccount {
 		alertUsernamePasswordError.setContentText("Correct the passwords and try again.");
 
         // Set up the account creation and login
-        setupButtonUI(button_UserSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);
+        setupButtonUI(button_UserSetup, "Dialog", 18, 200, Pos.CENTER, 475, 260);
         button_UserSetup.setOnAction((ignoredEvent) -> {ControllerNewAccount.doCreateUser(); });
 		
         // Enable the user to quit the application

@@ -38,6 +38,8 @@ import passwordPopUpWindow.PasswordPopupWindow;
  * @version 1.01		2025-08-19 Initial version plus new internal documentation
  * @version 1.02		2026-09-17 Every field is validated before use and the password is shown
  * 							masked rather than in clear text (A.G., agupt545)
+ * @version 1.03		2026-09-21 Distinguish first-user onboarding so it ends at login
+ * 							(Vishwam)
  *  
  */
 
@@ -128,6 +130,8 @@ public class ViewUserUpdate {
 	private static Stage theStage;				// The Stage that JavaFX has established for us	
 	private static Pane theRootPane;			// The Pane that holds all the GUI widgets
 	private static User theUser;				// The current user of the application
+	// Vishwam, retain the caller's explicit onboarding context across this singleton page.
+	private static boolean requireFreshLoginAfterUpdate;
 
 	public static Scene theUserUpdateScene = null;	// The Scene each invocation populates
 
@@ -162,10 +166,26 @@ public class ViewUserUpdate {
 	 *
 	 */
 	public static void displayUserUpdate(Stage ps, User user) {
-		
+		displayUserUpdate(ps, user, false);
+	}
+
+	/**********
+	 * Display the account-information page for the very first system user. Finishing this variant
+	 * must return to login rather than granting immediate access to the Admin home page.
+	 */
+	// Vishwam, a named entry point prevents ordinary invited-user or later profile updates from
+	// accidentally inheriting the first-user re-login rule.
+	public static void displayFirstUserUpdate(Stage ps, User user) {
+		displayUserUpdate(ps, user, true);
+	}
+
+	// Vishwam, one implementation keeps the singleton setup identical while preserving flow intent.
+	private static void displayUserUpdate(Stage ps, User user, boolean requireFreshLogin) {
+
 		// Establish the references to the GUI and the current user
 		theUser = user;
 		theStage = ps;
+		requireFreshLoginAfterUpdate = requireFreshLogin;
 		
 		// If not yet established, populate the static aspects of the GUI by creating the 
 		// singleton instance of this class
@@ -203,8 +223,13 @@ public class ViewUserUpdate {
     	else label_CurrentPreferredFirstName.setText(s);
         
 		s = theUser.getEmailAddress();
-    	if (s == null || s.length() < 1)label_CurrentEmailAddress.setText("<none>");
-    	else label_CurrentEmailAddress.setText(s);
+		if (s == null || s.length() < 1)label_CurrentEmailAddress.setText("<none>");
+		else label_CurrentEmailAddress.setText(s);
+
+		// Vishwam, tell the first user that completing account information requires another login.
+		button_ProceedToUserHomePage.setText(requireFreshLoginAfterUpdate
+				? "Finish Account Setup and Log In Again"
+				: "Proceed to the User Home Page");
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
     	theStage.setTitle("CSE 360 Foundation Code: Update User Account Details");
@@ -403,11 +428,15 @@ public class ViewUserUpdate {
         	else label_CurrentEmailAddress.setText(newEmail);
  			});
         
-        // Set up the button to proceed to this user's home page
-        setupButtonUI(button_ProceedToUserHomePage, "Dialog", 18, 300, 
-        		Pos.CENTER, width/2-150, 450);
-        button_ProceedToUserHomePage.setOnAction((ignoredEvent) ->
-        	{ControllerUserUpdate.goToUserHomePage(theStage, theUser);});
+		// Set up the button to proceed to this user's home page
+		setupButtonUI(button_ProceedToUserHomePage, "Dialog", 18, 300,
+				Pos.CENTER, width/2-150, 450);
+		// Vishwam, consume the one-page onboarding flag and delegate the correct completion path.
+		button_ProceedToUserHomePage.setOnAction((ignoredEvent) -> {
+			boolean freshLogin = requireFreshLoginAfterUpdate;
+			requireFreshLoginAfterUpdate = false;
+			ControllerUserUpdate.completeAccountUpdate(theStage, theUser, freshLogin);
+		});
     	
         // Populate the Pane's list of children widgets
         theRootPane.getChildren().addAll(

@@ -1,6 +1,8 @@
 package testingAutomation;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import database.Database;
 import entityClasses.User;
@@ -20,8 +22,11 @@ import passwordPopUpWindow.Model;
  * <p> Copyright: CSE 360 Team Project © 2026 </p>
  *
  * @author A.G. (agupt545)
+ * @author Vishwam
  *
  * @version 1.00	2026-09-17	Initial version
+ * @version 1.01	2026-09-21	Verify immediate consumption, reset persistence, input
+ * 							boundaries, and concurrent one-time redemption (Vishwam)
  *
  */
 public class OneTimePasswordTestingAutomation {
@@ -96,80 +101,93 @@ public class OneTimePasswordTestingAutomation {
 				theDatabase.getOneTimePasswordDeadline("contribOne")
 				.withNano(0).equals(inTwoHours.withNano(0)), true);
 
-		// Test 8: The one-time password is accepted at login before the deadline
-		performTestCase(8, "Logging in with the correct one-time password",
-				theDatabase.loginWithOneTimePassword("contribOne", otp), true);
-
-		// Test 9: A different text is refused
-		performTestCase(9, "Logging in with the wrong one-time password",
+		// Vishwam, test the exact initial-story lifecycle: wrong input preserves the OTP, while the
+		// first correct use consumes it before any permanent-password reset occurs.
+		performTestCase(8, "A wrong one-time password is refused",
 				theDatabase.loginWithOneTimePassword("contribOne", "Zz!99999999"), false);
-
-		// Test 10: The user's own password still works while a one-time password is outstanding
-		theDatabase.getUserAccountDetails("contribOne");
-		performTestCase(10, "The user's own password is unchanged by setting a one-time password",
-				theDatabase.getCurrentPassword().compareTo("Bb!15678") == 0, true);
-
-		// Test 11: After the user sets a new password, the one-time password is cleared so it
-		// can never be used a second time (this is what the login page does)
-		theDatabase.updatePassword("contribOne", "Cc!15678");
-		theDatabase.clearOneTimePassword("contribOne");
-		performTestCase(11, "The one-time password is refused after being used and cleared",
+		performTestCase(9, "A wrong attempt does not consume the valid one-time password",
+				theDatabase.hasActiveOneTimePassword("contribOne"), true);
+		performTestCase(10, "The correct one-time password is accepted before its deadline",
+				theDatabase.loginWithOneTimePassword("contribOne", otp), true);
+		performTestCase(11, "Successful one-time login consumes the credential immediately",
+				theDatabase.hasActiveOneTimePassword("contribOne"), false);
+		performTestCase(12, "The consumed one-time password cannot be reused",
 				theDatabase.loginWithOneTimePassword("contribOne", otp), false);
 
-		// Test 12: The new password chosen by the user is the one now stored
+		// Vishwam, consuming the temporary credential does not silently change the permanent one.
 		theDatabase.getUserAccountDetails("contribOne");
-		performTestCase(12, "The user's new password is stored",
+		performTestCase(13, "The permanent password is unchanged until reset",
+				theDatabase.getCurrentPassword().compareTo("Bb!15678") == 0, true);
+		performTestCase(14, "The reset password is written successfully",
+				theDatabase.updatePassword("contribOne", "Cc!15678"), true);
+		theDatabase.getUserAccountDetails("contribOne");
+		performTestCase(15, "The new permanent password is stored",
 				theDatabase.getCurrentPassword().compareTo("Cc!15678") == 0, true);
+		performTestCase(16, "A fresh session accepts the new permanent password",
+				theDatabase.authenticateSession("contribOne", "Cc!15678"), true);
+		performTestCase(17, "The old permanent password is no longer accepted",
+				theDatabase.authenticateSession("contribOne", "Bb!15678"), false);
 
-		// Test 13: The user no longer has an active one-time password
-		performTestCase(13, "contribOne has no active one-time password after the reset",
-				theDatabase.hasActiveOneTimePassword("contribOne"), false);
-
-		// Test 14: A deadline in the past is refused when the one-time password is set
-		performTestCase(14, "Setting a one-time password with a deadline in the past",
+		performTestCase(18, "Setting a one-time password with a past deadline is refused",
 				theDatabase.setOneTimePassword("contribOne", otp, anHourAgo), false);
-
-		// Test 15: A null deadline is refused
-		performTestCase(15, "Setting a one-time password with no deadline",
+		performTestCase(19, "Setting a one-time password with no deadline is refused",
 				theDatabase.setOneTimePassword("contribOne", otp, null), false);
-
-		// Test 16: An empty one-time password is refused
-		performTestCase(16, "Setting an empty one-time password",
+		performTestCase(20, "Setting an empty one-time password is refused",
 				theDatabase.setOneTimePassword("contribOne", "", inTwoHours), false);
-
-		// Test 17: A one-time password cannot be set for a user who does not exist
-		performTestCase(17, "Setting a one-time password for a user who does not exist",
+		performTestCase(21, "A one-time password cannot be set for a missing user",
 				theDatabase.setOneTimePassword("noSuchUser", otp, inTwoHours), false);
 
-		// Test 18: An expired one-time password is refused at login.  The deadline is written
-		// directly with a short lifetime and allowed to pass.
+		// Vishwam, expired and hostile inputs are refused without consuming a valid credential.
 		theDatabase.setOneTimePassword("adminOne", otp, LocalDateTime.now().plusSeconds(1));
-		Thread.sleep(1500);							// Let the deadline pass
-		performTestCase(18, "Logging in with an expired one-time password",
+		Thread.sleep(1500);
+		performTestCase(22, "An expired one-time password is refused",
 				theDatabase.loginWithOneTimePassword("adminOne", otp), false);
-
-		// Test 19: The expired one-time password was purged as a side effect of the attempt
-		performTestCase(19, "The expired one-time password is no longer active",
+		performTestCase(23, "An expired one-time password is purged",
 				theDatabase.hasActiveOneTimePassword("adminOne"), false);
-
-		// Test 20: A 10,000 character password (hacker-style long input) is refused, not a crash
 		theDatabase.setOneTimePassword("adminOne", otp, inTwoHours);
-		performTestCase(20, "Logging in with a 10,000 character one-time password",
+		performTestCase(24, "A 10,000-character one-time-password input is refused",
 				theDatabase.loginWithOneTimePassword("adminOne", "X".repeat(10000)), false);
-
-		// Test 21: A null one-time password at login is refused rather than throwing
-		performTestCase(21, "Logging in with a null one-time password",
+		performTestCase(25, "Oversized input does not consume the valid credential",
+				theDatabase.hasActiveOneTimePassword("adminOne"), true);
+		performTestCase(26, "A null one-time-password input is refused",
 				theDatabase.loginWithOneTimePassword("adminOne", null), false);
+		performTestCase(27, "Null input does not consume the valid credential",
+				theDatabase.hasActiveOneTimePassword("adminOne"), true);
 
-		// Test 22: Setting a new one-time password replaces the earlier one
 		String second = "Ss!87654321";
 		theDatabase.setOneTimePassword("adminOne", second, inTwoHours);
-		performTestCase(22, "The replaced one-time password no longer works",
+		performTestCase(28, "A replaced one-time password no longer works",
 				theDatabase.loginWithOneTimePassword("adminOne", otp), false);
-
-		// Test 23: The replacement one-time password does work
-		performTestCase(23, "The replacement one-time password works",
+		performTestCase(29, "The replacement remains active after the wrong old value",
+				theDatabase.hasActiveOneTimePassword("adminOne"), true);
+		performTestCase(30, "The replacement one-time password works",
 				theDatabase.loginWithOneTimePassword("adminOne", second), true);
+		performTestCase(31, "The replacement is consumed after its first use",
+				theDatabase.hasActiveOneTimePassword("adminOne"), false);
+
+		// Vishwam, two simultaneous database sessions must produce exactly one successful redemption.
+		String concurrentOtp = "Qq!13579246";
+		theDatabase.setOneTimePassword("adminOne", concurrentOtp, inTwoHours);
+		Database secondConnection = new Database("jdbc:h2:mem:otpTests;DB_CLOSE_DELAY=-1");
+		secondConnection.connectToDatabase();
+		CountDownLatch ready = new CountDownLatch(2);
+		CountDownLatch start = new CountDownLatch(1);
+		CountDownLatch done = new CountDownLatch(2);
+		AtomicInteger successfulRedemptions = new AtomicInteger();
+		Runnable redeemWithFirstConnection = () -> redeemConcurrently(
+				theDatabase, concurrentOtp, ready, start, done, successfulRedemptions);
+		Runnable redeemWithSecondConnection = () -> redeemConcurrently(
+				secondConnection, concurrentOtp, ready, start, done, successfulRedemptions);
+		new Thread(redeemWithFirstConnection, "otp-redemption-1").start();
+		new Thread(redeemWithSecondConnection, "otp-redemption-2").start();
+		ready.await();
+		start.countDown();
+		done.await();
+		performTestCase(32, "Two simultaneous redemptions succeed exactly once",
+				successfulRedemptions.get() == 1, true);
+		performTestCase(33, "The concurrently redeemed credential is no longer active",
+				theDatabase.hasActiveOneTimePassword("adminOne"), false);
+		secondConnection.closeConnection();
 
 		/************** End of the test cases **************/
 
@@ -196,6 +214,22 @@ public class OneTimePasswordTestingAutomation {
 		} else {
 			System.out.println("***Failure*** The test case did NOT produce the expected result.\n");
 			numFailed++;
+		}
+	}
+
+	// Vishwam, coordinate concurrent attempts without sharing a JDBC connection between threads.
+	private static void redeemConcurrently(Database database, String otp, CountDownLatch ready,
+			CountDownLatch start, CountDownLatch done, AtomicInteger successes) {
+		ready.countDown();
+		try {
+			start.await();
+			if (database.loginWithOneTimePassword("adminOne", otp)) {
+				successes.incrementAndGet();
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} finally {
+			done.countDown();
 		}
 	}
 }

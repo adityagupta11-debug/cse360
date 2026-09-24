@@ -26,6 +26,7 @@ import entityClasses.User;
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  * 
  * @author Lynn Robert Carter
+ * @author Kanish Garg (K.G.) - authenticated deletion policy and transactional safeguards
  * 
  * @version 2.00		2025-04-29 Updated and expanded from the version produce by Pravalika 
  * 							Mukkiri and Ishwarya Hidkimath Basavaraj
@@ -33,6 +34,10 @@ import entityClasses.User;
  * @version 2.02		2026-09-16 Named roles, invitation deadlines, last-Admin guard (A.G., agupt515)
  * @version 2.03		2026-09-17 One-time passwords, delete user, list users, manage invitations
  * 							(A.G., agupt545)
+ * @version 2.04		2026-09-21 Atomically consume accepted one-time passwords and report
+ * 							password-update failures (Vishwam)
+ * @version 2.05		2026-09-23 Deletion-block attribution documented only; no behavior changed
+ * 							(Vishwam)
  */
 
 /*
@@ -724,7 +729,7 @@ public class Database {
 	}
 	
 	/*******
-	 * <p> Method: void updatePassword(String username, String password) </p>
+	 * <p> Method: boolean updatePassword(String username, String password) </p>
 	 * 
 	 * <p> Description: Update the password of a user given that user's username and the new
 	 * 		password.</p>
@@ -732,19 +737,27 @@ public class Database {
 	 * @param username is the username of the user
 	 *  
 	 * @param password is the new password for the user
+	 *
+	 * @return true only when exactly one user record was updated
 	 *  
 	 */
 	// update the password: Joshua Luther
-	public void updatePassword(String username, String password) {
+	// Vishwam, return the database result so reset screens never claim an unsaved password worked.
+	public boolean updatePassword(String username, String password) {
+		if (username == null || username.isBlank() || password == null || password.isEmpty()) {
+			return false;
+		}
 	    String query = "UPDATE userDB SET password = ? WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        pstmt.setString(1, password);
 	        pstmt.setString(2, username);
-	        pstmt.executeUpdate();
-	        currentPassword = password;
+	        boolean updated = pstmt.executeUpdate() == 1;
+	        if (updated && username.equals(currentUsername)) currentPassword = password;
+	        return updated;
 	    } catch (SQLException e) {
 	        e.printStackTrace();
 	    }
+	    return false;
 	}
 	
 	/*******
@@ -1404,36 +1417,43 @@ public class Database {
 	 * <p> Method: boolean loginWithOneTimePassword(String username, String oneTimePassword) </p>
 	 *
 	 * <p> Description: Check whether the supplied text matches the user's stored one-time
-	 * password and that the deadline has not passed.  A match does not clear the one-time
-	 * password; the caller must force the user to set a new password and then call
-	 * clearOneTimePassword so the temporary password can never be used again.  An expired
-	 * one-time password is removed from the database as a side effect.</p>
+	 * password and that the deadline has not passed.  A successful match atomically clears the
+	 * password and deadline in the same database statement, so even simultaneous requests cannot
+	 * redeem it twice.  An expired one-time password is removed as a side effect.</p>
 	 *
 	 * @param username is the username of the user
 	 *
 	 * @param oneTimePassword is the text the user typed into the password field
 	 *
-	 * @return true if the one-time password matches and is still valid, else false
+	 * @return true if the one-time password matched, was still valid, and was consumed; else false
 	 *
 	 */
 	// Check a one-time password at login time
+	// Vishwam, consume the credential inside one conditional UPDATE to guarantee true one-time use.
 	public boolean loginWithOneTimePassword(String username, String oneTimePassword) {
-		if (username == null || oneTimePassword == null || oneTimePassword.isEmpty()) return false;
-		String query = "SELECT oneTimePassword, oneTimePasswordDeadline FROM userDB "
-				+ "WHERE userName = ?";
+		if (username == null || username.isBlank() || username.length() > 32
+				|| oneTimePassword == null || oneTimePassword.isEmpty()
+				|| oneTimePassword.length() > 64) return false;
+		String query = "UPDATE userDB SET oneTimePassword = NULL, "
+				+ "oneTimePasswordDeadline = NULL WHERE userName = ? AND oneTimePassword = ? "
+				+ "AND oneTimePasswordDeadline > CURRENT_TIMESTAMP";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, username);
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next()) {
-				String otp = rs.getString("oneTimePassword");
-				Timestamp ts = rs.getTimestamp("oneTimePasswordDeadline");
-				if (otp == null || otp.isEmpty() || ts == null) return false;
-				if (!ts.toLocalDateTime().isAfter(LocalDateTime.now())) {
-					clearOneTimePassword(username);		// Expired: purge it and refuse
-					return false;
-				}
-				return otp.compareTo(oneTimePassword) == 0;
-			}
+			pstmt.setString(2, oneTimePassword);
+			if (pstmt.executeUpdate() == 1) return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+
+		// Vishwam, purge only an actually expired credential; never erase a concurrently reissued one.
+		String purge = "UPDATE userDB SET oneTimePassword = NULL, "
+				+ "oneTimePasswordDeadline = NULL WHERE userName = ? "
+				+ "AND oneTimePasswordDeadline IS NOT NULL "
+				+ "AND oneTimePasswordDeadline <= CURRENT_TIMESTAMP";
+		try (PreparedStatement pstmt = connection.prepareStatement(purge)) {
+			pstmt.setString(1, username);
+			pstmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -1445,8 +1465,8 @@ public class Database {
 	 * <p> Method: void clearOneTimePassword(String username) </p>
 	 *
 	 * <p> Description: Remove the one-time password (and its deadline) from the user's record so
-	 * it cannot be used again.  This is called after the user has set a new permanent password
-	 * and when an expired one-time password is discovered.</p>
+	 * it cannot be used again.  Successful login already consumes a one-time password atomically;
+	 * this method remains available for explicit administrative cleanup.</p>
 	 *
 	 * @param username is the username of the user
 	 *
@@ -1518,6 +1538,8 @@ public class Database {
 	}
 
 
+	// K.G.: authenticated-session identity, deletion policy, and transactional safeguards begin here.
+	// Vishwam, attribution audit only: clarified ownership of this existing block; no logic changed.
 	/** K.G. deletion outcomes; the GUI never reports success after a database error. */
 	public enum DeletionResult {
 		DELETED, CANCELLED, NO_SELECTION, UNAUTHORIZED, SELF_PROTECTED,

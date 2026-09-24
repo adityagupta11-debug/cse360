@@ -2,6 +2,7 @@ package passwordPopUpWindow;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /*******
@@ -21,6 +22,8 @@ import javafx.stage.Stage;
  * @version 1.00		2026-09-16 Initial version (Joshua Luther)
  * @version 1.01		2026-09-17 Reset the field on each use and return "" when the window is
  * 							closed without finishing (A.G., agupt545)
+ * @version 1.02		2026-09-21 Reuse one modal view without accumulating listeners or stale state
+ * 							(Vishwam)
  */
 public class PasswordPopupWindow {
 
@@ -42,13 +45,17 @@ public class PasswordPopupWindow {
      * pressing Finish
      */
     public static String show() {
-        Pane root = new Pane();
-        theStage = new Stage();
-        theStage.setScene(new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT));
-        theStage.setTitle("Enter Password");
+		// Vishwam, construct the static controls once; repeated construction duplicated listeners.
+		if (theStage == null) {
+			Pane root = new Pane();
+			theStage = new Stage();
+			theStage.initModality(Modality.APPLICATION_MODAL);
+			theStage.setScene(new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT));
+			theStage.setTitle("Choose a Password");
+			View.view(root);
+		}
 
-        View.view(root);
-        View.text_Password.setText("");		// Start empty; never show a previous password
+		View.resetForShow();
         finished = false;
 
         theStage.showAndWait();   // blocks here until Controller calls theStage.hide()

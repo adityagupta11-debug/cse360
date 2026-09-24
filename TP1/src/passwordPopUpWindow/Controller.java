@@ -22,9 +22,13 @@ public class Controller {
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  *
  * @author Lynn Robert Carter
+ * @author Joshua Luther - connected the validated password popup completion handler
  *
  * @version 2.00	2025-07-31 Rewrite of this application for the Fall 2025 offering of CSE 360
  * and other ASU courses.
+ * @version 2.01	2026-09-16 Removed the password-testbed dependency and connected the shared
+ * 							popup result (Joshua Luther)
+ * @version 2.02	2026-09-23 Attribution documented only; no behavior changed (Vishwam)
  */
 
 	/*-********************************************************************************************
@@ -52,7 +56,8 @@ public class Controller {
 	 * application and it hides the password GUI window from the user so no more changes to the
 	 * password can be made.</p>
 	 */
-	//removed reliance on password testbed and created new file, passwordPopupWindow
+	// Joshua Luther: removed reliance on the password testbed and connected PasswordPopupWindow.
+	// Vishwam, attribution audit only: clarified ownership here; no behavior changed.
 	static protected void handleButtonPress() {
 	    PasswordPopupWindow.finished = true;	// Record that a password really was chosen
 	    PasswordPopupWindow.theStage.hide();

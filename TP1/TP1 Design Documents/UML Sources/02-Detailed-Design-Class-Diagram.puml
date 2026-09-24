@@ -1,4 +1,6 @@
 @startuml
+' Vishwam, 2026-09-21: updated OTP consumption, dynamic password entry, confirmation bounds,
+' and first-user re-login contracts
 ' CSE 360 Team Project - TP1 Detailed Design (class diagram)
 ' Author: A.G. (agupt545) - Design Documents and Architecture
 ' Deletion integration: Kanish Garg
@@ -60,6 +62,7 @@ package database {
     - connection : Connection
     --  users --
     + register(user : User) : void
+	+ updatePassword(username, password) : boolean
     + getUserAccountDetails(username : String) : boolean
     + getUserList() : List<String>
     + getAllUsers() : List<User> <<new>>
@@ -71,7 +74,7 @@ package database {
     + setOneTimePassword(username, otp, deadline) : boolean
     + getOneTimePasswordDeadline(username) : LocalDateTime
     + hasActiveOneTimePassword(username) : boolean
-    + loginWithOneTimePassword(username, otp) : boolean
+    + loginWithOneTimePassword(username, otp) : boolean <<atomically consumes on success>>
     + clearOneTimePassword(username) : void
     -- invitations --
     + generateInvitationCode(email, role, deadline) : String
@@ -96,9 +99,24 @@ package "Input Validation" {
   class "passwordPopUpWindow.Model" as PwModel {
     + {static} MAX_PASSWORD_LENGTH : int = 20 <<new>>
     + {static} evaluatePassword(input : String) : String
+    + {static} checkPasswordConfirmation(input : String) : String
   }
   class "passwordPopUpWindow.PasswordPopupWindow" as PwWindow {
     + {static} show() : String
+  }
+}
+
+package "guiFirstAdmin" {
+  class ControllerFirstAdmin {
+    # {static} chooseAdminPassword() : void
+    # {static} doSetupAdmin(stage, role) : void
+  }
+}
+
+package "guiNewAccount" {
+  class ControllerNewAccount {
+    # {static} choosePassword() : void
+    # {static} doCreateUser() : void
   }
 }
 
@@ -164,18 +182,26 @@ package "guiManageInvitations" <<new in TP1>> {
 }
 
 package "guiUserLogin" {
+  class ViewUserLogin {
+    + {static} displayUserLogin(stage : Stage) : void
+  }
   class ControllerUserLogin {
     # {static} doLogin(ts : Stage) : void
-    - {static} forcePasswordReset(username) : boolean <<new>>
+    - {static} forcePasswordReset(username) : void <<new>>
   }
 }
 
 package "guiUserUpdate" {
+  class ViewUserUpdate {
+    + {static} displayUserUpdate(stage, user) : void
+    + {static} displayFirstUserUpdate(stage, user) : void <<new>>
+  }
   class ControllerUserUpdate {
     + {static} MAX_NAME_LENGTH : int = 50
     + {static} checkName(value) : String <<new>>
     + {static} checkUserName(value) : String <<new>>
     + {static} checkEmailAddress(value) : String <<new>>
+    # {static} completeAccountUpdate(stage, user, freshLogin) : void <<new>>
   }
 }
 
@@ -198,10 +224,22 @@ ModelDeleteUser --> Database
 ControllerOneTimePassword ..> Database
 ControllerOneTimePassword ..> ControllerAdminHome : reuses the deadline rules
 ControllerManageInvitations ..> Database
+ControllerFirstAdmin ..> Database
+ControllerFirstAdmin ..> UserNameRecognizer
+ControllerFirstAdmin ..> PwModel : submit-time validation
+ControllerFirstAdmin ..> PwWindow : live password selection
+ControllerFirstAdmin ..> ViewUserUpdate : first-user account information
+ControllerNewAccount ..> Database
+ControllerNewAccount ..> UserNameRecognizer
+ControllerNewAccount ..> PwModel : submit-time validation
+ControllerNewAccount ..> PwWindow : live password selection
+ControllerNewAccount ..> ViewUserUpdate : invited-user account information
 ControllerUserLogin ..> Database
 ControllerUserLogin ..> PwWindow : forces a new password
+ViewUserUpdate --> ControllerUserUpdate
 ControllerUserUpdate ..> UserNameRecognizer
 ControllerUserUpdate ..> EmailAddressRecognizer
+ControllerUserUpdate ..> ViewUserLogin : first user must log in again
 PwWindow --> PwModel
 
 @enduml

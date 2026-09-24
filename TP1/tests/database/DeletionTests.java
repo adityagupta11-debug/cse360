@@ -6,7 +6,13 @@ import java.util.concurrent.*;
 import entityClasses.User;
 import database.Database.DeletionResult;
 
-/** Semiautomated tests in the supplied password-testbed style, using real isolated H2. */
+/**
+ * Semiautomated tests in the supplied password-testbed style, using real isolated H2.
+ *
+ * @author Kanish Garg (K.G.) - account-deletion database and concurrency tests
+ * @version 1.00 2026-09-17 Initial deletion test suite (K.G.)
+ * @version 1.01 2026-09-23 Attribution documented only; no behavior changed (Vishwam)
+ */
 public final class DeletionTests {
     private static int passed;
     private static final String PASSWORD = "DemoPass1!";

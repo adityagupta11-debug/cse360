@@ -22,6 +22,7 @@ import javafx.scene.paint.Color;
  *
  * @version 2.00	2025-07-30 Rewrite of this application for the Fall 2025 offering of CSE 360
  * and other ASU courses.
+ * @version 2.01	2026-09-21 Reset all dynamic state safely and never echo passwords (Vishwam)
  */
 
 public class Model {
@@ -32,23 +33,28 @@ public class Model {
 	 * <p> Description: This method is called every time the user changes the password (e.g., with 
 	 * every key pressed) using the GUI from the PasswordEvaluationGUITestbed.  It resets the 
 	 * messages associated with each of the requirements and then evaluates the current password
-	 * with respect to those requirements.  The results of that evaluation are display via the View
-	 * to the user and via the console.</p>
+	 * with respect to those requirements.  The results of that evaluation are displayed through the
+	 * View; console messages report status without echoing the password.</p>
 	 */
 
 	protected static void updatePassword() {
-		View.resetAssessments();						// Reset the assessment flags to the
-		String password = View.text_Password.getText();	// initial state and fetch the input
+		// Vishwam, every edit starts from a disabled, clean state so stale validity cannot be saved.
+		View.resetAssessments();
+		View.button_Finish.setDisable(true);
+		View.validPassword.setText("");
+		View.errPasswordPart1.setText("");
+		View.errPasswordPart2.setText("");
+		View.errPasswordPart3.setText("");
+		String password = View.text_Password.getText();
 		
 		// If the input is empty, clear the aspects of the user interface having to do with the
 		// user input and tell the user that the input is empty.
 		if (password.isEmpty()) {
-			View.errPasswordPart1.setText("");
-			View.errPasswordPart2.setText("");
 			View.noInputFound.setText("No input text found!");
 		}
 		else
 		{
+			View.noInputFound.setText("");
 			// There is user input, so evaluate it to see if it satisfies the requirements
 			String errMessage = evaluatePassword(password);
 			
@@ -56,15 +62,15 @@ public class Model {
 			updateFlags();
 			
 			// An empty string means there is no error message, which means the input is valid
-			if (errMessage != "") {
+			if (!errMessage.isEmpty()) {
 				
 				// Since the output is not empty, at least one requirement have not been satisfied.
 				System.out.println(errMessage);			// Display the message to the console
 				
-				View.noInputFound.setText("");			// There was input, so no error message
-				
-				// Extract the input up to the point of the error and place it in Part 1
-				View.errPasswordPart1.setText(password.substring(0, passwordIndexofError));
+				// Vishwam, preserve the error position without displaying the password itself.
+				int markerPosition = Math.max(0,
+						Math.min(passwordIndexofError, password.length()));
+				View.errPasswordPart1.setText("\u2022".repeat(markerPosition));
 				
 				// Place the red up arrow into Part 2
 				View.errPasswordPart2.setText("\u21EB");
@@ -113,6 +119,23 @@ public class Model {
 	 * hacking tactic) cannot slow the application down or make it fail.
 	 */
 	public static final int MAX_PASSWORD_LENGTH = 20;
+
+	/**********
+	 * Check the separate confirmation field's size before comparing it with the chosen password.
+	 * The confirmation does not need another composition pass, but it is still a free-text input and
+	 * must have an explicit bound of its own.
+	 *
+	 * @param input the confirmation text
+	 * @return an empty string when the size is acceptable, otherwise a useful validation message
+	 */
+	// Vishwam, explicitly bound both confirmation-password fields instead of rejecting long pastes
+	// only incidentally through a mismatch.
+	public static String checkPasswordConfirmation(String input) {
+		if (input == null) return "Enter the password again to confirm it.";
+		if (input.length() > MAX_PASSWORD_LENGTH)
+			return "The confirmation may not exceed " + MAX_PASSWORD_LENGTH + " characters.";
+		return "";
+	}
 	
 	public static String passwordErrorMessage = "";		// The error message text
 	public static String passwordInput = "";			// The input being processed
@@ -131,20 +154,14 @@ public class Model {
 														// running
 
 	/*
-	 * This private method displays the input line and then on a line under it displays the input
-	 * up to the point of the error.  At that point, a question mark is place and the rest of the 
-	 * input is ignored. This method is designed to be used to display information to make it clear
-	 * to the user where the error in the input can be found, and show that on the console 
-	 * terminal.
-	 * 
+	 * This optional diagnostic reports only the current position and total length. It deliberately
+	 * omits the input and current character so a password cannot leak through console output.
 	 */
 
 	private static void displayInputState() {
-		// Display the entire input line
-		System.out.println(inputLine);
-		System.out.println(inputLine.substring(0,currentCharNdx) + "?");
-		System.out.println("The password size: " + inputLine.length() + "  |  The currentCharNdx: " + 
-				currentCharNdx + "  |  The currentChar: \"" + currentChar + "\"");
+		// Vishwam, retain safe diagnostic structure without disclosing the password or character.
+		System.out.println("Password evaluation position " + currentCharNdx + " of "
+				+ inputLine.length());
 	}
 	
 	
@@ -208,10 +225,22 @@ public class Model {
 		// The following are the local variable used to perform the Directed Graph simulation
 		passwordErrorMessage = "";
 		passwordIndexofError = 0;			// Initialize the IndexofError
-		inputLine = input;					// Save the reference to the input line as a global
+		inputLine = input == null ? "" : input;	// Keep the evaluator safe for direct callers
 		currentCharNdx = 0;					// The index of the current character
+
+		// Vishwam, reset every requirement before any early return (empty, null, or excessive input).
+		passwordInput = "";
+		foundUpperCase = false;
+		foundLowerCase = false;
+		foundNumericDigit = false;
+		foundSpecialChar = false;
+		foundLongEnough = false;
+		foundShortEnough = false;
 		
-		if(input.length() <= 0) {
+		if (input == null) {
+			return "*** Error *** The password is missing!";
+		}
+		if (input.isEmpty()) {
 			return "*** Error *** The password is empty!";
 		}
 		
@@ -231,21 +260,13 @@ public class Model {
 		// local variable is a working copy of the input.
 		passwordInput = input;				// Save a copy of the input
 		
-		// The following are the attributes associated with each of the requirements
-		foundUpperCase = false;				// Reset the Boolean flag
-		foundLowerCase = false;				// Reset the Boolean flag
-		foundNumericDigit = false;			// Reset the Boolean flag
-		foundSpecialChar = false;			// Reset the Boolean flag
-		foundNumericDigit = false;			// Reset the Boolean flag
-		foundLongEnough = false;			// Reset the Boolean flag
-		
 		// This flag determines whether the directed graph (FSM) loop is operating or not
 		running = true;						// Start the loop
 
 		// The Directed Graph simulation continues until the end of the input is reached or at some
 		// state the current character does not match any valid transition
 		while (running) {
-			displayInputState();
+			// Vishwam, production validation never writes plaintext password contents to the console.
 			// The cascading if statement sequentially tries the current character against all of
 			// the valid transitions, each associated with one of the requirements
 			if (currentChar >= 'A' && currentChar <= 'Z') {
@@ -307,12 +328,16 @@ public class Model {
 			errMessage += "Short enough; ";
 		}
 		
-		if (errMessage == "")
+		if (errMessage.isEmpty())
 			return "";
 		
 		// If it gets here, there something was not found, so return an appropriate message
 		passwordIndexofError = currentCharNdx;
 		return errMessage + "conditions were not satisfied";
 	}
+
+	// Vishwam, expose the final length flag for focused non-GUI regression tests.
+public static boolean isShortEnough() {
+		return foundShortEnough;
+	}
 }
- 

@@ -21,8 +21,12 @@ import userNameRecognizer.UserNameRecognizer;
  * <p> Copyright: CSE 360 Team Project © 2026 </p>
  *
  * @author A.G. (agupt545)
+ * @author Vishwam
  *
  * @version 1.00	2026-09-17	Initial version
+	 * @version 1.01	2026-09-21	Add null, invalid-character, and stale dynamic-state
+	 * 							regression cases (Vishwam)
+	 * @version 1.02	2026-09-21	Add explicit confirmation-field boundary cases (Vishwam)
  *
  */
 public class InputValidationTestingAutomation {
@@ -214,6 +218,44 @@ public class InputValidationTestingAutomation {
 		performTestCase(36, "The account update page refuses email \"agupt545@asu\" as well",
 				ControllerUserUpdate.checkEmailAddress("agupt545@asu").isEmpty(), false);
 
+		/************** Dynamic password state regression cases ******************************/
+
+		// Vishwam, direct callers and changing GUI input must never reuse an earlier valid state.
+		performTestCase(37, "A null password is refused without an exception",
+				quietEvaluatePassword(null).isEmpty(), false);
+		performTestCase(38, "A tab character is refused as an invalid password character",
+				quietEvaluatePassword("Aa!1567\t").isEmpty(), false);
+
+		quietEvaluatePassword("Aa!15678");
+		performTestCase(39, "A valid password sets every observable requirement flag",
+				allPasswordRequirementFlags(), true);
+		quietEvaluatePassword("Aa!1" + "b".repeat(Model.MAX_PASSWORD_LENGTH));
+		performTestCase(40, "Overlong input clears all prior requirement flags",
+				noPasswordRequirementFlags(), true);
+
+		quietEvaluatePassword("Aa!15678");
+		quietEvaluatePassword("");
+		performTestCase(41, "Empty input clears all prior requirement flags",
+				noPasswordRequirementFlags(), true);
+
+		quietEvaluatePassword("X".repeat(10000));
+		performTestCase(42, "A valid password still succeeds after an excessive paste",
+				quietEvaluatePassword("Aa!15678").isEmpty(), true);
+
+		/************** Password confirmation size boundaries *********************************/
+
+		// Vishwam, both confirmation fields share this bound before equality comparison.
+		performTestCase(43, "A 20-character password confirmation is within the limit",
+				Model.checkPasswordConfirmation("x".repeat(Model.MAX_PASSWORD_LENGTH)).isEmpty(),
+				true);
+		performTestCase(44, "A 21-character password confirmation is refused",
+				Model.checkPasswordConfirmation(
+						"x".repeat(Model.MAX_PASSWORD_LENGTH + 1)).isEmpty(), false);
+		performTestCase(45, "A 10,000-character password confirmation is refused",
+				Model.checkPasswordConfirmation(LONG_INPUT).isEmpty(), false);
+		performTestCase(46, "A null password confirmation is refused safely",
+				Model.checkPasswordConfirmation(null).isEmpty(), false);
+
 		/************** End of the test cases **************/
 
 		System.out.println("______________________________________________________________________");
@@ -222,16 +264,28 @@ public class InputValidationTestingAutomation {
 	}
 
 	/*
-	 * The password evaluator traces every character it examines to the console, which is useful
-	 * when demonstrating the dynamic user interface but would bury the test report.  This helper
-	 * silences that trace while the evaluation runs and then restores the console.
+	 * The password evaluator reports generic requirement progress to the console. This helper keeps
+	 * those status lines out of the automated report and then restores the console; no password text
+	 * is emitted by the production evaluator.
 	 */
+	// Vishwam, keep validation-test output concise without weakening or bypassing the real evaluator.
 	private static String quietEvaluatePassword(String input) {
 		java.io.PrintStream console = System.out;
 		System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
 		String result = Model.evaluatePassword(input);
 		System.setOut(console);
 		return result;
+	}
+
+	// Vishwam, focused helpers make stale dynamic state visible without launching JavaFX.
+	private static boolean allPasswordRequirementFlags() {
+		return Model.foundUpperCase && Model.foundLowerCase && Model.foundNumericDigit
+				&& Model.foundSpecialChar && Model.foundLongEnough && Model.isShortEnough();
+	}
+
+	private static boolean noPasswordRequirementFlags() {
+		return !Model.foundUpperCase && !Model.foundLowerCase && !Model.foundNumericDigit
+				&& !Model.foundSpecialChar && !Model.foundLongEnough && !Model.isShortEnough();
 	}
 
 	/*

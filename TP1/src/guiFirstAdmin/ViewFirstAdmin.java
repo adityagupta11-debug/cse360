@@ -27,6 +27,7 @@ import javafx.scene.Scene;
  * 
  * @version 1.00		2025-08-15 Initial version
  * @version 1.01		2026-09-02 Add an alert for detailed UserName validation errors
+ * @version 1.02		2026-09-21 Require the dynamic password chooser for initial setup (Vishwam)
  *  
  */
 
@@ -61,6 +62,8 @@ public class ViewFirstAdmin {
 	protected static TextField text_AdminUsername = new TextField();
 	protected static PasswordField text_AdminPassword1 = new PasswordField();
 	protected static PasswordField text_AdminPassword2 = new PasswordField();
+	// Vishwam, this launches the shared live requirement checker before confirmation.
+	private static Button button_ChoosePassword = new Button("Choose / Change Password");
 	private static Button button_AdminSetup = new Button("Setup Admin Account");
 
 	// This alert is used should the user enter two passwords that do not match
@@ -168,12 +171,16 @@ public class ViewFirstAdmin {
 		alertUserNameError.setTitle("Invalid UserName");
 		alertUserNameError.setHeaderText("The Admin UserName is not valid.");
 
-		// Establish the text input operand field for the password
+		// Vishwam, the chosen value is masked and read-only; all edits go through live validation.
 		setupTextUI(text_AdminPassword1, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, 
-				true);
-		text_AdminPassword1.setPromptText("Enter Admin Password");
+				false);
+		text_AdminPassword1.setPromptText("Choose a password with the button");
         text_AdminPassword1.textProperty().addListener((observable, oldValue, newValue)
 				-> {ControllerFirstAdmin.setAdminPassword1(); });
+
+		setupButtonUI(button_ChoosePassword, "Dialog", 16, 250, Pos.CENTER, 375, 210);
+		button_ChoosePassword.setOnAction((ignoredEvent) ->
+				ControllerFirstAdmin.chooseAdminPassword());
 
 		// Establish the text input operand field for the password
 		setupTextUI(text_AdminPassword2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, 
@@ -183,7 +190,7 @@ public class ViewFirstAdmin {
 				-> {ControllerFirstAdmin.setAdminPassword2(); });
 
 		// Set up the Log In button
-		setupButtonUI(button_AdminSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);
+		setupButtonUI(button_AdminSetup, "Dialog", 18, 200, Pos.CENTER, 475, 260);
         button_AdminSetup.setOnAction((ignoredEvent) -> {
 			ControllerFirstAdmin.doSetupAdmin(theStage,1); 
 			});
@@ -197,7 +204,8 @@ public class ViewFirstAdmin {
 		// Place all of the just-initialized GUI elements into the pane
 		theRootPane.getChildren().addAll(label_ApplicationTitle, label_TitleLine1,
 				label_TitleLine2, text_AdminUsername, text_AdminPassword1, 
-				text_AdminPassword2, button_AdminSetup, label_PasswordsDoNotMatch,
+				text_AdminPassword2, button_ChoosePassword, button_AdminSetup,
+				label_PasswordsDoNotMatch,
 				button_Quit);
 	}
 	

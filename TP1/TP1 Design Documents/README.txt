@@ -13,7 +13,8 @@ TP1 Architecture and Detailed Design.pdf
 
 TP1 Traceability Matrix.pdf
     Every user story followed through to the code and the numbered test cases that verify it.
-    20 user stories, 132 automated test cases, no story without coverage.
+    20 user stories and the original 132-case baseline. See the current-test note below for the
+    additional validation and one-time-password regression cases added after publication.
 
 TP1 Integration and Regression Plan.pdf
     The merge schedule, the six regression checkpoints, the rules for a merge, the integration
@@ -54,7 +55,15 @@ The suite runs all six test classes and prints one summary. It exits non-zero if
 It uses private in-memory H2 databases, so it never alters the ~/FoundationDatabase file the
 application itself uses.
 
+VISHWAM VALIDATION / OTP INTEGRATION (21 September 2026)
+Vishwam: InputValidationTestingAutomation now contains 46 cases and
+OneTimePasswordTestingAutomation contains 33 cases. The complete TP1RegressionSuite now passes
+152/152. The OTP sequence and detailed class diagram sources and PNGs were regenerated to show
+atomic OTP consumption, the required fresh login after reset and first-user setup, and every shared
+dynamic-password integration. InputValidation.pdf records the implemented field rules, dynamic
+password behavior, defensive length checks, and test evidence.
+
 K.G. DELETION INTEGRATION (17 September 2026)
 KG Account Deletion Design.pdf describes the revised deletion flow and stable authenticated identity.
 Class and deletion sequence diagram sources and PNGs are updated. The earlier architecture PDF embeds the previous figures; consult the updated standalone diagrams and addendum.
-Run ../test.ps1 for 61 additional feature checks plus all 132 existing team checks (193 total).
+Run ../test.ps1 for 71 additional feature checks plus all 152 current team checks (223 total).

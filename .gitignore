@@ -3,3 +3,6 @@ HW1/bin/
 TP1/bin/
 TP1/src_original/
 .metadata/
+
+# macOS Finder metadata is local machine state, not project content.
+.DS_Store

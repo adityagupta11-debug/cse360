@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import database.Database;
 import entityClasses.User;
 import passwordPopUpWindow.Model;
+import passwordPopUpWindow.PasswordPopupWindow;
 import userNameRecognizer.UserNameRecognizer;
 
 /*******
@@ -29,6 +30,8 @@ import userNameRecognizer.UserNameRecognizer;
  * @version 1.01		2026-09-02 Validate a new UserName before database use
  * @version 1.02		2026-09-17 Validate the new password with the password evaluator, and remove
  * 							the invitation actually used so a code cannot be reused (A.G., agupt545)
+ * @version 1.03		2026-09-21 Add dynamic password selection and safe duplicate-account handling
+ * 							(Vishwam)
  *  
  */
 
@@ -53,6 +56,29 @@ public class ControllerNewAccount {
 	
 	// Reference for the in-memory database so this package has access
 	private static Database theDatabase = applicationMain.FoundationsMain.database;
+
+	/**********
+	 * Open the shared live password checker and retain only a password satisfying every rule.
+	 */
+	// Vishwam, invited users now receive dynamic password help before the confirmation field.
+	protected static void choosePassword() {
+		String chosenPassword = PasswordPopupWindow.show();
+		if (chosenPassword == null || chosenPassword.isEmpty()) {
+			if (ViewNewAccount.text_Password1.getText().isEmpty()) {
+				// Vishwam, restore the general chooser heading after any earlier confirmation error.
+				ViewNewAccount.alertPasswordError.setHeaderText(
+						"The password does not satisfy the requirements.");
+				ViewNewAccount.alertPasswordError.setContentText(
+						"Choose a valid password before creating the account.");
+				ViewNewAccount.alertPasswordError.showAndWait();
+			}
+			return;
+		}
+
+		ViewNewAccount.text_Password1.setText(chosenPassword);
+		ViewNewAccount.text_Password2.setText("");
+		ViewNewAccount.text_Password2.requestFocus();
+	}
 	
 	/**********
 	 * <p> Method: public doCreateUser() </p>
@@ -76,8 +102,18 @@ public class ControllerNewAccount {
 		// using the input to construct a User or access the database.
 		String userNameError = UserNameRecognizer.checkForValidUserName(username);
 		if (!userNameError.isEmpty()) {
+			ViewNewAccount.alertUserNameError.setHeaderText("The new UserName is not valid.");
 			ViewNewAccount.alertUserNameError.setContentText(
 					formatUserNameError(userNameError, username));
+			ViewNewAccount.alertUserNameError.showAndWait();
+			return;
+		}
+
+		// Vishwam, reject a duplicate as a validation error instead of exiting the application.
+		if (theDatabase.doesUserExist(username)) {
+			ViewNewAccount.alertUserNameError.setHeaderText("That UserName is already in use.");
+			ViewNewAccount.alertUserNameError.setContentText(
+					"Choose a different UserName and try again.");
 			ViewNewAccount.alertUserNameError.showAndWait();
 			return;
 		}
@@ -88,8 +124,24 @@ public class ControllerNewAccount {
 		if (!passwordError.isEmpty()) {
 			ViewNewAccount.text_Password1.setText("");
 			ViewNewAccount.text_Password2.setText("");
+			// Vishwam, avoid retaining a prior confirmation-specific alert heading.
+			ViewNewAccount.alertPasswordError.setHeaderText(
+					"The password does not satisfy the requirements.");
 			ViewNewAccount.alertPasswordError.setContentText(
 					"The password is not acceptable: " + passwordError);
+			ViewNewAccount.alertPasswordError.showAndWait();
+			return;
+		}
+
+		// Vishwam, the confirmation field receives its own explicit 20-character bound before
+		// equality comparison, role selection, or any database write.
+		String confirmationError = Model.checkPasswordConfirmation(
+				ViewNewAccount.text_Password2.getText());
+		if (!confirmationError.isEmpty()) {
+			ViewNewAccount.text_Password2.setText("");
+			ViewNewAccount.alertPasswordError.setHeaderText(
+					"The password confirmation is too long.");
+			ViewNewAccount.alertPasswordError.setContentText(confirmationError);
 			ViewNewAccount.alertPasswordError.showAndWait();
 			return;
 		}
@@ -133,18 +185,26 @@ public class ControllerNewAccount {
         	// Inform the system about which role will be played
 			applicationMain.FoundationsMain.activeHomePage = roleCode;
 			
-        	// Create the account based on user and proceed to the user account update page
-            try {
-            	// Create a new User object with the pre-set role and register in the database
-            	theDatabase.register(user);
-                if (!theDatabase.authenticateSession(user.getUserName(), user.getPassword()))
-                    throw new SQLException("Unable to start the new account session");
-            } catch (SQLException e) {
-                System.err.println("*** ERROR *** Database error: " + e.getMessage());
-                e.printStackTrace();
-                System.exit(0);
-            }
-            
+			// Create the account based on user and proceed to the user account update page
+			try {
+				// Create a new User object with the pre-set role and register in the database
+				theDatabase.register(user);
+				if (!theDatabase.authenticateSession(user.getUserName(), user.getPassword())) {
+					throw new SQLException("Unable to start the new account session");
+				}
+			} catch (SQLException e) {
+				System.err.println("*** ERROR *** Database error: " + e.getMessage());
+				e.printStackTrace();
+				// Vishwam, keep the invitation and application available after a failed write.
+				theDatabase.clearAuthenticatedSession();
+				ViewNewAccount.alertUserNameError.setHeaderText(
+						"The account could not be created.");
+				ViewNewAccount.alertUserNameError.setContentText(
+						"No account was created. Review the entries and try again.");
+				ViewNewAccount.alertUserNameError.showAndWait();
+				return;
+			}
+
             // The account has been set, so remove the invitation from the system
             theDatabase.removeInvitationAfterUse(ViewNewAccount.theInvitationCode);
             

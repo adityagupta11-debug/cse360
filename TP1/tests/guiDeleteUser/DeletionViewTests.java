@@ -16,7 +16,13 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
 import guiTools.TeamTheme;
 
-/** Tests the real MVC classes and renders JavaFX scenes offscreen, without desktop automation. */
+/**
+ * Tests the real MVC classes and renders JavaFX scenes offscreen, without desktop automation.
+ *
+ * @author Kanish Garg (K.G.) - account-deletion controller and JavaFX view tests
+ * @version 1.00 2026-09-17 Initial deletion view suite (K.G.)
+ * @version 1.01 2026-09-23 Attribution documented only; no behavior changed (Vishwam)
+ */
 public final class DeletionViewTests {
     private static int passed;
     private static void check(String name, boolean good) {
