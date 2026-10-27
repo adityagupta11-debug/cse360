@@ -1,12 +1,12 @@
 # Build dependencies
 
-Dependency JARs are excluded from Git. From the TP1 folder, run `python setup_dependencies.py` (or `python3 setup_dependencies.py` on macOS/Linux). Python 3 and an internet connection are needed for this setup step. The script downloads JavaFX for the current operating system and architecture, plus H2, into `lib`. It checks the Maven Central checksums before installing each file. Do not copy another operating system's lib folder.
+Dependency JARs are excluded from Git. From the TP2 folder, run `python setup_dependencies.py` (or `python3 setup_dependencies.py` on macOS/Linux). Python 3 and an internet connection are needed for this setup step. The script downloads JavaFX for the current operating system and architecture, plus H2, into `lib`. It checks the Maven Central checksums before installing each file. Do not copy another operating system's lib folder.
 
 ## Eclipse setup after pulling these changes
 
 1. Install/select JDK 21 or newer in Eclipse's Installed JREs settings. Use an Eclipse version that supports Java 21.
-2. Run the dependency setup command above from TP1.
-3. Refresh the TP1 project (F5), then use Project > Clean.
+2. Run the dependency setup command above from TP2.
+3. Refresh the TP2 project (F5), then use Project > Clean.
 4. Check that the project's JRE System Library points to the installed JDK. Compiler compliance is now Java 21.
 5. Run `applicationMain.FoundationsMain` as a Java Application.
 
@@ -34,4 +34,4 @@ Required local filenames and download URLs:
 - `lib/javafx-controls.jar`: https://repo.maven.apache.org/maven2/org/openjfx/javafx-controls/21.0.8/javafx-controls-21.0.8-win.jar
 - `lib/h2.jar`: https://repo.maven.apache.org/maven2/com/h2database/h2/2.3.232/h2-2.3.232.jar
 
-Run `./build.ps1`, `./run.ps1` or `./test.ps1` in PowerShell from TP1. The run script stores its database under TP1/data.
+Run `./build.ps1`, `./run.ps1` or `./test.ps1` in PowerShell from TP2. The run script stores its database under TP2/data.

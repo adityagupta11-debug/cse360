@@ -81,9 +81,9 @@ public class ViewContributorHome {
 	
 	protected static Label label_Message = new Label();
 	
-	protected static Button button_NewLesson = new Button("Clear Form");
-	protected static Button button_AddLesson = new Button("Add Lesson");
-	protected static Button button_SaveLesson = new Button("Save Changes");
+	protected static Button button_NewLesson = new Button("New");
+	protected static Button button_AddLesson = new Button("View");
+	protected static Button button_SaveLesson = new Button("Edit");
 	protected static Button button_DeleteLesson = new Button("Delete");
 	
 	// This is a separator and it is used to partition the GUI for various tasks
@@ -238,11 +238,11 @@ public class ViewContributorHome {
         
         double buttonWidth = (formWidth - 3 * 10) / 4;		// Four buttons with 10-pixel gaps
         setupButtonUI(button_NewLesson, "Dialog", 14, buttonWidth, Pos.CENTER, formX, 480);
-        button_NewLesson.setOnAction((ignoredEvent) -> {ControllerContributorHome.performClearForm(); });
+        button_NewLesson.setOnAction((ignoredEvent) -> {ControllerContributorHome.performAddLesson(); });
         
         setupButtonUI(button_AddLesson, "Dialog", 14, buttonWidth, Pos.CENTER,
         		formX + (buttonWidth + 10), 480);
-        button_AddLesson.setOnAction((ignoredEvent) -> {ControllerContributorHome.performAddLesson(); });
+        button_AddLesson.setOnAction((ignoredEvent) -> {ControllerContributorHome.performOpenViewLesson(); });
         
         setupButtonUI(button_SaveLesson, "Dialog", 14, buttonWidth, Pos.CENTER,
         		formX + 2 * (buttonWidth + 10), 480);
@@ -252,6 +252,18 @@ public class ViewContributorHome {
         		formX + 3 * (buttonWidth + 10), 480);
         button_DeleteLesson.setOnAction((ignoredEvent) -> {ControllerContributorHome.performDeleteLesson(); });
         
+        // K.G. integrates the current list with dedicated MVC CRUD windows. The old form is
+        // a read-only selection preview, so no alternate editable route bypasses window rules.
+        text_Title.setEditable(false); comboBox_Category.setDisable(true);
+        text_Situation.setEditable(false); text_LessonText.setEditable(false);
+        button_NewLesson.setId("home-new"); button_AddLesson.setId("home-view");
+        button_SaveLesson.setId("home-edit"); button_DeleteLesson.setId("home-delete");
+        listView_MyLessons.setId("home-lessons");
+        button_SaveLesson.setText("Edit");
+        button_NewLesson.setStyle("-fx-background-color: #175ab8; -fx-text-fill: white;");
+        button_DeleteLesson.setStyle("-fx-background-color: #b42335; -fx-text-fill: white;");
+        button_AddLesson.disableProperty().bind(listView_MyLessons.getSelectionModel().selectedItemProperty().isNull());
+
         // Save and Delete only make sense for an existing lesson, so they are disabled until one
         // is selected.  This prevents an "edit nothing" error rather than reporting it afterward.
         button_SaveLesson.disableProperty().bind(

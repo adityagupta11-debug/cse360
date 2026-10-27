@@ -1,0 +1,8 @@
+PASS I1 invitation boundary
+PASS I2 invitation boundary
+PASS I3 invitation boundary
+PASS I4 invitation boundary
+PASS I5 invitation boundary
+PASS I6 invitation boundary
+PASS I7 invitation boundary
+RESULT: 7 invitation checks passed; 0 failed.

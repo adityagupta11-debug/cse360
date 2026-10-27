@@ -1591,6 +1591,24 @@ public class Database {
 		} catch (SQLException failure) { return false; }
 	}
 
+    /**
+     * K.G. TP2 GUI integration: return the actual signed-in Contributor name without changing
+     * the account-details cache. This narrow addition lets new windows avoid trusting a stale
+     * User object or a mutable getCurrentUsername() value. Existing CRUD/schema are unchanged.
+     * @return authenticated Contributor username, or null after logout/role removal
+     * @throws SQLException if the stored identity cannot be verified
+     */
+    public synchronized String getAuthenticatedContributorName() throws SQLException {
+        if (authenticatedUserId == null) return null;
+        try (PreparedStatement query = connection.prepareStatement(
+                "SELECT userName FROM userDB WHERE id=? AND contributorRole=TRUE")) {
+            query.setInt(1, authenticatedUserId);
+            try (ResultSet result = query.executeQuery()) {
+                return result.next() ? result.getString(1) : null;
+            }
+        }
+    }
+
 	/** Clears authorization when the login screen is shown or the connection closes. */
 	public synchronized void clearAuthenticatedSession() { authenticatedUserId = null; }
 

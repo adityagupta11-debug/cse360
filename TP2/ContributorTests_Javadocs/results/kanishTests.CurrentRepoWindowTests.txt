@@ -1,0 +1,25 @@
+KG02_UI_HomeOnlyOwnLessons | PASS
+KG06_UI_RealHomeRoutes | PASS
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/asus/Documents/Codex/2026-10-21/yo/work/tp2-current-repo/TP2/lib/javafx-graphics.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+Contributor window request failed: IllegalArgumentException
+KG05_UI_InvalidDraftPreserved | PASS
+KG01_UI_RealCreate | PASS
+KG04_UI_MissingBackendDisabled | PASS
+KG01_UI_RealEdit | PASS
+KG06_UI_BackReloadsRealHome | PASS
+KG06_UI_HomeViewWired | PASS
+KG07_UI_NoDefault | PASS
+KG07_UI_NoKeepsRealData | PASS
+KG07_UI_YesDeletesRealData | PASS
+KG06_UI_HomeEditWired | PASS
+KG02_UI_RealLogoutClearsSession | PASS
+KG03_FIXTURE_TitleCategoryReadOnly | PASS
+KG03_FIXTURE_SituationTextReadOnly | PASS
+KG03_FIXTURE_FullLockActionsDisabled | PASS
+Contributor window request failed: IllegalArgumentException
+KG04_FIXTURE_EmptyRowsRejected | PASS
+KG04_FIXTURE_SaveDelegates | PASS
+RESULT: 18 passed; 0 failed. Real app navigation plus explicitly marked missing-backend fixtures.

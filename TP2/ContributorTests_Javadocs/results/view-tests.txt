@@ -1,0 +1,20 @@
+PASS V01 no selection never asks for confirmation
+PASS V02 No preserves account
+PASS V03 Delete disabled with no selection
+PASS V04 selector is not editable text
+PASS V05 selection enables Delete
+PASS V13 teammate account details retained
+PASS V06 exact confirmation and target
+PASS V07 Yes is not default
+PASS V08 No is default and cancel
+PASS V09 Yes removes captured selection
+PASS V10 clear selection disables Delete
+PASS V11-DELETED has useful feedback
+PASS V11-CANCELLED has useful feedback
+PASS V11-NO_SELECTION has useful feedback
+PASS V11-UNAUTHORIZED has useful feedback
+PASS V11-SELF_PROTECTED has useful feedback
+PASS V11-NOT_FOUND has useful feedback
+PASS V11-LAST_ADMIN_PROTECTED has useful feedback
+PASS V12 login theme attached
+RESULT: 19 controller/view checks passed; 0 failed.

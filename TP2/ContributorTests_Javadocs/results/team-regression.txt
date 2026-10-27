@@ -1,0 +1,1183 @@
+======================================================================
+TP1 Regression Suite
+======================================================================
+______________________________________________________________________
+
+Input Validation Testing Automation
+
+Current Final Input  Next
+State   State Char  State  Size
+   0             a     1     1
+   1       F     g     1     2
+   1       F     u     1     3
+   1       F     p     1     4
+   1       F     t     1     5
+   1       F     5     1     6
+   1       F     4     1     7
+   1       F     5     1     8
+   1       F   None
+The loop has ended.
+______________________________________________________________________
+
+Test case: 1
+Testing: UserName "agupt545" is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 2
+Testing: An empty UserName is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+
+Current Final Input  Next
+State   State Char  State  Size
+   0             1    -1     0
+The loop has ended.
+______________________________________________________________________
+
+Test case: 3
+Testing: UserName "1abc" (starts with a digit) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+
+Current Final Input  Next
+State   State Char  State  Size
+   0             X     1     1
+   1       F     X     1     2
+   1       F     X     1     3
+   1       F     X     1     4
+   1       F     X     1     5
+   1       F     X     1     6
+   1       F     X     1     7
+   1       F     X     1     8
+   1       F     X     1     9
+   1       F     X     1     10
+   1       F     X     1     11
+   1       F     X     1     12
+   1       F     X     1     13
+   1       F     X     1     14
+   1       F     X     1     15
+   1       F     X     1     16
+   1       F     X     1     17
+   1       F     X     1     18
+   1       F     X     1     19
+   1       F     X     1     20
+   1       F     X     1     21
+   1       F     X     1     22
+   1       F     X     1     23
+   1       F     X     1     24
+   1       F     X     1     25
+   1       F     X     1     26
+   1       F     X     1     27
+   1       F     X     1     28
+   1       F     X     1     29
+   1       F     X     1     30
+   1       F     X     1     31
+   1       F     X     1     32
+   1       F     X     1     33
+The loop has ended.
+______________________________________________________________________
+
+Test case: 4
+Testing: A 10,000 character UserName is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 5
+Testing: Password "Aa!15678" is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 6
+Testing: Password "aa!15678" (no upper case) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 7
+Testing: Password "Aa115678" (no special character) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 8
+Testing: Password "Aa!1567" (7 characters) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 9
+Testing: Password of exactly 20 characters is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 10
+Testing: Password of 21 characters is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 11
+Testing: A 10,000 character password is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 12
+Testing: Email "agupt545@asu.edu" is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 13
+Testing: Email "first.last+tag_1%x-y@sub.example.co.uk" is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 14
+Testing: An empty email address is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 15
+Testing: Email "agupt545.asu.edu" (no @) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 16
+Testing: Email "a@b@asu.edu" (two @) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 17
+Testing: Email "@asu.edu" (no mailbox name) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 18
+Testing: Email "agupt545@" (no domain) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 19
+Testing: Email "agupt545@asu" (no top-level domain) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 20
+Testing: Email "agupt545@asu.e" (one letter TLD) is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 21
+Testing: Email "first..last@asu.edu" is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 22
+Testing: Email "agupt545.@asu.edu" is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 23
+Testing: Email "agupt545@-asu.edu" is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 24
+Testing: Email "agupt 545@asu.edu" is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 25
+Testing: An email address longer than 254 characters is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 26
+Testing: A 10,000 character email address is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 27
+Testing: The recognizer records the index of the error
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 28
+Testing: Name "Aditya" is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 29
+Testing: Name "Anne-Marie O'Brien" is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 30
+Testing: An empty name is accepted (the field may be cleared)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 31
+Testing: Name "Aditya2" is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 32
+Testing: A name of exactly 50 characters is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 33
+Testing: A name of 51 characters is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 34
+Testing: A 10,000 character name is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+
+Current Final Input  Next
+State   State Char  State  Size
+   0             1    -1     0
+The loop has ended.
+______________________________________________________________________
+
+Test case: 35
+Testing: The account update page refuses UserName "1abc" as well
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 36
+Testing: The account update page refuses email "agupt545@asu" as well
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 37
+Testing: A null password is refused without an exception
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 38
+Testing: A tab character is refused as an invalid password character
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 39
+Testing: A valid password sets every observable requirement flag
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 40
+Testing: Overlong input clears all prior requirement flags
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 41
+Testing: Empty input clears all prior requirement flags
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 42
+Testing: A valid password still succeeds after an excessive paste
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 43
+Testing: A 20-character password confirmation is within the limit
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 44
+Testing: A 21-character password confirmation is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 45
+Testing: A 10,000-character password confirmation is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 46
+Testing: A null password confirmation is refused safely
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Number of tests passed: 46
+Number of tests failed: 0
+______________________________________________________________________
+
+Role Management Testing Automation
+______________________________________________________________________
+
+Test case: 1
+Testing: Add Viewer role to contribOne
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 2
+Testing: contribOne still has the Contributor role
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 3
+Testing: Remove Viewer role from contribOne
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 4
+Testing: Add Admin role to contribOne (Admin count becomes 2)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 5
+Testing: Remove Admin from adminOne while contribOne is also Admin
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 6
+Testing: Remove Admin from the last remaining Admin (must be refused)
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 7
+Testing: Last Admin still has the Admin role after the refusal
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 8
+Testing: Update a role that does not exist (Role1)
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 9
+Testing: Update a role with an illegal value ("yes")
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 10
+Testing: Update a role with a 10,000 character role name
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 11
+Testing: Add Viewer to a user who does not exist
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 12
+Testing: getUserAccountDetails for an unknown user returns false
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 13
+Testing: Add Curator role to contribOne
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 14
+Testing: contribOne now plays exactly three roles (Admin, Contributor, Curator)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 15
+Testing: Remove Curator role from contribOne, keep Admin and Contributor
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 16
+Testing: loginCurator succeeds for adminOne after Curator is added
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Number of tests passed: 16
+Number of tests failed: 0
+______________________________________________________________________
+
+Invitation Expiration Testing Automation
+______________________________________________________________________
+
+Test case: 1
+Testing: Parse a valid date with time "14:30"
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 2
+Testing: Parse time "2:30 PM" (wrong format)
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 3
+Testing: Parse with no date chosen
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 4
+Testing: Parse a 10,000 character time string
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 5
+Testing: Validate a deadline one hour in the past
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 6
+Testing: Validate a deadline one hour in the future
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 7
+Testing: Validate a deadline 31 days in the future
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 8
+Testing: Generate an invitation that expires in 2 hours
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 9
+Testing: Stored deadline equals the requested deadline
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 10
+Testing: Live invitation is usable (not expired, role is Contributor)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 11
+Testing: Generate an invitation with a deadline in the past
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 12
+Testing: Generate an invitation with a null deadline
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 13
+Testing: Invitation usable before its deadline and expired after it
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 14
+Testing: Purge removes 1 expired invitation and keeps 2 live ones
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 15
+Testing: Unknown invitation code is reported as expired
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 16
+Testing: Default invitation expires about 24 hours from now
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Number of tests passed: 16
+Number of tests failed: 0
+______________________________________________________________________
+
+Invitation Management Testing Automation
+______________________________________________________________________
+
+Test case: 1
+Testing: A new database has an empty invitation list
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 2
+Testing: Three invitations were created and all have codes
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 3
+Testing: The invitation list contains three entries
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 4
+Testing: The list is ordered by deadline (c@asu.edu expires first)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 5
+Testing: The entry for codeA carries a@asu.edu and the Contributor role
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 6
+Testing: A live invitation reports the status "Active"
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 7
+Testing: The displayed deadline is 16 characters (yyyy-MM-dd HH:mm)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 8
+Testing: Revoking codeB succeeds
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 9
+Testing: The revoked code no longer has a role
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 10
+Testing: The revoked code is treated as expired
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 11
+Testing: Revoking codeB a second time is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 12
+Testing: Revoking a code that does not exist is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 13
+Testing: Revoking an empty code is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 14
+Testing: Revoking a 10,000 character code is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 15
+Testing: Revoking a null code is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 16
+Testing: b@asu.edu may be invited again after the revocation
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 17
+Testing: An invitation past its deadline reports "Expired"
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 18
+Testing: Purging removes 1 expired invitation and keeps the live one
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 19
+Testing: Purging a second time removes nothing
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 20
+Testing: The surviving invitation is codeA
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Number of tests passed: 20
+Number of tests failed: 0
+______________________________________________________________________
+
+User Management Testing Automation
+______________________________________________________________________
+
+Test case: 1
+Testing: getAllUsers returns all four registered users
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 2
+Testing: The list is sorted by username (adminOne is first)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 3
+Testing: No password is included in the listed users
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 4
+Testing: fullName builds "Ada B Lovelace"
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 5
+Testing: fullName of a user with no names is empty
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 6
+Testing: rolesAsText reports "Admin" for adminOne
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 7
+Testing: rolesAsText reports "Contributor, Viewer" for contribOne
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 8
+Testing: rolesAsText reports "(none)" for a user with no roles
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 9
+Testing: blankIfNull turns null into an empty string
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 10
+Testing: Delete policy refuses the "<Select a User>" placeholder
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 11
+Testing: Delete policy refuses deleting your own account
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 12
+Testing: Delete policy refuses a user who does not exist
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 13
+Testing: Delete policy accepts deleting viewerOne
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 14
+Testing: Deleting viewerOne succeeds and removes one row
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 15
+Testing: Deleting viewerOne a second time is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 16
+Testing: Deleting adminTwo while adminOne is also an Admin
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 17
+Testing: Deleting the last remaining Admin (must be refused)
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 18
+Testing: The last Admin still exists after the refusal
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 19
+Testing: Delete policy refuses the last remaining Admin
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 20
+Testing: Deleting a user named by 10,000 characters
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 21
+Testing: Deleting a null username
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Number of tests passed: 21
+Number of tests failed: 0
+______________________________________________________________________
+
+One-Time Password Testing Automation
+______________________________________________________________________
+
+Test case: 1
+Testing: A new user has no active one-time password
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 2
+Testing: 100 generated one-time passwords all satisfy the requirements
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 3
+Testing: A generated one-time password is 12 characters long
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 4
+Testing: Two generated one-time passwords differ
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 5
+Testing: Setting a one-time password for contribOne
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 6
+Testing: contribOne now has an active one-time password
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 7
+Testing: The stored deadline equals the requested deadline
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 8
+Testing: A wrong one-time password is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 9
+Testing: A wrong attempt does not consume the valid one-time password
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 10
+Testing: The correct one-time password is accepted before its deadline
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 11
+Testing: Successful one-time login consumes the credential immediately
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 12
+Testing: The consumed one-time password cannot be reused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 13
+Testing: The permanent password is unchanged until reset
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 14
+Testing: The reset password is written successfully
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 15
+Testing: The new permanent password is stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 16
+Testing: A fresh session accepts the new permanent password
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 17
+Testing: The old permanent password is no longer accepted
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 18
+Testing: Setting a one-time password with a past deadline is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 19
+Testing: Setting a one-time password with no deadline is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 20
+Testing: Setting an empty one-time password is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 21
+Testing: A one-time password cannot be set for a missing user
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 22
+Testing: An expired one-time password is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 23
+Testing: An expired one-time password is purged
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 24
+Testing: A 10,000-character one-time-password input is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 25
+Testing: Oversized input does not consume the valid credential
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 26
+Testing: A null one-time-password input is refused
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 27
+Testing: Null input does not consume the valid credential
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 28
+Testing: A replaced one-time password no longer works
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 29
+Testing: The replacement remains active after the wrong old value
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 30
+Testing: The replacement one-time password works
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 31
+Testing: The replacement is consumed after its first use
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 32
+Testing: Two simultaneous redemptions succeed exactly once
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 33
+Testing: The concurrently redeemed credential is no longer active
+Expected: false   Observed: false
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Number of tests passed: 33
+Number of tests failed: 0
+
+======================================================================
+TP1 Regression Suite Summary
+======================================================================
+Input Validation           passed:  46   failed:   0
+Role Management            passed:  16   failed:   0
+Invitation Expiration      passed:  16   failed:   0
+Invitation Management      passed:  20   failed:   0
+User Management            passed:  21   failed:   0
+One-Time Password          passed:  33   failed:   0
+----------------------------------------------------------------------
+TOTAL                      passed: 152   failed:   0
+======================================================================
+All TP1 test cases passed. The regression checkpoint is clean.

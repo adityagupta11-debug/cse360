@@ -77,8 +77,12 @@ public class ControllerContributorHome {
 	 *
 	 */
 	protected static void refreshLessonList() {
-		ViewContributorHome.listView_MyLessons.getItems().setAll(
-				theDatabase.getLessonsByOwner(currentContributor()).getLessons());
+        try {
+            ViewContributorHome.listView_MyLessons.getItems().setAll(
+                new ModelContributorHome(theDatabase).ownLessons().getLessons());
+        } catch(Exception denied) {
+            ViewContributorHome.listView_MyLessons.getItems().clear();showError(denied.getMessage());
+        }
 	}
 	
 	
@@ -98,7 +102,13 @@ public class ControllerContributorHome {
 		// "Lesson added." is not erased by the reload that follows it.
 		if (selected == null) return;
 		
-		Lesson current = theDatabase.getLesson(selected.getLessonId());
+        Lesson current;
+        try {
+            new guiLessonSupport.CurrentRepoGateway(theDatabase).read(selected.getLessonId());
+            current=theDatabase.getLesson(selected.getLessonId());
+        } catch(Exception unavailable) {
+            performClearForm();showError("Lesson is unavailable. Refresh your own list.");return;
+        }
 		if (current == null) {
 			showError(LessonResult.NOT_FOUND.getMessage());
 			return;
@@ -131,80 +141,41 @@ public class ControllerContributorHome {
 	/**********
 	 * <p> Method: performAddLesson() </p>
 	 *
-	 * <p> Description: Adds the lesson in the form as a new lesson owned by the logged-in
+	 * <p> Description: Opens the dedicated Create Lesson MVC window for the logged-in
 	 * contributor (US-C1).  The Database validates the input with the LessonRecognizer, so the
 	 * error message shown here is exactly the one the automated tests check. </p>
 	 *
 	 */
 	protected static void performAddLesson() {
-		Lesson lesson = lessonFromForm(0, currentContributor());
-		LessonResult result = theDatabase.addLesson(lesson);
-		
-		if (result == LessonResult.SUCCESS) {
-			refreshLessonList();
-			selectLesson(lesson.getLessonId());		// Show the contributor the lesson just added
-			showSuccess("Lesson added.");
-		}
-		else if (result == LessonResult.INVALID_INPUT) showValidationError();
-		else showError(result.getMessage());
+		guiLessonSupport.ContributorWindows.create(windowContext());
 	}
 	
 	
 	/**********
 	 * <p> Method: performSaveLesson() </p>
 	 *
-	 * <p> Description: Saves the edits in the form to the selected lesson (US-U1).  If the input
+	 * <p> Description: Opens the dedicated Edit Lesson MVC window for the selected lesson (US-U1).  If the input
 	 * is invalid, or the lesson no longer exists or is not owned by this contributor, the stored
 	 * lesson is unchanged and the reason is shown. </p>
 	 *
 	 */
 	protected static void performSaveLesson() {
-		Lesson selected = ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
-		if (selected == null) return;		// The Save button is disabled when nothing is selected
-		
-		Lesson edited = lessonFromForm(selected.getLessonId(), selected.getOwner());
-		LessonResult result = theDatabase.updateLesson(edited, currentContributor());
-		
-		if (result == LessonResult.SUCCESS) {
-			refreshLessonList();
-			selectLesson(edited.getLessonId());	// Keep the edited lesson selected after the reload
-			showSuccess("Lesson updated.");
-		}
-		else if (result == LessonResult.INVALID_INPUT) showValidationError();
-		else showError(result.getMessage());
+        Lesson selected=ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
+        if(selected!=null)guiLessonSupport.ContributorWindows.edit(windowContext(),selected.getLessonId());
 	}
 	
 	
 	/**********
 	 * <p> Method: performDeleteLesson() </p>
 	 *
-	 * <p> Description: Deletes the selected lesson after the contributor answers "Yes" to
+	 * <p> Description: Opens the dedicated Delete Lesson window to ask
 	 * "Are you sure?" (US-D1).  Like the Admin delete-user page, the View asks the question and
 	 * the Database is told the answer, so a "No" answer never changes the database. </p>
 	 *
 	 */
 	protected static void performDeleteLesson() {
-		Lesson selected = ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
-		if (selected == null) return;		// The Delete button is disabled when nothing is selected
-		
-		Alert confirm = new Alert(AlertType.CONFIRMATION,
-				"Delete the lesson \"" + selected.getTitle() + "\"?  This cannot be undone.",
-				ButtonType.YES, ButtonType.NO);
-		confirm.setTitle("Delete Lesson");
-		confirm.setHeaderText("Are you sure?");
-		Optional<ButtonType> answer = confirm.showAndWait();
-		boolean confirmed = answer.isPresent() && answer.get() == ButtonType.YES;
-		
-		LessonResult result = theDatabase.deleteLesson(selected.getLessonId(),
-				currentContributor(), confirmed);
-		
-		if (result == LessonResult.SUCCESS) {
-			performClearForm();
-			refreshLessonList();
-			showSuccess("Lesson deleted.");
-		}
-		else if (result == LessonResult.CANCELLED) showSuccess("Delete cancelled. The lesson was not changed.");
-		else showError(result.getMessage());
+        Lesson selected=ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
+        if(selected!=null)guiLessonSupport.ContributorWindows.delete(windowContext(),selected.getLessonId());
 	}
 
 	/**********
@@ -216,7 +187,8 @@ public class ControllerContributorHome {
 	 *
 	 */
 	protected static void performLogout() {
-		guiUserLogin.ViewUserLogin.displayUserLogin(ViewContributorHome.theStage);
+        theDatabase.clearAuthenticatedSession();
+        guiUserLogin.ViewUserLogin.displayUserLogin(ViewContributorHome.theStage);
 	}
 
 	/**********
@@ -228,7 +200,8 @@ public class ControllerContributorHome {
 	 *
 	 */
 	protected static void performQuit() {
-		System.exit(0);
+        theDatabase.closeConnection();
+        javafx.application.Platform.exit();
 	}
 	
 	
@@ -295,4 +268,18 @@ public class ControllerContributorHome {
 	private static void clearMessage() {
 		ViewContributorHome.label_Message.setText("");
 	}
+
+    /** K.G. opens the selected record in the dedicated read window. */
+    protected static void performOpenViewLesson() {
+        Lesson selected=ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
+        if(selected!=null)guiLessonSupport.ContributorWindows.details(windowContext(),selected.getLessonId());
+    }
+    /** Existing signed-in stage and real list/navigation callbacks, not a preview fixture. */
+    private static guiLessonSupport.WindowContext windowContext() {
+        return new guiLessonSupport.WindowContext(ViewContributorHome.theStage,
+            new guiLessonSupport.CurrentRepoGateway(theDatabase),
+            () -> ViewContributorHome.displayContributorHome(ViewContributorHome.theStage,ViewContributorHome.theUser),
+            () -> performLogout(),() -> performQuit());
+    }
+
 }

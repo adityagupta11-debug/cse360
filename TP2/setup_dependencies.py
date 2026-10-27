@@ -30,7 +30,7 @@ def main():
         temporary.write_bytes(content)
         temporary.replace(destination / name)
         print('Installed', name)
-    print('Dependencies ready. Refresh TP1 in Eclipse and run Project > Clean.')
+    print('Dependencies ready. Refresh TP2 in Eclipse and run Project > Clean.')
 
 if __name__ == '__main__':
     main()

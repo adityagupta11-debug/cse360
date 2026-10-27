@@ -1,0 +1,20 @@
+{
+  "base_commit": "67bd0a9381128225911936171046b123b7b17085",
+  "model_checks": 23,
+  "real_integration_checks": 14,
+  "desktop_checks": 18,
+  "inherited_checks": 302,
+  "total_checks": 357,
+  "assertion_failures": 0,
+  "real_backend_gaps": [
+    "experience storage",
+    "full and per-field lock metadata/enforcement",
+    "curator-edited flag",
+    "lesson timestamps"
+  ],
+  "gui_screenshots": 7,
+  "gui_source_captures": 63,
+  "test_source_captures": 24,
+  "verification_scope": "Test snapshot; repository publication status is recorded by Git.",
+  "latest_rerun_note": "55 assertions passed, exit 0; JavaFX shutdown thread printed NullPointerException after results."
+}
