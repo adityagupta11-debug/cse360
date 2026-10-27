@@ -1,0 +1,18 @@
+/* Team 53 shared UI direction, K.G. GitHub settings-inspired; approval pending. */
+.root { -fx-font-family: "Segoe UI"; -fx-font-size: 14px; -fx-background-color: #F6F8FA; }
+.label { -fx-font-family: "Segoe UI"; -fx-text-fill: #1F2328; }
+.page-title { -fx-font-size: 30px; -fx-font-weight: bold; }
+.eyebrow { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #59636E; }
+.card { -fx-background-color: white; -fx-padding: 24; -fx-background-radius: 8; -fx-border-color: #D0D7DE; -fx-border-radius: 8; }
+.button { -fx-font-family: "Segoe UI"; -fx-padding: 8 14; -fx-background-color: #FFFFFF; -fx-border-color: #8C959F; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #1F2328; -fx-cursor: hand; }
+.button:hover { -fx-background-color: #EAEEF2; }
+.primary-button { -fx-background-color: #0969DA; -fx-text-fill: white; -fx-border-color: #0969DA; }
+.primary-button:hover { -fx-background-color: #0756B3; }
+.danger-button { -fx-background-color: #B42318; -fx-text-fill: white; -fx-border-color: #B42318; }
+.danger-button:hover { -fx-background-color: #8F1C13; }
+.button:focused, .text-input:focused, .combo-box:focused { -fx-effect: dropshadow(gaussian, #0969DA, 4, 0.7, 0, 0); }
+.text-input { -fx-background-color: white; -fx-border-color: #8C959F; -fx-border-radius: 6; -fx-padding: 8; }
+.combo-box { -fx-background-color: white; -fx-border-color: #8C959F; -fx-border-radius: 6; -fx-padding: 6; }
+.error-label { -fx-text-fill: #B42318; }
+.help-label { -fx-text-fill: #59636E; }
+.line { -fx-stroke: #D0D7DE; }

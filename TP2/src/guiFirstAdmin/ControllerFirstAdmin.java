@@ -1,0 +1,228 @@
+package guiFirstAdmin;
+
+import java.sql.SQLException;
+import database.Database;
+import entityClasses.User;
+import javafx.stage.Stage;
+import passwordPopUpWindow.Model;
+import passwordPopUpWindow.PasswordPopupWindow;
+import userNameRecognizer.UserNameRecognizer;
+
+/*******
+ * <p> Title: ControllerFirstAdmin Class. </p>
+ * 
+ * <p> Description: ControllerFirstAdmin class provides the controller actions based on the user's
+ *  use of the JavaFX GUI widgets defined by the View class.
+ * 
+ * This page contains a number of buttons that have not yet been implemented.  WHhen those buttons
+ * are pressed, an alert pops up to tell the user that the function associated with the button has
+ * not been implemented. Also, be aware that What has been implemented may not work the way the
+ * final product requires and there maybe defects in this code.
+ * 
+ * The class has been written assuming that the View or the Model are the only class methods that
+ * can invoke these methods.  This is why each has been declared at "protected".  Do not change any
+ * of these methods to public.</p>
+ * 
+ * <p> Copyright: Lynn Robert Carter © 2025 </p>
+ * 
+ * @author Lynn Robert Carter
+ * 
+ * @version 1.00		2025-08-17 Initial version
+ * @version 1.01		2026-09-02 Validate a new Admin UserName before database use
+ * @version 1.02		2026-09-17 Validate the new Admin password with the password evaluator
+ * 							before it is stored (A.G., agupt545)
+ * @version 1.03		2026-09-21 Add shared dynamic password selection before confirmation
+ * 							(Vishwam)
+ * @version 1.04		2026-09-21 Bound confirmation input and require a fresh login after
+ * 							first-user account setup (Vishwam)
+ *  
+ */
+
+public class ControllerFirstAdmin {
+	/*-********************************************************************************************
+
+	The controller attributes for this page
+	
+	This controller is not a class that gets instantiated.  Rather, it is a collection of protected
+	static methods that can be called by the View (which is a singleton instantiated object) and 
+	the Model is often just a stub, or will be a singleton instantiated object.
+	
+	*/
+	
+	private static String adminUsername = "";
+	private static String adminPassword1 = "";
+	private static String adminPassword2 = "";		
+	protected static Database theDatabase = applicationMain.FoundationsMain.database;		
+
+	/*-********************************************************************************************
+
+	The User Interface Actions for this page
+	
+	*/
+	
+	/**
+	 * Default constructor is not used.
+	 */
+	public ControllerFirstAdmin() {
+	}
+
+	/**********
+	 * <p> Method: setAdminUsername() </p>
+	 * 
+	 * <p> Description: This method is called when the user adds text to the username field in the
+	 * View.  A private local copy of what was last entered is kept here.</p>
+	 * 
+	 */
+	protected static void setAdminUsername() {
+		adminUsername = ViewFirstAdmin.text_AdminUsername.getText();
+	}
+	
+	
+	/**********
+	 * <p> Method: setAdminPassword1() </p>
+	 * 
+	 * <p> Description: This method is called when the user adds text to the password 1 field in
+	 * the View.  A private local copy of what was last entered is kept here.</p>
+	 * 
+	 */
+	protected static void setAdminPassword1() {
+		adminPassword1 = ViewFirstAdmin.text_AdminPassword1.getText();
+		ViewFirstAdmin.label_PasswordsDoNotMatch.setText("");
+	}
+	
+	
+	/**********
+	 * <p> Method: setAdminPassword2() </p>
+	 * 
+	 * <p> Description: This method is called when the user adds text to the password 2 field in
+	 * the View.  A private local copy of what was last entered is kept here.</p>
+	 * 
+	 */
+	protected static void setAdminPassword2() {
+		adminPassword2 = ViewFirstAdmin.text_AdminPassword2.getText();		
+		ViewFirstAdmin.label_PasswordsDoNotMatch.setText("");
+	}
+
+
+	/**********
+	 * Open the shared live password checker and retain only a password that satisfies every rule.
+	 */
+	// Vishwam, First Admin now receives the same dynamic help as password update and OTP reset.
+	protected static void chooseAdminPassword() {
+		String chosenPassword = PasswordPopupWindow.show();
+		if (chosenPassword == null || chosenPassword.isEmpty()) {
+			if (adminPassword1.isEmpty()) {
+				ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
+						"Choose a valid password before setting up the account.");
+			}
+			return;
+		}
+
+		ViewFirstAdmin.text_AdminPassword1.setText(chosenPassword);
+		ViewFirstAdmin.text_AdminPassword2.setText("");
+		ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
+				"Password chosen. Re-enter it below to confirm.");
+		ViewFirstAdmin.text_AdminPassword2.requestFocus();
+	}
+	
+	
+	/**********
+	 * <p> Method: doSetupAdmin() </p>
+	 * 
+	 * <p> Description: This method is called when the user presses the button to set up the Admin
+	 * account.  It start by trying to establish a new user and placing that user into the
+	 * database.  If that is successful, we proceed to the UserUpdate page.</p>
+	 * 
+	 */
+	protected static void doSetupAdmin(Stage ps, int r) {
+		// A new account establishes a new UserName, so apply the complete UserName FSM before
+		// using the input to construct a User or access the database.
+		String userNameError = UserNameRecognizer.checkForValidUserName(adminUsername);
+		if (!userNameError.isEmpty()) {
+			ViewFirstAdmin.alertUserNameError.setContentText(
+					formatUserNameError(userNameError, adminUsername));
+			ViewFirstAdmin.alertUserNameError.showAndWait();
+			return;
+		}
+		
+		// Apply the password requirements (upper case, lower case, digit, special character, and
+		// a length of 8 to 20 characters) before the password is stored
+		String passwordError = Model.evaluatePassword(adminPassword1);
+		if (!passwordError.isEmpty()) {
+			ViewFirstAdmin.text_AdminPassword1.setText("");
+			ViewFirstAdmin.text_AdminPassword2.setText("");
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
+					"The password is not acceptable: " + passwordError);
+			return;
+		}
+
+		// Vishwam, the confirmation field is independently bounded before equality comparison.
+		String confirmationError = Model.checkPasswordConfirmation(adminPassword2);
+		if (!confirmationError.isEmpty()) {
+			ViewFirstAdmin.text_AdminPassword2.setText("");
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText(confirmationError);
+			return;
+		}
+		
+		// Make sure the two passwords are the same
+		if (adminPassword1.compareTo(adminPassword2) == 0) {
+        	// Create the passwords and proceed to the user home page
+        	User user = new User(adminUsername, adminPassword1, "", "", "", "", "", true, false, 
+        			false, false);
+            try {
+            	// Create a new User object with admin role and register in the database
+            	theDatabase.register(user);
+                if (!theDatabase.authenticateSession(user.getUserName(), user.getPassword()))
+                    throw new SQLException("Unable to start the new account session");
+            	}
+            catch (SQLException e) {
+                System.err.println("*** ERROR *** Database error trying to register a user: " + 
+                		e.getMessage());
+                e.printStackTrace();
+                System.exit(0);
+            }
+            
+			// Vishwam, mark this as first-user onboarding so finishing account information
+			// returns to login, exactly as the Initial User Story requires.
+			guiUserUpdate.ViewUserUpdate.displayFirstUserUpdate(ViewFirstAdmin.theStage, user);
+		}
+		else {
+			// The two passwords are NOT the same, so clear the passwords, explain the passwords
+			// must be the same, and clear the message as soon as the first character is typed.
+			ViewFirstAdmin.text_AdminPassword1.setText("");
+			ViewFirstAdmin.text_AdminPassword2.setText("");
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
+					"The two passwords must match. Please try again!");
+		}
+	}
+
+	/**********
+	 * <p> Method: formatUserNameError(String message, String input) </p>
+	 *
+	 * <p> Description: Add the input and the one-based error position to the detailed message
+	 * produced by the UserName recognizer.  Reporting the position helps the user correct the
+	 * input without weakening the validation rule.</p>
+	 *
+	 * @param message specifies the detailed recognizer error
+	 * @param input specifies the rejected UserName
+	 * @return the message displayed by the UserName error alert
+	 */
+	private static String formatUserNameError(String message, String input) {
+		int errorPosition = UserNameRecognizer.userNameRecognizerIndexofError + 1;
+		return message.trim() + "\n\nInput: " + input + "\nError position: " + errorPosition;
+	}
+	
+	
+	/**********
+	 * <p> Method: performQuit() </p>
+	 * 
+	 * <p> Description: This method terminates the execution of the program.  It leaves the
+	 * database in a state where the normal login page will be displayed when the application is
+	 * restarted.</p>
+	 * 
+	 */
+	protected static void performQuit() {
+		System.out.println("Perform Quit");
+		System.exit(0);
+	}	
+}
