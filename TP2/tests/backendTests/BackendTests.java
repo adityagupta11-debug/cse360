@@ -466,9 +466,26 @@ public final class BackendTests {
         "INSERT INTO lessonDB(owner,title,category,situation,lessonText) VALUES('alice','Legacy"
             + " retained lesson','Testing','A valid old situation with enough text.','A valid old"
             + " lesson with enough text.')");
+    // A real legacy database includes its original owner account before ownership migration.
+    sql(
+        url,
+        "CREATE TABLE userDB(id INT AUTO_INCREMENT PRIMARY KEY,userName VARCHAR(255)"
+            + " UNIQUE,password VARCHAR(255),firstName VARCHAR(255),middleName"
+            + " VARCHAR(255),lastName VARCHAR(255),preferredFirstName VARCHAR(255),emailAddress"
+            + " VARCHAR(255),adminRole BOOL DEFAULT FALSE,contributorRole BOOL DEFAULT"
+            + " FALSE,viewerRole BOOL DEFAULT FALSE,curatorRole BOOL DEFAULT FALSE)");
+    sql(
+        url,
+        "INSERT INTO userDB(userName,password,contributorRole) VALUES('alice','"
+            + PASSWORD
+            + "',TRUE)");
+    sql(
+        url,
+        "INSERT INTO lessonDB(owner,title,category,situation,lessonText)"
+            + " VALUES('formerOwner','Unclaimed legacy lesson','Testing','A valid former situation"
+            + " with enough text.','A valid former lesson with enough text.')");
     Database old = new Database(url);
     old.connectToDatabase();
-    register(old, "alice", true, false);
     login(old, "alice");
     check(
         "VG08_MigrationRetainsOldCoreFields",
@@ -478,7 +495,92 @@ public final class BackendTests {
         !old.getLesson(1).hasAnyLock() && old.getLesson(1).getCreatedAt() != null);
     old.addExperience(1, experience(1));
     check("VG08_MigrationEnablesExperienceStorage", old.getExperiences(1).size() == 1);
+    register(old, "formerOwner", true, false);
+    login(old, "formerOwner");
+    check("VG08_UnknownLegacyOwnerNeverClaimedByNewRegistration", old.getLesson(2) == null);
     old.closeConnection();
+    old = new Database(url);
+    old.connectToDatabase();
+    login(old, "formerOwner");
+    check("VG08_ReopenNeverRebindsUnclaimedLegacyOwner", old.getLesson(2) == null);
+    old.closeConnection();
+  }
+
+  /** VG02/VG08: account rename/deletion/name reuse must never transfer record ownership. */
+  private static void accountLifecycle(Path directory) throws Exception {
+    String url = "jdbc:h2:" + directory.resolve("account-lifecycle");
+    Database db = new Database(url);
+    db.connectToDatabase();
+    int id, ownerId;
+    try {
+      register(db, "alice", true, false);
+      register(db, "bob", true, false);
+      db.register(
+          new User(
+              "guardAdmin",
+              PASSWORD,
+              "Guard",
+              "",
+              "Admin",
+              "",
+              "guard@example.test",
+              true,
+              false,
+              false,
+              false));
+      login(db, "alice");
+      var original = lesson("alice");
+      db.addLesson(original);
+      id = original.getLessonId();
+      ownerId = original.getOwnerUserId();
+      db.addExperience(id, experience(id));
+      check("VG02_CreatedLessonHasStableAccountId", ownerId > 0);
+      check("VG02_RenameOriginalAccount", db.updateUserName("alice", "aliceRenamed"));
+      check(
+          "VG02_RenameRetainsLessonAndIdentity",
+          db.getLesson(id) != null
+              && db.getLesson(id).getOwnerUserId() == ownerId
+              && db.getLesson(id).getOwner().equals("aliceRenamed"));
+      check(
+          "VG02_RenameRetainsExperience",
+          db.getExperiences(id).getFirst().owner().equals("aliceRenamed"));
+      var changed = db.getLesson(id);
+      changed.setTitle("Renamed owner can still edit");
+      check(
+          "VG02_RenamedAccountCanUpdate",
+          db.updateLesson(changed, "aliceRenamed") == LessonResult.SUCCESS);
+      check(
+          "VG02_CollidingRenameRejected",
+          !db.updateUserName("aliceRenamed", "bob") && db.getLesson(id) != null);
+      register(db, "alice", true, false);
+      login(db, "alice");
+      check(
+          "VG02_ReusedOldNameCannotReadLesson",
+          db.getLesson(id) == null && db.getLessonsByOwner("alice").isEmpty());
+      check("VG02_ReusedOldNameCannotReadExperience", denied(() -> db.getExperiences(id)));
+      check(
+          "VG02_ReusedOldNameCannotDeleteLesson",
+          db.deleteLesson(id, "alice", true) == LessonResult.NOT_OWNER);
+      login(db, "guardAdmin");
+      check("VG02_DeleteOriginalAccount", db.deleteUser("aliceRenamed"));
+      register(db, "aliceRenamed", true, false);
+      login(db, "aliceRenamed");
+      check("VG02_DeletedNameReuseCannotReadOrphan", db.getLesson(id) == null);
+      check("VG02_DeletedNameReuseCannotReadExperience", denied(() -> db.getExperiences(id)));
+      check(
+          "VG02_DeletedNameReuseCannotDeleteOrphan",
+          db.deleteLesson(id, "aliceRenamed", true) == LessonResult.NOT_OWNER);
+    } finally {
+      db.closeConnection();
+    }
+    Database reopened = new Database(url);
+    reopened.connectToDatabase();
+    try {
+      login(reopened, "aliceRenamed");
+      check("VG08_ReopenDoesNotReassignDeletedOwner", reopened.getLesson(id) == null);
+    } finally {
+      reopened.closeConnection();
+    }
   }
 
   /** Run every requirement group; always close fixture databases and return nonzero on failure. */
@@ -546,6 +648,7 @@ public final class BackendTests {
     } finally {
       db.closeConnection();
     }
+    accountLifecycle(dir);
     migration(dir);
     try (var files = Files.walk(dir)) {
       for (Path path : files.sorted(Comparator.reverseOrder()).toList()) Files.delete(path);

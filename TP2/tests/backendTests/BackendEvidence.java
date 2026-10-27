@@ -88,6 +88,27 @@ public final class BackendEvidence {
                 1,
                 Integer.MAX_VALUE,
                 "VG01-VG10_7.4_tests");
+            capture(
+                stage,
+                Path.of("tests/backendTests/ListSnapshotTests.java"),
+                Path.of("ContributorTests_Javadocs/source-screenshots"),
+                1,
+                Integer.MAX_VALUE,
+                "LIST_snapshot_7.4_tests");
+            // Task 7.4 applies to inherited regression and manual procedures as well as new tests.
+            for (String file :
+                List.of(
+                    "src/testingAutomation/LessonTestingAutomation.java",
+                    "src/testingAutomation/LessonListTestingAutomation.java",
+                    "src/testingAutomation/MyLessonsManualTests.java",
+                    "src/testingAutomation/LessonTestFixtures.java"))
+              capture(
+                  stage,
+                  Path.of(file),
+                  Path.of("ContributorTests_Javadocs/source-screenshots"),
+                  1,
+                  Integer.MAX_VALUE,
+                  "Contributor_7.4_regression_manual");
             stage.close();
             done.complete(null);
           } catch (Throwable failure) {

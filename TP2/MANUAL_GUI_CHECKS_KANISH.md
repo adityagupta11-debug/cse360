@@ -1,3 +1,5 @@
+> **Historical pre-integration contribution notes.** The missing-backend statements and suggested progress below describe Kanish's earlier branch, not the integrated TP2 build. Use `MANUAL_GUI_CHECKS_INTEGRATED.md`, `README_VISHWAM_TP2.md`, current generated evidence, and actual test reports for current behavior. Real locks and experience persistence are now connected. Do not read the historical standup wording as a current progress report or a record of a meeting.
+
 # Manual checks for the current-repository GUI
 
 Local KG identifiers refer to the supplied work split, not official story numbers.

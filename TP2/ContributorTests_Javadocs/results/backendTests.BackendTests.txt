@@ -95,7 +95,23 @@ VG04_ReopenedLockStillEnforced | PASS
 VG04_UnlockedDeleteSucceeds | PASS
 VG04_CascadeRemovesExperiencesAndEfforts | PASS
 VG04_MissingDeleteReported | PASS
+VG02_CreatedLessonHasStableAccountId | PASS
+VG02_RenameOriginalAccount | PASS
+VG02_RenameRetainsLessonAndIdentity | PASS
+VG02_RenameRetainsExperience | PASS
+VG02_RenamedAccountCanUpdate | PASS
+VG02_CollidingRenameRejected | PASS
+VG02_ReusedOldNameCannotReadLesson | PASS
+VG02_ReusedOldNameCannotReadExperience | PASS
+VG02_ReusedOldNameCannotDeleteLesson | PASS
+VG02_DeleteOriginalAccount | PASS
+VG02_DeletedNameReuseCannotReadOrphan | PASS
+VG02_DeletedNameReuseCannotReadExperience | PASS
+VG02_DeletedNameReuseCannotDeleteOrphan | PASS
+VG08_ReopenDoesNotReassignDeletedOwner | PASS
 VG08_MigrationRetainsOldCoreFields | PASS
 VG08_MigrationAddsDefaultLocksAndTimes | PASS
 VG08_MigrationEnablesExperienceStorage | PASS
-RESULT: 100 passed; 0 failed. Real session-bound file-backed H2.
+VG08_UnknownLegacyOwnerNeverClaimedByNewRegistration | PASS
+VG08_ReopenNeverRebindsUnclaimedLegacyOwner | PASS
+RESULT: 116 passed; 0 failed. Real session-bound file-backed H2.

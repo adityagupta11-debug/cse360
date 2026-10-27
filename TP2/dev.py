@@ -12,6 +12,7 @@ TESTS = ROOT / 'build/test-classes'
 REPORTS = ROOT / 'build/reports'
 SUITES = [
     'backendTests.BackendTests',
+    'backendTests.ListSnapshotTests',
     'kanishTests.ModelTests',
     'kanishTests.CurrentRepoIntegrationTests',
     'kanishTests.CurrentRepoWindowTests',
@@ -48,6 +49,24 @@ def compile_tests():
 def java(suite):
     return ['java','--enable-native-access=javafx.graphics','--module-path',str(LIB),'--add-modules','javafx.controls','-cp',os.pathsep.join([str(TESTS),str(CLASSES),str(LIB/'h2.jar')]),suite]
 
+def launch(database_name='Team53'):
+    """Use the same project-local database as run.ps1, independent of the caller's directory."""
+    data=ROOT/'data'
+    data.mkdir(exist_ok=True)
+    database_url='jdbc:h2:'+(data/database_name).as_posix()
+    command(['java','--enable-native-access=javafx.graphics',
+             '-Dcse360.db.url='+database_url,
+             '--module-path',os.pathsep.join([str(LIB),str(CLASSES)]),
+             '-m','FoundationsF26/applicationMain.FoundationsMain'])
+
+def demo():
+    """Seed only on first use, so restarting never resurrects deleted demo records."""
+    if not (ROOT/'data'/'TP2Demo.mv.db').exists():
+        command(java('testingAutomation.LessonDemoData'))
+    else:
+        print('Reopening existing isolated TP2Demo data without reseeding.', flush=True)
+    launch('TP2Demo')
+
 def test(suites):
     compile_tests(); REPORTS.mkdir(parents=True,exist_ok=True)
     for suite in suites:
@@ -57,16 +76,16 @@ def test(suites):
         if result.returncode: raise SystemExit(f'Failed: {suite} (exit {result.returncode})')
         # Inherited testbeds originally printed failures but still returned zero.
         import re
-        if re.search(r'(?:Number of tests failed:|Failed:)\s*[1-9]|\| FAIL|\*\*\*Failure',result.stdout):
+        if re.search(r'(?:Number of tests failed:|Tests failed:|Checks failed:|Failed:)\s*[1-9]|\| FAIL|\*\*\*Failure',result.stdout,re.IGNORECASE):
             raise SystemExit('Failed assertions in '+suite)
     print(f'All {len(suites)} suites passed.',flush=True)
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action',choices=['build','test','run'])
+    parser.add_argument('action',choices=['build','test','run','demo'])
     parser.add_argument('suites',nargs='*')
     args=parser.parse_args()
     build()
     if args.action=='test': test(args.suites or SUITES)
-    elif args.action=='run':
-        command(['java','--enable-native-access=javafx.graphics','--module-path',os.pathsep.join([str(LIB),str(CLASSES)]),'-m','FoundationsF26/applicationMain.FoundationsMain'])
+    elif args.action=='run': launch()
+    elif args.action=='demo': demo()

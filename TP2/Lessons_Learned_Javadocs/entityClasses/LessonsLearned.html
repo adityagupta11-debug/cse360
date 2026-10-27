@@ -67,6 +67,7 @@ initTheme();
 <ol class="toc-list">
 <li><a href="#CATEGORIES" tabindex="0">CATEGORIES</a></li>
 <li><a href="#LOCKABLE_FIELDS" tabindex="0">LOCKABLE_FIELDS</a></li>
+<li><a href="#ownerUserId" tabindex="0">ownerUserId</a></li>
 <li><a href="#lessonId" tabindex="0">lessonId</a></li>
 <li><a href="#owner" tabindex="0">owner</a></li>
 <li><a href="#title" tabindex="0">title</a></li>
@@ -92,6 +93,8 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#getOwnerUserId()" tabindex="0">getOwnerUserId()</a></li>
+<li><a href="#setOwnerUserId(int)" tabindex="0">setOwnerUserId(int)</a></li>
 <li><a href="#getCreatedAt()" tabindex="0">getCreatedAt()</a></li>
 <li><a href="#getUpdatedAt()" tabindex="0">getUpdatedAt()</a></li>
 <li><a href="#setCreatedAt(java.time.LocalDateTime)" tabindex="0">setCreatedAt(LocalDateTime)</a></li>
@@ -152,6 +155,28 @@ initTheme();
  whether the whole lesson or individual fields are locked, and whether a curator has edited
  the lesson. </p>
 
+<p>Attribute sources and rationale:</p>
+<table border="1"><caption>Persistent Contributor attributes</caption>
+<tr><th>Attributes</th><th>Source and rationale</th></tr>
+<tr><td>lessonId</td><td>Contributor stories 1/2: stable identity for managing a selected lesson.</td></tr>
+<tr><td>ownerUserId, owner</td><td>Stories 1/4: immutable account ID authorizes reads/writes;
+owner is the current display name. Renaming or reusing a name never transfers ownership.</td></tr>
+<tr><td>title, category, situation, lessonText</td><td>Story 1 core information, concretized by
+the team's HW2 fields: identify, organize, describe context, and explain the reusable lesson.</td></tr>
+<tr><td>CATEGORIES</td><td>HW2 design policy: one vocabulary shared by GUI and validation.</td></tr>
+<tr><td>LOCKABLE_FIELDS</td><td>Story 2 and TP3 curator locking epic: canonical names for per-field locks.</td></tr>
+<tr><td>lessonLocked</td><td>Story 2: a whole-lesson lock prevents Contributor edits and deletion.</td></tr>
+<tr><td>titleLocked, categoryLocked, situationLocked, lessonTextLocked</td><td>Story 2:
+protect selected fields while allowing other edits; any lock prevents lesson deletion.</td></tr>
+<tr><td>curatorEdited</td><td>Story 4: retain original authorship and identify curator-edited content.</td></tr>
+<tr><td>createdAt, updatedAt</td><td>Team persistence/audit design and future curator work:
+database-controlled creation and last-change times. Legacy rows use migration time.</td></tr>
+</table>
+<p>Experience attempts and member effort are linked through LessonExperience. Private curator
+notes, search terms and aggregate-summary capacity are stored separately so Contributor
+projections cannot disclose them. These accommodate published TP3 directions; team-specific
+epic allocations still require confirmation.</p>
+
 <p> Copyright: Joshua Luther © 2026 </p></div>
 </div>
 </section>
@@ -203,21 +228,24 @@ initTheme();
 <div class="col-first even-row-color"><code>private <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
 <div class="col-second even-row-color"><code><a href="#owner" class="member-name-link">owner</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>private <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#situation" class="member-name-link">situation</a></code></div>
+<div class="col-first odd-row-color"><code>private int</code></div>
+<div class="col-second odd-row-color"><code><a href="#ownerUserId" class="member-name-link">ownerUserId</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>private boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#situationLocked" class="member-name-link">situationLocked</a></code></div>
+<div class="col-first even-row-color"><code>private <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#situation" class="member-name-link">situation</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>private <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#title" class="member-name-link">title</a></code></div>
+<div class="col-first odd-row-color"><code>private boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#situationLocked" class="member-name-link">situationLocked</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>private boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#titleLocked" class="member-name-link">titleLocked</a></code></div>
+<div class="col-first even-row-color"><code>private <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#title" class="member-name-link">title</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>private <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/time/LocalDateTime.html" title="class in java.time" class="external-link">LocalDateTime</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#updatedAt" class="member-name-link">updatedAt</a></code></div>
+<div class="col-first odd-row-color"><code>private boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#titleLocked" class="member-name-link">titleLocked</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>private <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/time/LocalDateTime.html" title="class in java.time" class="external-link">LocalDateTime</a></code></div>
+<div class="col-second even-row-color"><code><a href="#updatedAt" class="member-name-link">updatedAt</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -303,106 +331,116 @@ initTheme();
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: String getOwner()</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSituation()" class="member-name-link">getSituation</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getOwnerUserId()" class="member-name-link">getOwnerUserId</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block"> Method: String getSituation()</div>
+<div class="block">VG02: immutable owning account identity; used by storage even when its name changes.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTitle()" class="member-name-link">getTitle</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSituation()" class="member-name-link">getSituation</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block"> Method: String getSituation()</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTitle()" class="member-name-link">getTitle</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: String getTitle()</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/time/LocalDateTime.html" title="class in java.time" class="external-link">LocalDateTime</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUpdatedAt()" class="member-name-link">getUpdatedAt</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/time/LocalDateTime.html" title="class in java.time" class="external-link">LocalDateTime</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUpdatedAt()" class="member-name-link">getUpdatedAt</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">VG08: latest persisted core/lock/experience change; supports future curator auditing.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hasAnyLock()" class="member-name-link">hasAnyLock</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hasAnyLock()" class="member-name-link">hasAnyLock</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean hasAnyLock()</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isCategoryLocked()" class="member-name-link">isCategoryLocked</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isCategoryLocked()" class="member-name-link">isCategoryLocked</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean isCategoryLocked()</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isCuratorEdited()" class="member-name-link">isCuratorEdited</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isCuratorEdited()" class="member-name-link">isCuratorEdited</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean isCuratorEdited()</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isFieldLocked(java.lang.String)" class="member-name-link">isFieldLocked</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;fieldName)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isFieldLocked(java.lang.String)" class="member-name-link">isFieldLocked</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;fieldName)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean isFieldLocked(String fieldName)</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isLessonLocked()" class="member-name-link">isLessonLocked</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isLessonLocked()" class="member-name-link">isLessonLocked</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean isLessonLocked()</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isLessonTextLocked()" class="member-name-link">isLessonTextLocked</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isLessonTextLocked()" class="member-name-link">isLessonTextLocked</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean isLessonTextLocked()</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isSituationLocked()" class="member-name-link">isSituationLocked</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isSituationLocked()" class="member-name-link">isSituationLocked</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean isSituationLocked()</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isTitleLocked()" class="member-name-link">isTitleLocked</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isTitleLocked()" class="member-name-link">isTitleLocked</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: boolean isTitleLocked()</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#read(database.Database,int)" class="member-name-link">read</a><wbr>(<a href="../database/Database.html" title="class in database">Database</a>&nbsp;database,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#read(database.Database,int)" class="member-name-link">read</a><wbr>(<a href="../database/Database.html" title="class in database">Database</a>&nbsp;database,
  int&nbsp;id)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">VG02: read an authorized Contributor projection, without curator-private data.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCategory(java.lang.String)" class="member-name-link">setCategory</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;category)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCategory(java.lang.String)" class="member-name-link">setCategory</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;category)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: void setCategory(String category)</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCategoryLocked(boolean)" class="member-name-link">setCategoryLocked</a><wbr>(boolean&nbsp;categoryLocked)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCategoryLocked(boolean)" class="member-name-link">setCategoryLocked</a><wbr>(boolean&nbsp;categoryLocked)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: void setCategoryLocked(boolean categoryLocked)</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCreatedAt(java.time.LocalDateTime)" class="member-name-link">setCreatedAt</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/time/LocalDateTime.html" title="class in java.time" class="external-link">LocalDateTime</a>&nbsp;value)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCreatedAt(java.time.LocalDateTime)" class="member-name-link">setCreatedAt</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/time/LocalDateTime.html" title="class in java.time" class="external-link">LocalDateTime</a>&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Persistence mapping only; save operations ignore caller-supplied timestamps.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCuratorEdited(boolean)" class="member-name-link">setCuratorEdited</a><wbr>(boolean&nbsp;curatorEdited)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCuratorEdited(boolean)" class="member-name-link">setCuratorEdited</a><wbr>(boolean&nbsp;curatorEdited)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: void setCuratorEdited(boolean curatorEdited)</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonId(int)" class="member-name-link">setLessonId</a><wbr>(int&nbsp;lessonId)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonId(int)" class="member-name-link">setLessonId</a><wbr>(int&nbsp;lessonId)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: void setLessonId(int lessonId)</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonLocked(boolean)" class="member-name-link">setLessonLocked</a><wbr>(boolean&nbsp;lessonLocked)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonLocked(boolean)" class="member-name-link">setLessonLocked</a><wbr>(boolean&nbsp;lessonLocked)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: void setLessonLocked(boolean lessonLocked)</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonText(java.lang.String)" class="member-name-link">setLessonText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;lessonText)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonText(java.lang.String)" class="member-name-link">setLessonText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;lessonText)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: void setLessonText(String lessonText)</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonTextLocked(boolean)" class="member-name-link">setLessonTextLocked</a><wbr>(boolean&nbsp;lessonTextLocked)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLessonTextLocked(boolean)" class="member-name-link">setLessonTextLocked</a><wbr>(boolean&nbsp;lessonTextLocked)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block"> Method: void setLessonTextLocked(boolean lessonTextLocked)</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setOwnerUserId(int)" class="member-name-link">setOwnerUserId</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Persistence mapping; a caller-supplied ID is never accepted as authorization.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setSituation(java.lang.String)" class="member-name-link">setSituation</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;situation)</code></div>
@@ -462,9 +500,9 @@ initTheme();
 <h3>CATEGORIES</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>[]</span>&nbsp;<span class="element-name">CATEGORIES</span></div>
-<div class="block">The categories a lesson may be assigned to.  The GUI uses this list to populate its
-  category selector and the recognizer uses it to reject any other value, so both always
-  agree on the allowed categories.</div>
+<div class="block">The categories a lesson may be assigned to. The GUI uses this list to populate its category
+selector and the recognizer uses it to reject any other value, so both always agree on the
+allowed categories.</div>
 </div>
 </section>
 </li>
@@ -473,9 +511,17 @@ initTheme();
 <h3>LOCKABLE_FIELDS</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>[]</span>&nbsp;<span class="element-name">LOCKABLE_FIELDS</span></div>
-<div class="block">The names of the fields a curator can lock individually.  These are the same names the
-  LessonRecognizer reports in lessonRecognizerErrorField, so the GUI can use one name to
-  find both a field's validation error and its lock state.</div>
+<div class="block">The names of the fields a curator can lock individually. These are the same names the
+LessonRecognizer reports in lessonRecognizerErrorField, so the GUI can use one name to find
+both a field's validation error and its lock state.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="ownerUserId">
+<h3>ownerUserId</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">private</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">ownerUserId</span></div>
 </div>
 </section>
 </li>
@@ -674,6 +720,24 @@ one used for new lessons. </p></div>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="getOwnerUserId()">
+<h3>getOwnerUserId</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getOwnerUserId</span>()</div>
+<div class="block">VG02: immutable owning account identity; used by storage even when its name changes.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="setOwnerUserId(int)">
+<h3>setOwnerUserId</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setOwnerUserId</span><wbr><span class="parameters">(int&nbsp;value)</span></div>
+<div class="block">Persistence mapping; a caller-supplied ID is never accepted as authorization.</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="getCreatedAt()">
 <h3>getCreatedAt</h3>

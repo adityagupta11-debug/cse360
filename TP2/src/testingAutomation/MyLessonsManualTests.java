@@ -63,8 +63,9 @@ public class MyLessonsManualTests {
 	public static void main(String[] args) {
 		System.out.println("______________________________________________________________________");
 		System.out.println("\nMy Lessons, Add Lesson, and Lesson Detail Manual Tests");
-		System.out.println("Run LessonDemoData first (with the application closed), then start the");
-		System.out.println("application and follow each test.  Answer y or n after each one.");
+		System.out.println("From TP2 run python3 dev.py demo to open isolated data/TP2Demo.");
+		System.out.println("Demo accounts: jsmith / akim / newcontributor; password DemoPass1!.");
+        System.out.println("Keep normal application data separate. Answer y or n after each check.");
 
 		testOwnLessonsWithTags();					// GUI-1
 		testOtherContributorsHidden();
@@ -270,7 +271,7 @@ public class MyLessonsManualTests {
 				"Logged in as jsmith.",
 				new String[] {"Add a lesson titled Persistence check lesson.",
 						"Open it and change the title to Persistence check after edit; save.",
-						"Click Quit. Start the application again and log in as jsmith.",
+						"Click Quit. Run python3 dev.py demo again (without reseeding), then log in as jsmith.",
 						"Click My lessons."},
 				"\"Persistence check after edit\" is listed, with the edited title.");
 	}
@@ -284,7 +285,7 @@ public class MyLessonsManualTests {
 		performManualTest("MT-13", "GUI-6", "negative",
 				"Logged in as jsmith.",
 				new String[] {"Open \"Persistence check after edit\", delete it, and answer Yes.",
-						"Click Quit. Start the application again and log in as jsmith.",
+						"Click Quit. Run python3 dev.py demo again (without reseeding), then log in as jsmith.",
 						"Click My lessons."},
 				"\"Persistence check after edit\" is not listed.");
 	}

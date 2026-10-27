@@ -123,6 +123,7 @@ public class LessonListTestingAutomation {
 		System.out.println("______________________________________________________________________");
 		System.out.println("\nTests passed: " + testsPassed + "    Tests failed: " + testsFailed);
 		System.out.println("Checks passed: " + checksPassed + "   Checks failed: " + checksFailed);
+        if (testsFailed>0 || checksFailed>0) throw new AssertionError("List regression failures: "+checksFailed);
 	}
 
 	

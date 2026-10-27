@@ -12,8 +12,50 @@ CP=os.pathsep.join([str(dev.TESTS),str(dev.CLASSES),str(dev.LIB/'h2.jar')])
 GROUPS={
  'Lessons_Learned_Javadocs': ['src/entityClasses/LessonsLearned.java','src/entityClasses/LessonsLearnedList.java','src/entityClasses/LessonExperience.java','src/database/Database.java','src/database/LessonStore.java','src/experienceRecognizer/ExperienceRecognizer.java'],
  'Contributor_Javadocs': [str(p.relative_to(ROOT)) for folder in ['guiContributor','guiMyLessons','guiAddLesson','guiLessonDetail','guiLessonSupport','guiLessonCreate','guiLessonDetails','guiLessonEdit','guiLessonDelete','guiExperienceAdd'] for p in (ROOT/'src'/folder).glob('*.java')],
- 'ContributorTests_Javadocs': [str(p.relative_to(ROOT)) for folder in ['kanishTests','backendTests'] for p in (ROOT/'tests'/folder).glob('*.java')]+['src/testingAutomation/LessonTestingAutomation.java','src/testingAutomation/LessonListTestingAutomation.java','src/testingAutomation/LessonTestFixtures.java'],
+ 'ContributorTests_Javadocs': [str(p.relative_to(ROOT)) for folder in ['kanishTests','backendTests'] for p in (ROOT/'tests'/folder).glob('*.java')]+['src/testingAutomation/LessonTestingAutomation.java','src/testingAutomation/LessonListTestingAutomation.java','src/testingAutomation/LessonTestFixtures.java','src/testingAutomation/MyLessonsManualTests.java'],
 }
+
+
+def refresh_contributor_matrix():
+ """Keep Kanish's contribution matrix aligned with the real integrated backend and captures."""
+ target=ROOT/'ContributorTests_Javadocs/Requirements_Test_Evidence.csv'
+ if not target.exists():
+  raise SystemExit('Missing inherited Contributor requirement matrix: '+str(target))
+ with target.open(encoding='utf-8-sig',newline='') as source:
+  reader=csv.DictReader(source)
+  columns=reader.fieldnames
+  rows=list(reader)
+ scopes={
+  'KG01':'Real database and actual GUI create/edit/delete verified; see current execution reports.',
+  'KG02':'Real session, ownership, cache isolation, logout and revoked-role checks verified.',
+  'KG03':'Real stored full/per-field locks and GUI read-only/delete gating verified; model fixtures separately labeled.',
+  'KG04':'Actual Add Experience save and file-backed persistence verified; model fixtures separately labeled.',
+  'KG05':'Shared recognizer, storage validation and live retained-draft GUI checks verified.',
+  'KG06':'Actual Home, dedicated list/search, Back and Logout navigation verified; manual keyboard/resize checklist remains separate.',
+  'KG07':'Real confirmed/cancelled deletion and backend lock rejection verified, including waiting concurrent deletes.',
+  'KG08':'Actual H2 reopen, schema migration and forced SQL-error rollback verified; GUI error fixtures separately labeled.',
+ }
+ captures=sorted((ROOT/'ContributorTests_Javadocs/source-screenshots').glob('*.png'))
+ for row in rows:
+  identifier=row['Local ID']
+  row['Observed scope']=scopes.get(identifier,row['Observed scope'])
+  documents=[item.strip() for item in row['Other test Javadocs'].split(';') if item.strip()]
+  if 'backendTests/BackendTests.html' not in documents:
+   documents.append('backendTests/BackendTests.html')
+  if identifier in ('KG01','KG02') and 'backendTests/ListSnapshotTests.html' not in documents:
+   documents.append('backendTests/ListSnapshotTests.html')
+  row['Other test Javadocs']='; '.join(documents)
+  if identifier in ('KG03','KG04') and 'testRealStorageLocks' not in row['Named model tests']:
+   row['Named model tests']+='; CurrentRepoWindowTests.testRealStorageLocks; CurrentRepoWindowTests.testLiveCrud'
+  # Link exact generated filenames rather than keeping historical pre-merge page counts.
+  row['Actual source screenshots']='; '.join('source-screenshots/'+image.name for image in captures
+   if any(part in image.name for part in ('kanishTests_ModelTests_', 'kanishTests_CurrentRepoIntegrationTests_',
+       'kanishTests_CurrentRepoWindowTests_', 'kanishTests_TestGateway_', 'tests_BackendTests_', 'tests_ListSnapshotTests_')))
+ with target.open('w',newline='',encoding='utf-8') as output:
+  writer=csv.DictWriter(output,fieldnames=columns,lineterminator='\n')
+  writer.writeheader()
+  writer.writerows(rows)
+
 
 def generate():
  dev.build();dev.compile_tests()
@@ -51,6 +93,7 @@ def generate():
    # Preserve HTML's whitespace between adjacent inline text across line breaks.
    content=re.sub(r'[ \t]+\n', '\n ',content)
    page.write_text(content)
+ refresh_contributor_matrix()
  print('Evidence indexes and actual test reports updated.',flush=True)
 
 if __name__=='__main__':generate()

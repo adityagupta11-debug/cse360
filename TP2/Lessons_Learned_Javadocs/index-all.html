@@ -503,6 +503,10 @@ initTheme();
 <dd>
 <div class="block"> Method: String getOwner()</div>
 </dd>
+<dt><a href="entityClasses/LessonsLearned.html#getOwnerUserId()" class="member-name-link">getOwnerUserId()</a> - Method in class entityClasses.<a href="entityClasses/LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></dt>
+<dd>
+<div class="block">VG02: immutable owning account identity; used by storage even when its name changes.</div>
+</dd>
 <dt><a href="database/Database.html#getPreferredFirstName(java.lang.String)" class="member-name-link">getPreferredFirstName(String)</a> - Method in class database.<a href="database/Database.html" title="class in database">Database</a></dt>
 <dd>
 <div class="block"> Method: String getPreferredFirstName(String username)</div>
@@ -541,6 +545,10 @@ initTheme();
 <dt><a href="entityClasses/LessonsLearned.html#hasAnyLock()" class="member-name-link">hasAnyLock()</a> - Method in class entityClasses.<a href="entityClasses/LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></dt>
 <dd>
 <div class="block"> Method: boolean hasAnyLock()</div>
+</dd>
+<dt><a href="database/Database.html#hasColumn(java.lang.String,java.lang.String)" class="member-name-link">hasColumn(String, String)</a> - Method in class database.<a href="database/Database.html" title="class in database">Database</a></dt>
+<dd>
+<div class="block">Check schema metadata before one-time ownership backfill; do not reclaim orphan rows.</div>
 </dd>
 <dt><a href="database/Database.DeletionCandidate.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class database.<a href="database/Database.DeletionCandidate.html" title="class in database">Database.DeletionCandidate</a></dt>
 <dd>
@@ -802,6 +810,8 @@ initTheme();
 <dd>
 <div class="block">Returns the value of the <a href="./entityClasses/LessonExperience.html#param-owner"><code>owner</code></a> record component.</div>
 </dd>
+<dt><a href="entityClasses/LessonsLearned.html#ownerUserId" class="member-name-link">ownerUserId</a> - Variable in class entityClasses.<a href="entityClasses/LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:P">P</h2>
 <dl class="index">
@@ -814,7 +824,7 @@ initTheme();
 </dl>
 <h2 class="title" id="I:Q">Q</h2>
 <dl class="index">
-<dt><a href="database/LessonStore.html#queryList(java.lang.String,java.lang.String)" class="member-name-link">queryList(String, String)</a> - Method in class database.<a href="database/LessonStore.html" title="class in database">LessonStore</a></dt>
+<dt><a href="database/LessonStore.html#queryList(java.lang.String,java.lang.Integer)" class="member-name-link">queryList(String, Integer)</a> - Method in class database.<a href="database/LessonStore.html" title="class in database">LessonStore</a></dt>
 <dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:R">R</h2>
@@ -928,6 +938,10 @@ initTheme();
 <dd>
 <div class="block"> Method: boolean setOneTimePassword(String username, String oneTimePassword,
                 LocalDateTime deadline)</div>
+</dd>
+<dt><a href="entityClasses/LessonsLearned.html#setOwnerUserId(int)" class="member-name-link">setOwnerUserId(int)</a> - Method in class entityClasses.<a href="entityClasses/LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></dt>
+<dd>
+<div class="block">Persistence mapping; a caller-supplied ID is never accepted as authorization.</div>
 </dd>
 <dt><a href="entityClasses/LessonsLearned.html#setSituation(java.lang.String)" class="member-name-link">setSituation(String)</a> - Method in class entityClasses.<a href="entityClasses/LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></dt>
 <dd>

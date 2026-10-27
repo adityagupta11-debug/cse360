@@ -166,8 +166,12 @@ public class LessonsLearnedList {
 	public LessonResult addLesson(Database database, LessonsLearned lesson) {
 		if (database == null) return LessonResult.DATABASE_ERROR;
 		LessonResult result = database.addLesson(lesson);
-		// Changing the list only after the database succeeds keeps the two from disagreeing
-		if (result == LessonResult.SUCCESS) add(lesson);
+		// Storage normalizes core text and ignores caller-supplied lock/curator metadata.
+		// Keep the authoritative stored projection, never the still-mutable request object.
+		if (result == LessonResult.SUCCESS) {
+			LessonsLearned stored = database.getLesson(lesson.getLessonId());
+			if (stored != null) add(stored);
+		}
 		return result;
 	}
 

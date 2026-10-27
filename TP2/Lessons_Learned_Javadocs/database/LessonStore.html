@@ -83,7 +83,7 @@ initTheme();
 <li><a href="#read(int)" tabindex="0">read(int)</a></li>
 <li><a href="#byOwner(java.lang.String)" tabindex="0">byOwner(String)</a></li>
 <li><a href="#all()" tabindex="0">all()</a></li>
-<li><a href="#queryList(java.lang.String,java.lang.String)" tabindex="0">queryList(String, String)</a></li>
+<li><a href="#queryList(java.lang.String,java.lang.Integer)" tabindex="0">queryList(String, Integer)</a></li>
 <li><a href="#update(entityClasses.LessonsLearned,java.lang.String)" tabindex="0">update(LessonsLearned, String)</a></li>
 <li><a href="#delete(int,java.lang.String,boolean)" tabindex="0">delete(int, String, boolean)</a></li>
 <li><a href="#refused(int,java.lang.String)" tabindex="0">refused(int, String)</a></li>
@@ -124,7 +124,9 @@ Database synchronizes these calls on its one connection. Prepared conditional wr
 current locks in the same SQL statement as the write. Experience changes lock the parent
 row and commit the parent/experience/member rows together, or roll back all of them.</p>
 <p>Attributes: connection is the existing Foundations connection (no second database);
-session supplies the stable authenticated user ID, independent of mutable account caches.</p></div>
+session supplies the stable authenticated user ID, independent of mutable account caches.
+ownerUserId binds records to that immutable ID; usernames are display labels only, so renames
+and deleted/reused names never transfer a previous account's lessons.</p></div>
 </div>
 </section>
 <section class="summary">
@@ -248,8 +250,8 @@ session supplies the stable authenticated user ID, independent of mutable accoun
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#privileged()" class="member-name-link">privileged</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>private <a href="../entityClasses/LessonsLearnedList.html" title="class in entityClasses">LessonsLearnedList</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#queryList(java.lang.String,java.lang.String)" class="member-name-link">queryList</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;sql,
- <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;owner)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#queryList(java.lang.String,java.lang.Integer)" class="member-name-link">queryList</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;sql,
+ <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/Integer.html" title="class in java.lang" class="external-link">Integer</a>&nbsp;owner)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>(package private) <a href="../entityClasses/LessonsLearned.html" title="class in entityClasses">LessonsLearned</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#read(int)" class="member-name-link">read</a><wbr>(int&nbsp;id)</code></div>
@@ -419,11 +421,11 @@ session supplies the stable authenticated user ID, independent of mutable accoun
 </section>
 </li>
 <li>
-<section class="detail" id="queryList(java.lang.String,java.lang.String)">
+<section class="detail" id="queryList(java.lang.String,java.lang.Integer)">
 <h3>queryList</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">private</span>&nbsp;<span class="return-type"><a href="../entityClasses/LessonsLearnedList.html" title="class in entityClasses">LessonsLearnedList</a></span>&nbsp;<span class="element-name">queryList</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;sql,
- <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;owner)</span>
+ <a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/lang/Integer.html" title="class in java.lang" class="external-link">Integer</a>&nbsp;owner)</span>
                               throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/26/docs/api/java.sql/java/sql/SQLException.html" title="class in java.sql" class="external-link">SQLException</a></span></div>
 <dl class="notes">
 <dt>Throws:</dt>

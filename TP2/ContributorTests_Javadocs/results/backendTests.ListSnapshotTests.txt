@@ -1,0 +1,14 @@
+VG01_ListAddSucceeds | PASS
+VG01_ListAddUsesSeparateStoredObject | PASS
+VG01_ListAddCanonicalCoreFields | PASS
+VG01_ListAddRejectsFakeLockMetadata | PASS
+VG01_ListAddIncludesStoredIdentityAndTimestamps | PASS
+VG01_ListDoesNotRetainMutableCallerAlias | PASS
+VG03_ListUpdateSucceeds | PASS
+VG03_ListUpdateCanonicalDataAndFlags | PASS
+VG03_FixtureStoresRealFieldLock | PASS
+VG03_FixtureStoresRealCuratorFlag | PASS
+VG03_ListUpdateAllowsOtherUnlockedField | PASS
+VG03_ListUpdateRefreshesRealStoredMetadata | PASS
+VG03_RefusedListUpdatePreservesSnapshot | PASS
+RESULT: 13 passed; 0 failed. Real authenticated persistent list snapshots.

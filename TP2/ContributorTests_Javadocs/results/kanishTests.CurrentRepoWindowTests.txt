@@ -1,5 +1,6 @@
 KG02_UI_HomeOnlyOwnLessons | PASS
 KG06_UI_RealHomeRoutes | PASS
+VG10_UI_BrowseDoesNotCoverLessonRows | PASS
 WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
 WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/Users/wishhh/Desktop/HW2CSE360/TP%20PHASE%202/cse360/TP2/lib/javafx-graphics.jar)
 WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
@@ -32,4 +33,4 @@ KG03_FIXTURE_FullLockActionsDisabled | PASS
 Contributor window request failed: IllegalArgumentException
 KG04_FIXTURE_EmptyRowsRejected | PASS
 KG04_FIXTURE_SaveDelegates | PASS
-RESULT: 27 passed; 0 failed. Real persistent app navigation plus explicitly marked model fixtures.
+RESULT: 28 passed; 0 failed. Real persistent app navigation plus explicitly marked model fixtures.

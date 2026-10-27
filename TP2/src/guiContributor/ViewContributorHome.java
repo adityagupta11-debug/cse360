@@ -76,7 +76,7 @@ public class ViewContributorHome {
     protected static ComboBox<String> comboBox_Category = new ComboBox<String>();
     protected static Label label_Situation = new Label("Situation (what happened)");
     protected static TextArea text_Situation = new TextArea();
-    protected static Label label_LessonText = new Label("LessonsLearned (what was learned)");
+    protected static Label label_LessonText = new Label("Lesson (what was learned)");
     protected static TextArea text_LessonText = new TextArea();
 
     protected static Label label_Message = new Label();
@@ -204,7 +204,8 @@ public class ViewContributorHome {
         // its toString() method, which returns the title.  The placeholder is shown whenever the
         // list is empty, using the same message the automated tests check (TC-11).
         setupLabelUI(label_MyLessons, "Arial", 16, 260, Pos.BASELINE_LEFT, 20, 100);
-        setupInputUI(listView_MyLessons, 260, 390, 20, 125);
+        // Leave space below the list for the Browse button; no rows are covered.
+        setupInputUI(listView_MyLessons, 260, 340, 20, 125);
         listView_MyLessons.setPlaceholder(new Label(LessonsLearnedList.EMPTY_LIST_MESSAGE));
         listView_MyLessons.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldLesson, newLesson) -> {ControllerContributorHome.performSelectLesson(); });

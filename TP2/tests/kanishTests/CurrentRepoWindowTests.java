@@ -80,6 +80,9 @@ public final class CurrentRepoWindowTests {
         list().getItems().size() == 1
             && list().getItems().getFirst().getOwner().equals("kanishDemo"));
     check("KG06_UI_RealHomeRoutes", button("home-new") != null && button("home-view").isDisabled());
+    check(
+        "VG10_UI_BrowseDoesNotCoverLessonRows",
+        !list().getBoundsInParent().intersects(button("home-browse").getBoundsInParent()));
     snapshot("KG06_Real_Contributor_Home.png");
     button("home-new").fire();
     fill("");

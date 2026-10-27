@@ -18,7 +18,9 @@ import lessonRecognizer.LessonRecognizer;
  * current locks in the same SQL statement as the write. Experience changes lock the parent
  * row and commit the parent/experience/member rows together, or roll back all of them.</p>
  * <p>Attributes: connection is the existing Foundations connection (no second database);
- * session supplies the stable authenticated user ID, independent of mutable account caches.</p>
+ * session supplies the stable authenticated user ID, independent of mutable account caches.
+ * ownerUserId binds records to that immutable ID; usernames are display labels only, so renames
+ * and deleted/reused names never transfer a previous account's lessons.</p>
  * @author Vishwam
  */
 final class LessonStore {
@@ -65,16 +67,19 @@ final class LessonStore {
     // VG01: never persist client-supplied locks, curator flags, timestamps or ownership.
     try (PreparedStatement p =
         connection.prepareStatement(
-            "INSERT INTO lessonDB(owner,title,category,situation,lessonText) VALUES(?,?,?,?,?)",
+            "INSERT INTO lessonDB(owner,ownerUserId,title,category,situation,lessonText)"
+                + " VALUES(?,?,?,?,?,?)",
             Statement.RETURN_GENERATED_KEYS)) {
       p.setString(1, actor);
-      bindCore(p, lesson, 2);
+      p.setInt(2, session.get());
+      bindCore(p, lesson, 3);
       p.executeUpdate();
       try (ResultSet keys = p.getGeneratedKeys()) {
         if (keys.next()) lesson.setLessonId(keys.getInt(1));
       }
     }
     LessonsLearned saved = read(lesson.getLessonId());
+    lesson.setOwnerUserId(saved.getOwnerUserId());
     lesson.setCreatedAt(saved.getCreatedAt());
     lesson.setUpdatedAt(saved.getUpdatedAt());
     return LessonResult.SUCCESS;
@@ -84,9 +89,9 @@ final class LessonStore {
     String actor = actor();
     if (actor == null) return null;
     try (PreparedStatement p =
-        connection.prepareStatement("SELECT * FROM lessonDB WHERE id=? AND owner=?")) {
+        connection.prepareStatement("SELECT * FROM lessonDB WHERE id=? AND ownerUserId=?")) {
       p.setInt(1, id);
-      p.setString(2, actor);
+      p.setInt(2, session.get());
       try (ResultSet r = p.executeQuery()) {
         return r.next() ? row(r) : null;
       }
@@ -96,7 +101,7 @@ final class LessonStore {
   LessonsLearnedList byOwner(String owner) throws SQLException {
     String actor = actor();
     if (actor == null || !actor.equals(owner)) return new LessonsLearnedList();
-    return queryList("SELECT * FROM lessonDB WHERE owner=? ORDER BY title,id", actor);
+    return queryList("SELECT * FROM lessonDB WHERE ownerUserId=? ORDER BY title,id", session.get());
   }
 
   LessonsLearnedList all() throws SQLException {
@@ -106,10 +111,10 @@ final class LessonStore {
     return actor == null ? new LessonsLearnedList() : byOwner(actor);
   }
 
-  private LessonsLearnedList queryList(String sql, String owner) throws SQLException {
+  private LessonsLearnedList queryList(String sql, Integer owner) throws SQLException {
     LessonsLearnedList list = new LessonsLearnedList();
     try (PreparedStatement p = connection.prepareStatement(sql)) {
-      if (owner != null) p.setString(1, owner);
+      if (owner != null) p.setInt(1, owner);
       try (ResultSet r = p.executeQuery()) {
         while (r.next()) list.add(row(r));
       }
@@ -126,13 +131,13 @@ final class LessonStore {
     String sql =
         "UPDATE lessonDB SET"
             + " title=?,category=?,situation=?,lessonText=?,updatedAt=CURRENT_TIMESTAMP WHERE id=?"
-            + " AND owner=? AND lessonLocked=FALSE AND (titleLocked=FALSE OR title=?) AND"
+            + " AND ownerUserId=? AND lessonLocked=FALSE AND (titleLocked=FALSE OR title=?) AND"
             + " (categoryLocked=FALSE OR category=?) AND (situationLocked=FALSE OR situation=?) AND"
             + " (lessonTextLocked=FALSE OR lessonText=?)";
     try (PreparedStatement p = connection.prepareStatement(sql)) {
       bindCore(p, lesson, 1);
       p.setInt(5, lesson.getLessonId());
-      p.setString(6, actor);
+      p.setInt(6, session.get());
       bindCore(p, lesson, 7);
       if (p.executeUpdate() == 1) return LessonResult.SUCCESS;
     }
@@ -147,11 +152,11 @@ final class LessonStore {
     // VG04: the current row's lock predicates and delete are one operation; FK cascade is atomic.
     try (PreparedStatement p =
         connection.prepareStatement(
-            "DELETE FROM lessonDB WHERE id=? AND owner=? AND lessonLocked=FALSE AND"
+            "DELETE FROM lessonDB WHERE id=? AND ownerUserId=? AND lessonLocked=FALSE AND"
                 + " titleLocked=FALSE AND categoryLocked=FALSE AND situationLocked=FALSE AND"
                 + " lessonTextLocked=FALSE")) {
       p.setInt(1, id);
-      p.setString(2, actor);
+      p.setInt(2, session.get());
       if (p.executeUpdate() == 1) return LessonResult.SUCCESS;
     }
     return refused(id, actor);
@@ -159,11 +164,13 @@ final class LessonStore {
 
   private LessonResult refused(int id, String actor) throws SQLException {
     try (PreparedStatement p =
-        connection.prepareStatement("SELECT owner FROM lessonDB WHERE id=?")) {
+        connection.prepareStatement("SELECT ownerUserId FROM lessonDB WHERE id=?")) {
       p.setInt(1, id);
       try (ResultSet r = p.executeQuery()) {
         if (!r.next()) return LessonResult.NOT_FOUND;
-        return actor.equals(r.getString(1)) ? LessonResult.LOCKED : LessonResult.NOT_OWNER;
+        return java.util.Objects.equals(session.get(), r.getObject(1, Integer.class))
+            ? LessonResult.LOCKED
+            : LessonResult.NOT_OWNER;
       }
     }
   }
@@ -197,6 +204,7 @@ final class LessonStore {
             r.getString("category"),
             r.getString("situation"),
             r.getString("lessonText"));
+    s.setOwnerUserId(r.getInt("ownerUserId"));
     s.setLessonLocked(r.getBoolean("lessonLocked"));
     s.setTitleLocked(r.getBoolean("titleLocked"));
     s.setCategoryLocked(r.getBoolean("categoryLocked"));
@@ -217,10 +225,10 @@ final class LessonStore {
   private void parent(int id, String actor, boolean writing) throws SQLException {
     try (PreparedStatement p =
         connection.prepareStatement(
-            "SELECT lessonLocked FROM lessonDB WHERE id=? AND owner=?"
+            "SELECT lessonLocked FROM lessonDB WHERE id=? AND ownerUserId=?"
                 + (writing ? " FOR UPDATE" : ""))) {
       p.setInt(1, id);
-      p.setString(2, actor);
+      p.setInt(2, session.get());
       try (ResultSet r = p.executeQuery()) {
         if (!r.next())
           throw new IllegalArgumentException(
@@ -243,12 +251,14 @@ final class LessonStore {
           if (id == 0) {
             try (PreparedStatement p =
                 connection.prepareStatement(
-                    "INSERT INTO lessonExperienceDB(lessonId,owner,whatDone,howDone,durationHours)"
-                        + " VALUES(?,?,?,?,?)",
+                    "INSERT INTO"
+                        + " lessonExperienceDB(lessonId,owner,ownerUserId,whatDone,howDone,durationHours)"
+                        + " VALUES(?,?,?,?,?,?)",
                     Statement.RETURN_GENERATED_KEYS)) {
               p.setInt(1, lessonId);
               p.setString(2, actor);
-              bindExperience(p, input, 3);
+              p.setInt(3, session.get());
+              bindExperience(p, input, 4);
               p.executeUpdate();
               try (ResultSet keys = p.getGeneratedKeys()) {
                 keys.next();
@@ -260,11 +270,11 @@ final class LessonStore {
                 connection.prepareStatement(
                     "UPDATE lessonExperienceDB SET"
                         + " whatDone=?,howDone=?,durationHours=?,updatedAt=CURRENT_TIMESTAMP WHERE"
-                        + " id=? AND lessonId=? AND owner=?")) {
+                        + " id=? AND lessonId=? AND ownerUserId=?")) {
               bindExperience(p, input, 1);
               p.setLong(4, id);
               p.setInt(5, lessonId);
-              p.setString(6, actor);
+              p.setInt(6, session.get());
               if (p.executeUpdate() != 1)
                 throw new IllegalArgumentException(
                     "Experience is unavailable. Refresh the lesson.");
@@ -307,9 +317,9 @@ final class LessonStore {
     List<LessonExperience> list = new ArrayList<>();
     try (PreparedStatement p =
         connection.prepareStatement(
-            "SELECT * FROM lessonExperienceDB WHERE lessonId=? AND owner=? ORDER BY id")) {
+            "SELECT * FROM lessonExperienceDB WHERE lessonId=? AND ownerUserId=? ORDER BY id")) {
       p.setInt(1, lessonId);
-      p.setString(2, actor);
+      p.setInt(2, session.get());
       try (ResultSet r = p.executeQuery()) {
         while (r.next()) {
           List<LessonExperience.Effort> efforts = new ArrayList<>();
@@ -348,10 +358,10 @@ final class LessonStore {
           parent(lessonId, actor, true);
           try (PreparedStatement p =
               connection.prepareStatement(
-                  "DELETE FROM lessonExperienceDB WHERE id=? AND lessonId=? AND owner=?")) {
+                  "DELETE FROM lessonExperienceDB WHERE id=? AND lessonId=? AND ownerUserId=?")) {
             p.setLong(1, id);
             p.setInt(2, lessonId);
-            p.setString(3, actor);
+            p.setInt(3, session.get());
             boolean deleted = p.executeUpdate() == 1;
             if (deleted) touch(lessonId);
             return deleted;

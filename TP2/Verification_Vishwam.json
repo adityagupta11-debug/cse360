@@ -7,10 +7,10 @@
   },
   "runtime": "macOS ARM64, JDK 26.0.1, JavaFX 21.0.8, H2 2.3.232; --release 21",
   "suite_assertion_counts": {
-    "backendTests.BackendTests": 100,
+    "backendTests.BackendTests": 116,
     "kanishTests.ModelTests": 23,
     "kanishTests.CurrentRepoIntegrationTests": 14,
-    "kanishTests.CurrentRepoWindowTests": 27,
+    "kanishTests.CurrentRepoWindowTests": 28,
     "testingAutomation.LessonTestingAutomation": 79,
     "testingAutomation.LessonListTestingAutomation": 64,
     "database.DeletionTests": 35,
@@ -18,9 +18,10 @@
     "guiUserLogin.LoginInputTests": 7,
     "passwordPopUpWindow.DynamicPasswordViewTests": 6,
     "guiUserUpdate.FirstUserReloginTests": 4,
-    "testingAutomation.TP1RegressionSuite": 152
+    "testingAutomation.TP1RegressionSuite": 152,
+    "backendTests.ListSnapshotTests": 13
   },
-  "total_checks": 530,
+  "total_checks": 560,
   "assertion_failures": 0,
   "real_backend_gaps": [],
   "scope": "Implemented Member 1 backend and integration; not the complete team submission. Model fixtures remain explicitly labeled; real backend and GUI checks are separate.",
@@ -31,5 +32,18 @@
     "Confirm proposed AI field allocations and team report consolidation",
     "Team submission verification and individual peer evaluation"
   ],
-  "pushed": false
+  "pushed": false,
+  "audit_fixes": [
+    "Immutable owner account IDs preserve ownership across rename/deletion/username reuse",
+    "Canonical stored snapshots in persistent lists",
+    "Shared project-local normal-launch database",
+    "Home list/Browse overlap removed",
+    "Authenticated isolated demo, distinct from normal data",
+    "Complete legacy/manual test source evidence and current contribution matrix"
+  ],
+  "verification_limits": [
+    "macOS ARM64 runtime tested; no independent Windows/Eclipse execution",
+    "Human manual walkthrough and recordings not performed",
+    "Additional team-specific epic allocations remain unconfirmed"
+  ]
 }

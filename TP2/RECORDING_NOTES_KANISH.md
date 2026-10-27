@@ -1,3 +1,5 @@
+> **Historical pre-integration contribution notes.** The missing-backend statements and suggested progress below describe Kanish's earlier branch, not the integrated TP2 build. Use `MANUAL_GUI_CHECKS_INTEGRATED.md`, `README_VISHWAM_TP2.md`, current generated evidence, and actual test reports for current behavior. Real locks and experience persistence are now connected. Do not read the historical standup wording as a current progress report or a record of a meeting.
+
 # Current repository GUI recording notes
 
 Your work-split segment is about five minutes of the shared 5-10 minute PhaseTwoGUIScreencast.

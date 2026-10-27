@@ -99,7 +99,7 @@ public class ControllerContributorHome {
 
         // The selection is cleared whenever the list is reloaded or the form is cleared.  Nothing
         // needs to happen then, and the message label is left alone so a confirmation such as
-        // "LessonsLearned added." is not erased by the reload that follows it.
+        // "Lesson added." is not erased by the reload that follows it.
         if (selected == null) return;
 
         LessonsLearned current;
@@ -107,7 +107,7 @@ public class ControllerContributorHome {
             new guiLessonSupport.CurrentRepoGateway(theDatabase).read(selected.getLessonId());
             current=theDatabase.getLesson(selected.getLessonId());
         } catch(Exception unavailable) {
-            performClearForm();showError("LessonsLearned is unavailable. Refresh your own list.");return;
+            performClearForm();showError("Lesson is unavailable. Refresh your own list.");return;
         }
         if (current == null) {
             showError(LessonResult.NOT_FOUND.getMessage());
