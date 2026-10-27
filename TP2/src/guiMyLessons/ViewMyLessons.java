@@ -224,7 +224,10 @@ public class ViewMyLessons {
 	private ViewMyLessons() {
 
 		// Create the Pane for the list of widgets and the Scene for the window
-		theRootPane = new Pane();
+		text_Search.setId("my-lessons-search");
+        button_Search.setId("my-lessons-search-button");button_ClearSearch.setId("my-lessons-clear");
+        listView_Lessons.setId("my-lessons-list");button_OpenLesson.setId("my-lessons-open");
+        theRootPane = new Pane();
 		theRootPane.setStyle("-fx-background-color: " + COLOR_BACKGROUND + ";");
 		theViewMyLessonsScene = new Scene(theRootPane, width, height);	// Create the scene
 		

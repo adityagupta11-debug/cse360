@@ -1,12 +1,23 @@
 package guiContributor;
 
+import java.util.Optional;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.paint.Color;
+import database.Database;
+import database.Database.LessonResult;
+import entityClasses.LessonsLearned;
+import lessonRecognizer.LessonRecognizer;
+
 
 /*******
  * <p> Title: ControllerContributorHome Class. </p>
  *
  * <p> Description: The Java/FX-based Contributor Home Page.  This class provides the controller
- * actions basic on the user's use of the JavaFX GUI widgets defined by the View class: going to
- * the My Lessons and Add Lesson pages, updating the account, logging out, and quitting.
+ * actions basic on the user's use of the JavaFX GUI widgets defined by the View class, including
+ * the actions a contributor uses to create, read, update, and delete lessons learned.
  *
  * The class has been written assuming that the View or the Model are the only class methods that
  * can invoke these methods.  This is why each has been declared at "protected".  Do not change any
@@ -15,90 +26,260 @@ package guiContributor;
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  *
  * @author Lynn Robert Carter
- * @author Joshua Luther (J.L.) - lessons learned navigation
+ * @author Joshua Luther (J.L.) - lessons learned actions
  *
- * @version 1.00		2025-08-17 Initial version
- * @version 1.01		2025-09-16 Update Javadoc documentation *
- * @version 1.02		2026-10-08 Lesson create, read, update, and delete actions for HW2
- * 							(Joshua Luther)
- * @version 1.03		2026-10-22 Lesson actions moved to the My Lessons, Add Lesson, and Lesson
- * 							Detail pages for TP2; this page now navigates to them (Joshua Luther)
+ * @version 1.00        2025-08-17 Initial version
+ * @version 1.01        2025-09-16 Update Javadoc documentation *
+ * @version 1.02        2026-10-08 LessonsLearned create, read, update, and delete actions for HW2
+ *                          (Joshua Luther)
  */
 
 public class ControllerContributorHome {
 
-	/*-*******************************************************************************************
+    /*-*******************************************************************************************
 
-	User Interface Actions for this page
+    User Interface Actions for this page
 
-	This controller is not a class that gets instantiated.  Rather, it is a collection of protected
-	static methods that can be called by the View (which is a singleton instantiated object) and
-	the Model is often just a stub, or will be a singleton instantiated object.
+    This controller is not a class that gets instantiated.  Rather, it is a collection of protected
+    static methods that can be called by the View (which is a singleton instantiated object) and
+    the Model is often just a stub, or will be a singleton instantiated object.
 
-	 */
+     */
 
-	/**
-	 * Default constructor is not used.
-	 */
-	public ControllerContributorHome() {
-	}
+    // Reference for the in-memory database so this package has access (the same approach the View
+    // uses)
+    private static Database theDatabase = applicationMain.FoundationsMain.database;
 
-	/**********
-	 * <p> Method: performMyLessons() </p>
-	 *
-	 * <p> Description: This method directs the contributor to the My Lessons page, which lists
-	 * the lessons the contributor has added (Contributor stories 2 and 4). </p>
-	 *
-	 */
-	protected static void performMyLessons() {
-		guiMyLessons.ViewMyLessons.displayMyLessons(ViewContributorHome.theStage,
-				ViewContributorHome.theUser);
-	}
+    /**
+     * Default constructor is not used.
+     */
+    public ControllerContributorHome() {
+    }
 
-	/**********
-	 * <p> Method: performAddLesson() </p>
-	 *
-	 * <p> Description: This method directs the contributor to the Add Lesson page (Contributor
-	 * story 1). </p>
-	 *
-	 */
-	protected static void performAddLesson() {
-		guiAddLesson.ViewAddLesson.displayAddLesson(ViewContributorHome.theStage,
-				ViewContributorHome.theUser);
-	}
+    /**********
+     * <p> Method: performUpdate() </p>
+     *
+     * <p> Description: This method directs the user to the User Update Page so the user can change
+     * the user account attributes. </p>
+     *
+     */
+    protected static void performUpdate () {
+        guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewContributorHome.theStage, ViewContributorHome.theUser);
+    }
 
-	/**********
-	 * <p> Method: performUpdate() </p>
-	 *
-	 * <p> Description: This method directs the user to the User Update Page so the user can change
-	 * the user account attributes. </p>
-	 *
-	 */
-	protected static void performUpdate () {
-		guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewContributorHome.theStage, ViewContributorHome.theUser);
-	}
 
-	/**********
-	 * <p> Method: performLogout() </p>
-	 *
-	 * <p> Description: This method logs out the current user and proceeds to the normal login
-	 * page where existing users can log in or potential new users with a invitation code can
-	 * start the process of setting up an account. </p>
-	 *
-	 */
-	protected static void performLogout() {
-		guiUserLogin.ViewUserLogin.displayUserLogin(ViewContributorHome.theStage);
-	}
+    /**********
+     * <p> Method: refreshLessonList() </p>
+     *
+     * <p> Description: Reloads the list from the database with only the lessons owned by the
+     * logged-in contributor (US-R1).  Reading from the database each time, rather than editing the
+     * list in memory, guarantees the list always shows what is actually stored. </p>
+     *
+     */
+    protected static void refreshLessonList() {
+        try {
+            ViewContributorHome.listView_MyLessons.getItems().setAll(
+                new ModelContributorHome(theDatabase).ownLessons().getLessons());
+        } catch(Exception denied) {
+            ViewContributorHome.listView_MyLessons.getItems().clear();showError(denied.getMessage());
+        }
+    }
 
-	/**********
-	 * <p> Method: performQuit() </p>
-	 *
-	 * <p> Description: This method terminates the execution of the program.  It leaves the
-	 * database in a state where the normal login page will be displayed when the application is
-	 * restarted.</p>
-	 *
-	 */
-	protected static void performQuit() {
-		System.exit(0);
-	}
+
+    /**********
+     * <p> Method: performSelectLesson() </p>
+     *
+     * <p> Description: Called when the contributor selects a lesson in the list.  The lesson is
+     * read again from the database by its ID and its core information is shown in the form
+     * (US-R2).  If it no longer exists, the not-found message is shown (US-V5). </p>
+     *
+     */
+    protected static void performSelectLesson() {
+        LessonsLearned selected = ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
+
+        // The selection is cleared whenever the list is reloaded or the form is cleared.  Nothing
+        // needs to happen then, and the message label is left alone so a confirmation such as
+        // "LessonsLearned added." is not erased by the reload that follows it.
+        if (selected == null) return;
+
+        LessonsLearned current;
+        try {
+            new guiLessonSupport.CurrentRepoGateway(theDatabase).read(selected.getLessonId());
+            current=theDatabase.getLesson(selected.getLessonId());
+        } catch(Exception unavailable) {
+            performClearForm();showError("LessonsLearned is unavailable. Refresh your own list.");return;
+        }
+        if (current == null) {
+            showError(LessonResult.NOT_FOUND.getMessage());
+            return;
+        }
+        ViewContributorHome.text_Title.setText(current.getTitle());
+        ViewContributorHome.comboBox_Category.setValue(current.getCategory());
+        ViewContributorHome.text_Situation.setText(current.getSituation());
+        ViewContributorHome.text_LessonText.setText(current.getLessonText());
+        clearMessage();
+    }
+
+
+    /**********
+     * <p> Method: performClearForm() </p>
+     *
+     * <p> Description: Empties the form and clears the selection, so the contributor can enter a
+     * new lesson from a blank form. </p>
+     *
+     */
+    protected static void performClearForm() {
+        ViewContributorHome.listView_MyLessons.getSelectionModel().clearSelection();
+        ViewContributorHome.text_Title.clear();
+        ViewContributorHome.comboBox_Category.setValue(null);
+        ViewContributorHome.text_Situation.clear();
+        ViewContributorHome.text_LessonText.clear();
+        clearMessage();
+    }
+
+
+    /**********
+     * <p> Method: performAddLesson() </p>
+     *
+     * <p> Description: Opens the dedicated Create LessonsLearned MVC window for the logged-in
+     * contributor (US-C1).  The Database validates the input with the LessonRecognizer, so the
+     * error message shown here is exactly the one the automated tests check. </p>
+     *
+     */
+    protected static void performAddLesson() {
+        guiLessonSupport.ContributorWindows.create(windowContext());
+    }
+
+
+    /**********
+     * <p> Method: performSaveLesson() </p>
+     *
+     * <p> Description: Opens the dedicated Edit LessonsLearned MVC window for the selected lesson (US-U1).  If the input
+     * is invalid, or the lesson no longer exists or is not owned by this contributor, the stored
+     * lesson is unchanged and the reason is shown. </p>
+     *
+     */
+    protected static void performSaveLesson() {
+        LessonsLearned selected=ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
+        if(selected!=null)guiLessonSupport.ContributorWindows.edit(windowContext(),selected.getLessonId());
+    }
+
+
+    /**********
+     * <p> Method: performDeleteLesson() </p>
+     *
+     * <p> Description: Opens the dedicated Delete LessonsLearned window to ask
+     * "Are you sure?" (US-D1).  Like the Admin delete-user page, the View asks the question and
+     * the Database is told the answer, so a "No" answer never changes the database. </p>
+     *
+     */
+    protected static void performDeleteLesson() {
+        LessonsLearned selected=ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
+        if(selected!=null)guiLessonSupport.ContributorWindows.delete(windowContext(),selected.getLessonId());
+    }
+
+    /**********
+     * <p> Method: performLogout() </p>
+     *
+     * <p> Description: This method logs out the current user and proceeds to the normal login
+     * page where existing users can log in or potential new users with a invitation code can
+     * start the process of setting up an account. </p>
+     *
+     */
+    protected static void performLogout() {
+        theDatabase.clearAuthenticatedSession();
+        guiUserLogin.ViewUserLogin.displayUserLogin(ViewContributorHome.theStage);
+    }
+
+    /**********
+     * <p> Method: performQuit() </p>
+     *
+     * <p> Description: This method terminates the execution of the program.  It leaves the
+     * database in a state where the normal login page will be displayed when the application is
+     * restarted.</p>
+     *
+     */
+    protected static void performQuit() {
+        theDatabase.closeConnection();
+        javafx.application.Platform.exit();
+    }
+
+
+    /*-*******************************************************************************************
+
+    Private helper methods for the lesson actions
+
+     */
+
+    /*
+     * The owner always comes from the user this page was displayed for, not from the Database's
+     * current-user cache.  That cache changes whenever any user's details are read (see the K.G.
+     * comments in Database), but theUser is fixed for as long as this contributor is on the page.
+     */
+    private static String currentContributor() {
+        return ViewContributorHome.theUser.getUserName();
+    }
+
+    // Builds a LessonsLearned from the values currently in the form
+    private static LessonsLearned lessonFromForm(int lessonId, String owner) {
+        return new LessonsLearned(lessonId, owner,
+                ViewContributorHome.text_Title.getText(),
+                ViewContributorHome.comboBox_Category.getValue(),
+                ViewContributorHome.text_Situation.getText(),
+                ViewContributorHome.text_LessonText.getText());
+    }
+
+    // Selects the lesson with the given ID in the list, if it is there
+    private static void selectLesson(int lessonId) {
+        for (LessonsLearned lesson : ViewContributorHome.listView_MyLessons.getItems()) {
+            if (lesson.getLessonId() == lessonId) {
+                ViewContributorHome.listView_MyLessons.getSelectionModel().select(lesson);
+                return;
+            }
+        }
+    }
+
+    /*
+     * Shows the recognizer's message and moves the cursor to the field it names, so the
+     * contributor sees both what is wrong and where to fix it.
+     */
+    private static void showValidationError() {
+        showError(LessonRecognizer.lessonRecognizerErrorMessage);
+        switch (LessonRecognizer.lessonRecognizerErrorField) {
+        case "Title":       ViewContributorHome.text_Title.requestFocus(); break;
+        case "Category":    ViewContributorHome.comboBox_Category.requestFocus(); break;
+        case "Situation":   ViewContributorHome.text_Situation.requestFocus(); break;
+        case "Lesson":      ViewContributorHome.text_LessonText.requestFocus(); break;
+        default: break;
+        }
+    }
+
+    // Errors are shown in red and confirmations in green, so the two are never confused
+    private static void showError(String message) {
+        ViewContributorHome.label_Message.setTextFill(Color.RED);
+        ViewContributorHome.label_Message.setText(message);
+    }
+
+    private static void showSuccess(String message) {
+        ViewContributorHome.label_Message.setTextFill(Color.GREEN);
+        ViewContributorHome.label_Message.setText(message);
+    }
+
+    private static void clearMessage() {
+        ViewContributorHome.label_Message.setText("");
+    }
+
+    /** K.G. opens the selected record in the dedicated read window. */
+    protected static void performOpenViewLesson() {
+        LessonsLearned selected=ViewContributorHome.listView_MyLessons.getSelectionModel().getSelectedItem();
+        if(selected!=null)guiLessonSupport.ContributorWindows.details(windowContext(),selected.getLessonId());
+    }
+    /** Existing signed-in stage and real list/navigation callbacks, not a preview fixture. */
+    private static guiLessonSupport.WindowContext windowContext() {
+        return new guiLessonSupport.WindowContext(ViewContributorHome.theStage,
+            new guiLessonSupport.CurrentRepoGateway(theDatabase),
+            () -> ViewContributorHome.displayContributorHome(ViewContributorHome.theStage,ViewContributorHome.theUser),
+            () -> performLogout(),() -> performQuit());
+    }
+
 }

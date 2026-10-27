@@ -10,6 +10,8 @@ try {
     Get-ChildItem tests -Recurse -Filter *.java | ForEach-Object { '"' + $_.FullName.Replace('\','/') + '"' } | Set-Content -Encoding utf8 build/tests.args
     & javac -encoding UTF-8 --release 21 --module-path lib --add-modules javafx.controls -cp $applicationClassPath -d build/test-classes '@build/tests.args'
     if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed.' }
+    & java --module-path lib --add-modules javafx.controls -cp $testClassPath backendTests.BackendTests | Tee-Object build/reports/backendTests.BackendTests.txt
+    if ($LASTEXITCODE -ne 0) { throw 'TP2 backend tests failed.' }
     & java --module-path lib --add-modules javafx.controls -cp $testClassPath database.DeletionTests | Tee-Object build/reports/database-tests.txt
     if ($LASTEXITCODE -ne 0) { throw 'Database tests failed.' }
     & java --module-path lib --add-modules javafx.controls -cp $testClassPath guiDeleteUser.DeletionViewTests | Tee-Object build/reports/view-tests.txt

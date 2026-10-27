@@ -1,0 +1,7 @@
+*** Fetching account data for user: firstAdmin
+PASS R01 first-user completion clearly requires another login
+PASS R02 first-user completion returns to the login scene
+PASS R03 first-user completion clears the authenticated session
+*** Fetching account data for user: firstAdmin
+PASS R04 ordinary display resets the singleton to the role-home action
+RESULT: 4 first-user relogin checks passed; 0 failed.

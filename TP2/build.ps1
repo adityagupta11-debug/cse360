@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 foreach ($jar in @('javafx-base.jar','javafx-graphics.jar','javafx-controls.jar','h2.jar')) {
     if (-not (Test-Path (Join-Path $PSScriptRoot "lib/$jar"))) {
-        throw 'Missing dependencies. Run python setup_dependencies.py from TP1, then retry.'
+        throw 'Missing dependencies. Run python setup_dependencies.py from TP2, then retry.'
     }
 }
 Push-Location $PSScriptRoot

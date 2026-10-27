@@ -71,6 +71,7 @@ public class ControllerMyLessons {
 	 *
 	 */
 	protected static void performSearch() {
+        ModelMyLessons.loadLessons(theDatabase, ViewMyLessons.theUser.getUserName());
 		ViewMyLessons.label_Status.setText("");		// An earlier confirmation no longer applies
 		ModelMyLessons.setSearchText(ViewMyLessons.text_Search.getText());
 		showVisibleLessons();
@@ -85,6 +86,7 @@ public class ControllerMyLessons {
 	 *
 	 */
 	protected static void performClearSearch() {
+        ModelMyLessons.loadLessons(theDatabase, ViewMyLessons.theUser.getUserName());
 		ViewMyLessons.label_Status.setText("");
 		ViewMyLessons.text_Search.clear();
 		ModelMyLessons.setSearchText("");
@@ -104,8 +106,7 @@ public class ControllerMyLessons {
 		LessonsLearned selected =
 				ViewMyLessons.listView_Lessons.getSelectionModel().getSelectedItem();
 		if (selected == null) return;		// The button is disabled when nothing is selected
-		guiLessonDetail.ViewLessonDetail.displayLessonDetail(ViewMyLessons.theStage,
-				ViewMyLessons.theUser, selected);
+		guiLessonSupport.ContributorWindows.details(windowContext(), selected.getLessonId());
 	}
 
 	
@@ -116,7 +117,7 @@ public class ControllerMyLessons {
 	 *
 	 */
 	protected static void performAddLesson() {
-		guiAddLesson.ViewAddLesson.displayAddLesson(ViewMyLessons.theStage, ViewMyLessons.theUser);
+		guiLessonSupport.ContributorWindows.create(windowContext());
 	}
 
 	
@@ -140,6 +141,7 @@ public class ControllerMyLessons {
 	 *
 	 */
 	protected static void performLogout() {
+        theDatabase.clearAuthenticatedSession();
 		guiUserLogin.ViewUserLogin.displayUserLogin(ViewMyLessons.theStage);
 	}
 
@@ -151,7 +153,8 @@ public class ControllerMyLessons {
 	 *
 	 */
 	protected static void performQuit() {
-		System.exit(0);
+		theDatabase.closeConnection();
+        javafx.application.Platform.exit();
 	}
 	
 	
@@ -178,4 +181,12 @@ public class ControllerMyLessons {
 					+ (total == 1 ? " lesson matches" : " lessons match") + " \""
 					+ ModelMyLessons.getSearchText().trim() + "\"");
 	}
+
+    /** VG10: use the same gateway/session when returning from Kanish's windows to Joshua's list. */
+    private static guiLessonSupport.WindowContext windowContext() {
+        return new guiLessonSupport.WindowContext(ViewMyLessons.theStage,
+            new guiLessonSupport.CurrentRepoGateway(theDatabase),
+            () -> guiMyLessons.ViewMyLessons.displayMyLessons(ViewMyLessons.theStage, ViewMyLessons.theUser),
+            () -> performLogout(), () -> performQuit());
+    }
 }

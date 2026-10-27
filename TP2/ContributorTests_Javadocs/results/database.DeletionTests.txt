@@ -1,0 +1,36 @@
+PASS D01 registration does not authenticate
+PASS D02 valid admin authenticates
+PASS D03 No cancels with unchanged count
+PASS D04 missing selection
+PASS D05 self denied with multiple admins
+PASS D06 reading another user does not change actor
+PASS D07 non-admin denied
+PASS D08 non-admin cannot list deletion choices
+PASS D09 logged-out caller denied
+PASS D10 nonexistent identity
+PASS D11 Yes deletes selected member only
+PASS D12 removed account cannot authenticate
+PASS D13 deleted account fails all role logins
+PASS D14 deleted details unavailable
+PASS D15 repeat delete does not remove another account
+PASS D16 reused username has a new identity
+PASS D17 another admin may be deleted
+PASS D18 sole admin cannot self-delete
+PASS D19 deletion survives reconnect
+PASS D20 reconnect clears session
+PASS D21 failed login clears prior authorization
+PASS D22 oversize username rejected
+PASS D23 oversize password rejected
+PASS D24 null credentials rejected
+PASS D25 SQL syntax in credentials is treated as data
+PASS D26 revoked role is rechecked
+PASS D27 storage failure rolls back
+PASS D28 transaction usable after rollback
+PASS D30 admin rename keeps stable self-protection
+PASS D31 password update retains current identity
+PASS D32 new credentials authenticate after rename
+PASS D33 legacy entry rejects logged-out calls
+PASS D34 legacy entry blocks self-deletion
+PASS D35 deletion also removes OTP access
+PASS D29 concurrent cross-deletion preserves an admin
+RESULT: 35 database checks passed; 0 failed.

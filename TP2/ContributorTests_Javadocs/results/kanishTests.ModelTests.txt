@@ -1,0 +1,24 @@
+KG01_CreateValid | PASS
+KG01_UpdateValid | PASS
+KG05_BlankTitle | PASS
+KG05_TitleBounds | PASS
+KG05_Category | PASS
+KG05_Situation | PASS
+KG05_LessonText | PASS
+KG03_TitleLock | PASS
+KG03_CategoryLock | PASS
+KG03_SituationLock | PASS
+KG03_TextLock | PASS
+KG03_OtherEditable | PASS
+KG03_FullLock | PASS
+KG07_DeleteNo | PASS
+KG07_DeleteYes | PASS
+KG07_AnyLock | PASS
+KG02_Denied | PASS
+KG04_ValidExperience | PASS
+KG04_MissingText | PASS
+KG04_Hours | PASS
+KG04_Members | PASS
+KG08_FailedCreate | PASS
+KG08_FailedEdit | PASS
+RESULT: 23 passed; 0 failed. Test fixture only.

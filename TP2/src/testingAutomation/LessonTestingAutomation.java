@@ -69,8 +69,8 @@ public class LessonTestingAutomation {
 		Database db = freshDatabase("create");
 		LessonsLearned sample = sampleLesson(JSMITH);
 		performTestCase("TC-01", "A valid lesson is added successfully",
-				db.addLesson(sample) == LessonResult.SUCCESS, true);
-		LessonsLearned stored = db.getLesson(sample.getLessonId());
+				LessonTestFixtures.add(db, sample) == LessonResult.SUCCESS, true);
+		LessonsLearned stored = LessonTestFixtures.read(db, sample.getLessonId());
 		performTestCase("TC-01", "The new lesson has a database ID and is owned by jsmith",
 				sample.getLessonId() > 0 && stored != null && JSMITH.equals(stored.getOwner()),
 				true);
@@ -102,10 +102,10 @@ public class LessonTestingAutomation {
 
 		// TC-04: Titles exactly at each limit are accepted
 		performTestCase("TC-04", "A 5-character title is accepted",
-				db.addLesson(new LessonsLearned(JSMITH, "abcde", SAMPLE_CATEGORY, SAMPLE_SITUATION,
+				LessonTestFixtures.add(db, new LessonsLearned(JSMITH, "abcde", SAMPLE_CATEGORY, SAMPLE_SITUATION,
 						SAMPLE_LESSON)) == LessonResult.SUCCESS, true);
 		performTestCase("TC-04", "A 100-character title is accepted",
-				db.addLesson(new LessonsLearned(JSMITH, "t".repeat(100), SAMPLE_CATEGORY,
+				LessonTestFixtures.add(db, new LessonsLearned(JSMITH, "t".repeat(100), SAMPLE_CATEGORY,
 						SAMPLE_SITUATION, SAMPLE_LESSON)) == LessonResult.SUCCESS, true);
 
 		/************** Category validation (US-V2) ********************************************/
@@ -124,8 +124,8 @@ public class LessonTestingAutomation {
 		for (String category : LessonsLearned.CATEGORIES) {
 			LessonsLearned lesson = new LessonsLearned(JSMITH, SAMPLE_TITLE, category, SAMPLE_SITUATION,
 					SAMPLE_LESSON);
-			allAccepted &= db.addLesson(lesson) == LessonResult.SUCCESS
-					&& category.equals(db.getLesson(lesson.getLessonId()).getCategory());
+			allAccepted &= LessonTestFixtures.add(db, lesson) == LessonResult.SUCCESS
+					&& category.equals(LessonTestFixtures.read(db, lesson.getLessonId()).getCategory());
 		}
 		performTestCase("TC-06", "All " + LessonsLearned.CATEGORIES.length +
 				" allowed categories are accepted and stored", allAccepted, true);
@@ -160,13 +160,13 @@ public class LessonTestingAutomation {
 
 		// TC-09: Both text fields exactly at each limit are accepted, and long text is not cut off
 		performTestCase("TC-09", "Situation and lesson text of 20 characters are accepted",
-				db.addLesson(new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(20),
+				LessonTestFixtures.add(db, new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(20),
 						"l".repeat(20))) == LessonResult.SUCCESS, true);
 		LessonsLearned longest = new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(2000),
 				"l".repeat(2000));
 		performTestCase("TC-09", "Situation and lesson text of 2,000 characters are accepted",
-				db.addLesson(longest) == LessonResult.SUCCESS, true);
-		LessonsLearned readBack = db.getLesson(longest.getLessonId());
+				LessonTestFixtures.add(db, longest) == LessonResult.SUCCESS, true);
+		LessonsLearned readBack = LessonTestFixtures.read(db, longest.getLessonId());
 		performTestCase("TC-09", "The 2,000-character text is read back without being cut off",
 				readBack != null && readBack.getSituation().length() == 2000
 				&& readBack.getLessonText().length() == 2000, true);
@@ -175,20 +175,20 @@ public class LessonTestingAutomation {
 
 		// TC-10: Each contributor's list holds only that contributor's lessons
 		db = freshDatabase("read");
-		for (int i = 0; i < 3; i++) db.addLesson(sampleLesson(JSMITH));
-		for (int i = 0; i < 2; i++) db.addLesson(sampleLesson(AKIM));
-		LessonsLearnedList jsmithList = db.getLessonsByOwner(JSMITH);
-		LessonsLearnedList akimList = db.getLessonsByOwner(AKIM);
+		for (int i = 0; i < 3; i++) LessonTestFixtures.add(db, sampleLesson(JSMITH));
+		for (int i = 0; i < 2; i++) LessonTestFixtures.add(db, sampleLesson(AKIM));
+		LessonsLearnedList jsmithList = LessonTestFixtures.list(db, JSMITH);
+		LessonsLearnedList akimList = LessonTestFixtures.list(db, AKIM);
 		performTestCase("TC-10", "jsmith's list holds exactly 3 lessons, all owned by jsmith",
 				jsmithList.size() == 3 && jsmithList.filterByOwner(JSMITH).size() == 3, true);
 		performTestCase("TC-10", "akim's list holds exactly 2 lessons, all owned by akim",
 				akimList.size() == 2 && akimList.filterByOwner(AKIM).size() == 2, true);
 		performTestCase("TC-10", "The full list holds all 5 lessons, and its jsmith subset holds 3",
-				db.getAllLessons().size() == 5
-				&& db.getAllLessons().filterByOwner(JSMITH).size() == 3, true);
+				LessonTestFixtures.all(db).size() == 5
+				&& LessonTestFixtures.all(db).filterByOwner(JSMITH).size() == 3, true);
 
 		// TC-11: A contributor with no lessons gets an empty list, not null or an error
-		LessonsLearnedList emptyList = db.getLessonsByOwner("newcontributor");
+		LessonsLearnedList emptyList = LessonTestFixtures.list(db, "newcontributor");
 		performTestCase("TC-11", "A contributor with no lessons gets an empty list (not null)",
 				emptyList != null && emptyList.isEmpty() && emptyList.size() == 0, true);
 		performMessageTestCase("TC-11", "The empty-list message is the one in Test Cases.pdf",
@@ -196,15 +196,15 @@ public class LessonTestingAutomation {
 
 		// TC-12: There is no fixed upper limit on the number of lessons in a list
 		Database bigDb = freshDatabase("large");
-		for (int i = 0; i < 1000; i++) bigDb.addLesson(sampleLesson(JSMITH));
+		for (int i = 0; i < 1000; i++) LessonTestFixtures.add(bigDb, sampleLesson(JSMITH));
 		performTestCase("TC-12", "All 1,000 lessons are returned in jsmith's list",
-				bigDb.getLessonsByOwner(JSMITH).size() == 1000, true);
+				LessonTestFixtures.list(bigDb, JSMITH).size() == 1000, true);
 		bigDb.closeConnection();
 
 		// TC-13: A single lesson can be retrieved and examined in detail
 		LessonsLearned toView = sampleLesson(JSMITH);
-		db.addLesson(toView);
-		LessonsLearned viewed = db.getLesson(toView.getLessonId());
+		LessonTestFixtures.add(db, toView);
+		LessonsLearned viewed = LessonTestFixtures.read(db, toView.getLessonId());
 		performTestCase("TC-13", "Viewing a lesson returns every field and the owner",
 				viewed != null && SAMPLE_TITLE.equals(viewed.getTitle())
 				&& SAMPLE_CATEGORY.equals(viewed.getCategory())
@@ -214,7 +214,7 @@ public class LessonTestingAutomation {
 
 		// TC-14: Asking for a lesson that does not exist is reported, not a crash
 		performTestCase("TC-14", "Viewing a nonexistent lesson returns no lesson",
-				db.getLesson(999999) == null, true);
+				LessonTestFixtures.read(db, 999999) == null, true);
 		performMessageTestCase("TC-14", "The not-found message is the one in Test Cases.pdf",
 				LessonResult.NOT_FOUND.getMessage(), MSG_NOT_FOUND);
 		db.closeConnection();
@@ -224,14 +224,14 @@ public class LessonTestingAutomation {
 		// TC-15: A valid edit is saved, keeping the same ID and owner
 		db = freshDatabase("update");
 		LessonsLearned toEdit = sampleLesson(JSMITH);
-		db.addLesson(toEdit);
+		LessonTestFixtures.add(db, toEdit);
 		int editId = toEdit.getLessonId();
 		LessonsLearned edited = new LessonsLearned(editId, JSMITH, "JavaFX VM arguments in Eclipse",
 				SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON + " Uncheck -XstartOnFirstThread "
 				+ "on a Mac.");
 		performTestCase("TC-15", "A valid update by the owner succeeds",
 				db.updateLesson(edited, JSMITH) == LessonResult.SUCCESS, true);
-		LessonsLearned afterEdit = db.getLesson(editId);
+		LessonsLearned afterEdit = LessonTestFixtures.read(db, editId);
 		performTestCase("TC-15", "The stored lesson has the new values, same ID and owner",
 				afterEdit != null && "JavaFX VM arguments in Eclipse".equals(afterEdit.getTitle())
 				&& afterEdit.getLessonText().endsWith("on a Mac.")
@@ -246,11 +246,11 @@ public class LessonTestingAutomation {
 				LessonRecognizer.lessonRecognizerErrorMessage,
 				"Title must be at least 5 characters.");
 		performTestCase("TC-16", "The stored title is unchanged",
-				"JavaFX VM arguments in Eclipse".equals(db.getLesson(editId).getTitle()), true);
+				"JavaFX VM arguments in Eclipse".equals(LessonTestFixtures.read(db, editId).getTitle()), true);
 
 		// TC-17: A contributor cannot edit another contributor's lesson
 		LessonsLearned akimLesson = sampleLesson(AKIM);
-		db.addLesson(akimLesson);
+		LessonTestFixtures.add(db, akimLesson);
 		LessonsLearned hijack = new LessonsLearned(akimLesson.getLessonId(), AKIM, "Changed by jsmith",
 				SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON);
 		LessonResult result = db.updateLesson(hijack, JSMITH);
@@ -259,7 +259,7 @@ public class LessonTestingAutomation {
 		performMessageTestCase("TC-17", "The ownership message is the one in Test Cases.pdf",
 				result.getMessage(), MSG_NOT_OWNER);
 		performTestCase("TC-17", "akim's lesson is unchanged",
-				SAMPLE_TITLE.equals(db.getLesson(akimLesson.getLessonId()).getTitle()), true);
+				SAMPLE_TITLE.equals(LessonTestFixtures.read(db, akimLesson.getLessonId()).getTitle()), true);
 
 		// TC-18: Updating a lesson that does not exist is reported, and no lesson is created
 		int countBefore = db.getNumberOfLessons();
@@ -280,34 +280,34 @@ public class LessonTestingAutomation {
 		db = freshDatabase("delete");
 		LessonsLearned toDelete = sampleLesson(JSMITH);
 		LessonsLearned toKeep = sampleLesson(JSMITH);
-		db.addLesson(toDelete);
-		db.addLesson(toKeep);
+		LessonTestFixtures.add(db, toDelete);
+		LessonTestFixtures.add(db, toKeep);
 		performTestCase("TC-19", "Deleting jsmith's lesson after \"Yes\" succeeds",
 				db.deleteLesson(toDelete.getLessonId(), JSMITH, true) == LessonResult.SUCCESS,
 				true);
 		performTestCase("TC-19", "The deleted lesson is gone from the database and the list",
-				db.getLesson(toDelete.getLessonId()) == null
-				&& db.getLessonsByOwner(JSMITH).findById(toDelete.getLessonId()) == null, true);
+				LessonTestFixtures.read(db, toDelete.getLessonId()) == null
+				&& LessonTestFixtures.list(db, JSMITH).findById(toDelete.getLessonId()) == null, true);
 		performTestCase("TC-19", "The other lesson is unaffected",
-				db.getLesson(toKeep.getLessonId()) != null, true);
+				LessonTestFixtures.read(db, toKeep.getLessonId()) != null, true);
 
 		// TC-20: Answering "No" cancels the delete and leaves the lesson in place
 		performTestCase("TC-20", "Answering \"No\" cancels the delete",
 				db.deleteLesson(toKeep.getLessonId(), JSMITH, false) == LessonResult.CANCELLED,
 				true);
 		performTestCase("TC-20", "The lesson is still in the database",
-				db.getLesson(toKeep.getLessonId()) != null, true);
+				LessonTestFixtures.read(db, toKeep.getLessonId()) != null, true);
 
 		// TC-21: A contributor cannot delete another contributor's lesson
 		LessonsLearned akimKeeps = sampleLesson(AKIM);
-		db.addLesson(akimKeeps);
+		LessonTestFixtures.add(db, akimKeeps);
 		result = db.deleteLesson(akimKeeps.getLessonId(), JSMITH, true);
 		performTestCase("TC-21", "jsmith's delete of akim's lesson is refused",
 				result == LessonResult.NOT_OWNER, true);
 		performMessageTestCase("TC-21", "The ownership message is the one in Test Cases.pdf",
 				result.getMessage(), MSG_NOT_OWNER);
 		performTestCase("TC-21", "akim's lesson still exists",
-				db.getLesson(akimKeeps.getLessonId()) != null, true);
+				LessonTestFixtures.read(db, akimKeeps.getLessonId()) != null, true);
 
 		// TC-22: Deleting a lesson that does not exist is reported, and nothing else changes
 		countBefore = db.getNumberOfLessons();
@@ -331,15 +331,16 @@ public class LessonTestingAutomation {
 		
 		Database firstRun = new Database(fileUrl);
 		firstRun.connectToDatabase();
+        LessonTestFixtures.prepare(firstRun);
 		LessonsLearned lessonA = new LessonsLearned(JSMITH, "Lesson A kept as is", SAMPLE_CATEGORY,
 				SAMPLE_SITUATION, SAMPLE_LESSON);
 		LessonsLearned lessonB = new LessonsLearned(JSMITH, "Lesson B before update", SAMPLE_CATEGORY,
 				SAMPLE_SITUATION, SAMPLE_LESSON);
 		LessonsLearned lessonC = new LessonsLearned(JSMITH, "Lesson C to be deleted", SAMPLE_CATEGORY,
 				SAMPLE_SITUATION, SAMPLE_LESSON);
-		firstRun.addLesson(lessonA);
-		firstRun.addLesson(lessonB);
-		firstRun.addLesson(lessonC);
+		LessonTestFixtures.add(firstRun, lessonA);
+		LessonTestFixtures.add(firstRun, lessonB);
+		LessonTestFixtures.add(firstRun, lessonC);
 		lessonB.setTitle("Lesson B after update");
 		firstRun.updateLesson(lessonB, JSMITH);
 		firstRun.deleteLesson(lessonC.getLessonId(), JSMITH, true);
@@ -347,14 +348,15 @@ public class LessonTestingAutomation {
 		
 		Database secondRun = new Database(fileUrl);			// "Run HW2 again"
 		secondRun.connectToDatabase();
-		LessonsLearned aAgain = secondRun.getLesson(lessonA.getLessonId());
-		LessonsLearned bAgain = secondRun.getLesson(lessonB.getLessonId());
+        LessonTestFixtures.prepare(secondRun);
+		LessonsLearned aAgain = LessonTestFixtures.read(secondRun, lessonA.getLessonId());
+		LessonsLearned bAgain = LessonTestFixtures.read(secondRun, lessonB.getLessonId());
 		performTestCase("TC-23", "Lesson A is present and unchanged after reopening",
 				aAgain != null && "Lesson A kept as is".equals(aAgain.getTitle()), true);
 		performTestCase("TC-23", "Lesson B shows the updated title after reopening",
 				bAgain != null && "Lesson B after update".equals(bAgain.getTitle()), true);
 		performTestCase("TC-23", "Lesson C is still deleted after reopening",
-				secondRun.getLesson(lessonC.getLessonId()) == null, true);
+				LessonTestFixtures.read(secondRun, lessonC.getLessonId()) == null, true);
 		secondRun.closeConnection();
 		new File(dbFile.getPath() + ".mv.db").delete();		// Remove the temporary file
 
@@ -363,6 +365,7 @@ public class LessonTestingAutomation {
 		System.out.println("______________________________________________________________________");
 		System.out.println("\nNumber of tests passed: " + numPassed);
 		System.out.println("Number of tests failed: " + numFailed);
+        if(numFailed>0)throw new AssertionError("Lesson regression failures: "+numFailed);
 	}
 
 	/*
@@ -372,6 +375,7 @@ public class LessonTestingAutomation {
 	private static Database freshDatabase(String name) throws Exception {
 		Database db = new Database("jdbc:h2:mem:lessonTest_" + name + ";DB_CLOSE_DELAY=-1");
 		db.connectToDatabase();
+        LessonTestFixtures.prepare(db);
 		return db;
 	}
 
@@ -389,7 +393,7 @@ public class LessonTestingAutomation {
 			LessonsLearned lesson, String expectedMessage) {
 		int countBefore = db.getNumberOfLessons();
 		performTestCase(testCaseId, description,
-				db.addLesson(lesson) == LessonResult.INVALID_INPUT, true);
+				LessonTestFixtures.add(db, lesson) == LessonResult.INVALID_INPUT, true);
 		performMessageTestCase(testCaseId, "The error message is the one in Test Cases.pdf",
 				LessonRecognizer.lessonRecognizerErrorMessage, expectedMessage);
 		performTestCase(testCaseId, "No lesson was stored",

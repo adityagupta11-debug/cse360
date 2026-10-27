@@ -1,0 +1,15 @@
+KG01_Real_CreateAllFields | PASS
+KG02_StableSessionNotCache | PASS
+KG01_Real_UpdateFourFields | PASS
+KG03_RealLockMetadataAndTimestamps | PASS
+KG04_RealExperienceCapabilityRejectsNull | PASS
+KG02_Real_ForeignReadDenied | PASS
+KG02_Real_ForeignUpdateDenied | PASS
+KG02_Real_ForeignDeleteDenied | PASS
+KG02_Real_LogoutDenied | PASS
+KG02_Real_RoleRevokedDenied | PASS
+KG08_Real_ReopenRetainsUpdate | PASS
+KG07_Real_CancelKeeps | PASS
+KG07_Real_YesDeletes | PASS
+KG07_Real_ReopenRetainsDeletion | PASS
+RESULT: 14 passed; 0 failed. Real repository and file-backed H2.

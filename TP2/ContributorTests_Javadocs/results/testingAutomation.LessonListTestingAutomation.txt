@@ -1,0 +1,404 @@
+______________________________________________________________________
+
+LessonsLearnedList Testing Automation
+______________________________________________________________________
+
+Test LT-01  [LIST-1, positive]
+Testing: loadAll returns every lesson from every contributor
+
+  Check: The list holds all 3 stored lessons
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: It includes lessons from both jsmith and akim
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-02  [LIST-1, negative]
+Testing: loadAll on an empty database gives an empty list, not null
+
+  Check: The result is a real list with no lessons
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-03  [LIST-1, negative]
+Testing: loadAll with no database fails safely
+
+  Check: An empty list is returned, with no exception
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-04  [LIST-2, positive]
+Testing: A contributor's list holds exactly their own lessons
+
+  Check: jsmith's list holds 2 lessons
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: Every lesson in it is owned by jsmith
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-05  [LIST-2, negative]
+Testing: Other contributors' lessons are never in a contributor's list
+
+  Check: akim's lesson is not in jsmith's list
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: A contributor with no lessons sees none of the 2 stored
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-06  [LIST-2, positive]
+Testing: A curator-edited lesson stays in its contributor's list
+
+  Check: The edited lesson is still in jsmith's list
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: It is still owned by jsmith
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-07  [LIST-3, positive]
+Testing: A list of 1,000 lessons is loaded completely
+
+  Check: jsmith's list holds all 1,000
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The all-lessons list holds all 1,000
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-08  [LIST-3, negative]
+Testing: A contributor with no lessons gets an empty list
+
+  Check: The list is empty but not null
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The empty-list message
+  Expected message: "You have not added any lessons yet."
+  Observed message: "You have not added any lessons yet."
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-09  [LIST-3, negative]
+Testing: A list's contents cannot be changed from outside
+
+  Check: Clearing the read-only view is refused
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: Adding null is refused
+  Expected: false   Observed: false
+  ***Success*** The check produced the expected result.
+
+  Check: The list still holds its one lesson
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-10  [LIST-4, positive]
+Testing: A valid lesson added through the list is stored in both
+
+  Check: addLesson returns SUCCESS
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The lesson is in the list with a database ID
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The lesson is in the database
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-11  [LIST-4, negative]
+Testing: An invalid lesson is stored in neither the list nor the database
+
+  Check: addLesson returns INVALID_INPUT
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The error message
+  Expected message: "Title must be at least 5 characters."
+  Observed message: "Title must be at least 5 characters."
+  ***Success*** The check produced the expected result.
+
+  Check: Neither the list nor the database gained a lesson
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-12  [LIST-5, positive]
+Testing: A valid update through the list changes both
+
+  Check: updateLesson returns SUCCESS
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The list shows the trimmed, stored title
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The database holds the same title
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-13  [LIST-5, negative]
+Testing: An invalid update changes neither the list nor the database
+
+  Check: updateLesson returns INVALID_INPUT
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The error message
+  Expected message: "Title must be at least 5 characters."
+  Observed message: "Title must be at least 5 characters."
+  ***Success*** The check produced the expected result.
+
+  Check: The list and database keep the original title
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-14  [LIST-5, negative]
+Testing: Updating another contributor's lesson is refused
+
+  Check: updateLesson returns NOT_OWNER
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The ownership message
+  Expected message: "You can only edit or delete lessons that you added."
+  Observed message: "You can only edit or delete lessons that you added."
+  ***Success*** The check produced the expected result.
+
+  Check: akim's lesson is unchanged
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-15  [LIST-6, positive]
+Testing: A confirmed delete removes the lesson from both
+
+  Check: deleteLesson returns SUCCESS
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: It is gone from the list and the database
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The other lesson remains in both
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-16  [LIST-6, negative]
+Testing: Answering No cancels the delete
+
+  Check: deleteLesson returns CANCELLED
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The lesson is still in the list and the database
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-17  [LIST-6, negative]
+Testing: Deleting a lesson that no longer exists is refused
+
+  Check: The second delete returns NOT_FOUND
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The not-found message
+  Expected message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+  Observed message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+  ***Success*** The check produced the expected result.
+
+  Check: The other lesson is unaffected
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-18  [LIST-7, positive]
+Testing: A keyword is found in the title, category, situation, or lesson
+
+  Check: "zebra" (title) finds only lesson 1
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: "teamwork" (category) finds only lesson 2
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: "walrus" (situation) finds only lesson 3
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: "giraffe" (lesson text) finds only lesson 4
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-19  [LIST-7, positive]
+Testing: Search ignores upper and lower case
+
+  Check: "JAVAFX" finds the lesson
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: "javafx" finds the lesson
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-20  [LIST-7, positive]
+Testing: Every keyword must match
+
+  Check: "javafx" finds both lessons
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: "javafx eclipse" finds only the Eclipse lesson
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-21  [LIST-7, negative]
+Testing: A search with no matches gives an empty list
+
+  Check: The result is empty but not null
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The no-matches message
+  Expected message: "No lessons match your search."
+  Observed message: "No lessons match your search."
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-22  [LIST-7, negative]
+Testing: A blank or missing search returns every lesson
+
+  Check: "" returns all 3
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: "   " returns all 3
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: null returns all 3
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-23  [LIST-7, positive]
+Testing: Search leaves the source list unchanged and stays within it
+
+  Check: The search finds only jsmith's Kotlin lesson
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: jsmith's list still holds both lessons
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-24  [LIST-8, positive]
+Testing: The list reports locks and curator edits
+
+  Check: A lesson with one locked field reports a lock on that field only
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: A wholly locked lesson reports every field locked
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The curator-edited lesson reports it
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-25  [LIST-8, negative]
+Testing: New and unlocked lessons report no lock
+
+  Check: A new lesson has no lock and no curator edit
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: After unlocking, the lesson reports no lock
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: Locking an unknown field is refused
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-26  [LIST-9, positive]
+Testing: Changes made through the list survive a restart
+
+  Check: The updated lesson is there with its new title
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+
+  Check: The deleted lesson is still gone
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Test LT-27  [LIST-9, negative]
+Testing: Refused changes leave nothing behind after a restart
+
+  Check: Exactly the one valid lesson is stored, unchanged
+  Expected: true   Observed: true
+  ***Success*** The check produced the expected result.
+TEST PASSED
+______________________________________________________________________
+
+Tests passed: 27    Tests failed: 0
+Checks passed: 64   Checks failed: 0

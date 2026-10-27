@@ -142,10 +142,10 @@ public class LessonListTestingAutomation {
 	static void testLoadAllReturnsEveryLesson() throws Exception {
 		beginTest("LT-01", "LIST-1", "positive", "loadAll returns every lesson from every contributor");
 		Database db = freshDatabase();
-		db.addLesson(lesson(JSMITH, "First jsmith lesson"));
-		db.addLesson(lesson(JSMITH, "Second jsmith lesson"));
-		db.addLesson(lesson(AKIM, "Only akim lesson"));
-		LessonsLearnedList all = LessonsLearnedList.loadAll(db);
+		LessonTestFixtures.add(db, lesson(JSMITH, "First jsmith lesson"));
+		LessonTestFixtures.add(db, lesson(JSMITH, "Second jsmith lesson"));
+		LessonTestFixtures.add(db, lesson(AKIM, "Only akim lesson"));
+		LessonsLearnedList all = LessonTestFixtures.all(db);
 		check("The list holds all 3 stored lessons", all.size() == 3, true);
 		check("It includes lessons from both jsmith and akim",
 				all.filterByOwner(JSMITH).size() == 2 && all.filterByOwner(AKIM).size() == 1, true);
@@ -196,9 +196,9 @@ public class LessonListTestingAutomation {
 	static void testContributorSeesOnlyOwnLessons() throws Exception {
 		beginTest("LT-04", "LIST-2", "positive", "A contributor's list holds exactly their own lessons");
 		Database db = freshDatabase();
-		db.addLesson(lesson(JSMITH, "First jsmith lesson"));
-		db.addLesson(lesson(JSMITH, "Second jsmith lesson"));
-		db.addLesson(lesson(AKIM, "Only akim lesson"));
+		LessonTestFixtures.add(db, lesson(JSMITH, "First jsmith lesson"));
+		LessonTestFixtures.add(db, lesson(JSMITH, "Second jsmith lesson"));
+		LessonTestFixtures.add(db, lesson(AKIM, "Only akim lesson"));
 		LessonsLearnedList mine = LessonsLearnedList.loadForContributor(db, JSMITH);
 		check("jsmith's list holds 2 lessons", mine.size() == 2, true);
 		check("Every lesson in it is owned by jsmith", mine.filterByOwner(JSMITH).size() == 2, true);
@@ -216,9 +216,9 @@ public class LessonListTestingAutomation {
 	static void testOtherContributorsExcluded() throws Exception {
 		beginTest("LT-05", "LIST-2", "negative", "Other contributors' lessons are never in a contributor's list");
 		Database db = freshDatabase();
-		db.addLesson(lesson(JSMITH, "A jsmith lesson"));
+		LessonTestFixtures.add(db, lesson(JSMITH, "A jsmith lesson"));
 		LessonsLearned akims = lesson(AKIM, "An akim lesson");
-		db.addLesson(akims);
+		LessonTestFixtures.add(db, akims);
 		check("akim's lesson is not in jsmith's list",
 				LessonsLearnedList.loadForContributor(db, JSMITH).findById(akims.getLessonId()) == null,
 				true);
@@ -240,8 +240,8 @@ public class LessonListTestingAutomation {
 		beginTest("LT-06", "LIST-2", "positive", "A curator-edited lesson stays in its contributor's list");
 		Database db = freshDatabase();
 		LessonsLearned edited = lesson(JSMITH, "Lesson a curator edited");
-		db.addLesson(edited);
-		db.setCuratorEdited(edited.getLessonId(), true);
+		LessonTestFixtures.add(db, edited);
+		LessonTestFixtures.edited(db, edited.getLessonId(), true);
 		LessonsLearned found =
 				LessonsLearnedList.loadForContributor(db, JSMITH).findById(edited.getLessonId());
 		check("The edited lesson is still in jsmith's list", found != null, true);
@@ -266,10 +266,10 @@ public class LessonListTestingAutomation {
 	static void testLargeListHasNoLimit() throws Exception {
 		beginTest("LT-07", "LIST-3", "positive", "A list of 1,000 lessons is loaded completely");
 		Database db = freshDatabase();
-		for (int i = 1; i <= 1000; i++) db.addLesson(lesson(JSMITH, "Lesson number " + i));
+		for (int i = 1; i <= 1000; i++) LessonTestFixtures.add(db, lesson(JSMITH, "Lesson number " + i));
 		check("jsmith's list holds all 1,000",
 				LessonsLearnedList.loadForContributor(db, JSMITH).size() == 1000, true);
-		check("The all-lessons list holds all 1,000", LessonsLearnedList.loadAll(db).size() == 1000, true);
+		check("The all-lessons list holds all 1,000", LessonTestFixtures.all(db).size() == 1000, true);
 		endTest();
 	}
 
@@ -332,7 +332,7 @@ public class LessonListTestingAutomation {
 		check("addLesson returns SUCCESS", mine.addLesson(db, added) == LessonResult.SUCCESS, true);
 		check("The lesson is in the list with a database ID",
 				added.getLessonId() > 0 && mine.findById(added.getLessonId()) != null, true);
-		check("The lesson is in the database", db.getLesson(added.getLessonId()) != null, true);
+		check("The lesson is in the database", LessonTestFixtures.read(db, added.getLessonId()) != null, true);
 		endTest();
 	}
 
@@ -385,7 +385,7 @@ public class LessonListTestingAutomation {
 		check("The list shows the trimmed, stored title",
 				"New title here".equals(mine.findById(original.getLessonId()).getTitle()), true);
 		check("The database holds the same title",
-				"New title here".equals(db.getLesson(original.getLessonId()).getTitle()), true);
+				"New title here".equals(LessonTestFixtures.read(db, original.getLessonId()).getTitle()), true);
 		endTest();
 	}
 
@@ -410,7 +410,7 @@ public class LessonListTestingAutomation {
 				"Title must be at least 5 characters.");
 		check("The list and database keep the original title",
 				"Original title here".equals(mine.findById(original.getLessonId()).getTitle())
-				&& "Original title here".equals(db.getLesson(original.getLessonId()).getTitle()),
+				&& "Original title here".equals(LessonTestFixtures.read(db, original.getLessonId()).getTitle()),
 				true);
 		endTest();
 	}
@@ -427,8 +427,8 @@ public class LessonListTestingAutomation {
 		beginTest("LT-14", "LIST-5", "negative", "Updating another contributor's lesson is refused");
 		Database db = freshDatabase();
 		LessonsLearned akims = lesson(AKIM, "Akim's own lesson");
-		db.addLesson(akims);
-		LessonsLearnedList all = LessonsLearnedList.loadAll(db);
+		LessonTestFixtures.add(db, akims);
+		LessonsLearnedList all = LessonTestFixtures.all(db);
 		LessonsLearned edited = new LessonsLearned(akims.getLessonId(), AKIM,
 				"Changed by jsmith", "Coding", SITUATION, LESSON);
 		LessonResult result = all.updateLesson(db, edited, JSMITH);
@@ -436,7 +436,7 @@ public class LessonListTestingAutomation {
 		checkMessage("The ownership message", result.getMessage(),
 				"You can only edit or delete lessons that you added.");
 		check("akim's lesson is unchanged",
-				"Akim's own lesson".equals(db.getLesson(akims.getLessonId()).getTitle()), true);
+				"Akim's own lesson".equals(LessonTestFixtures.read(db, akims.getLessonId()).getTitle()), true);
 		endTest();
 	}
 
@@ -466,10 +466,10 @@ public class LessonListTestingAutomation {
 		check("deleteLesson returns SUCCESS",
 				mine.deleteLesson(db, gone.getLessonId(), JSMITH, true) == LessonResult.SUCCESS, true);
 		check("It is gone from the list and the database",
-				mine.findById(gone.getLessonId()) == null && db.getLesson(gone.getLessonId()) == null,
+				mine.findById(gone.getLessonId()) == null && LessonTestFixtures.read(db, gone.getLessonId()) == null,
 				true);
 		check("The other lesson remains in both",
-				mine.findById(kept.getLessonId()) != null && db.getLesson(kept.getLessonId()) != null,
+				mine.findById(kept.getLessonId()) != null && LessonTestFixtures.read(db, kept.getLessonId()) != null,
 				true);
 		endTest();
 	}
@@ -491,7 +491,7 @@ public class LessonListTestingAutomation {
 				mine.deleteLesson(db, kept.getLessonId(), JSMITH, false) == LessonResult.CANCELLED,
 				true);
 		check("The lesson is still in the list and the database",
-				mine.findById(kept.getLessonId()) != null && db.getLesson(kept.getLessonId()) != null,
+				mine.findById(kept.getLessonId()) != null && LessonTestFixtures.read(db, kept.getLessonId()) != null,
 				true);
 		endTest();
 	}
@@ -632,9 +632,9 @@ public class LessonListTestingAutomation {
 		beginTest("LT-23", "LIST-7", "positive", "Search leaves the source list unchanged and stays within it");
 		Database db = freshDatabase();
 		// "Kotlin" appears only in these titles, not in the shared situation and lesson text
-		db.addLesson(lesson(JSMITH, "Kotlin for jsmith"));
-		db.addLesson(lesson(JSMITH, "Merge conflicts for jsmith"));
-		db.addLesson(lesson(AKIM, "Kotlin for akim"));
+		LessonTestFixtures.add(db, lesson(JSMITH, "Kotlin for jsmith"));
+		LessonTestFixtures.add(db, lesson(JSMITH, "Merge conflicts for jsmith"));
+		LessonTestFixtures.add(db, lesson(AKIM, "Kotlin for akim"));
 		LessonsLearnedList mine = LessonsLearnedList.loadForContributor(db, JSMITH);
 		LessonsLearnedList found = mine.search("kotlin");
 		check("The search finds only jsmith's Kotlin lesson",
@@ -664,11 +664,11 @@ public class LessonListTestingAutomation {
 		Database db = freshDatabase();
 		LessonsLearned fieldLocked = lesson(JSMITH, "One field locked");
 		LessonsLearned wholeLocked = lesson(JSMITH, "Whole lesson locked");
-		db.addLesson(fieldLocked);
-		db.addLesson(wholeLocked);
-		db.setFieldLock(fieldLocked.getLessonId(), "Title", true);
-		db.setLessonLock(wholeLocked.getLessonId(), true);
-		db.setCuratorEdited(wholeLocked.getLessonId(), true);
+		LessonTestFixtures.add(db, fieldLocked);
+		LessonTestFixtures.add(db, wholeLocked);
+		LessonTestFixtures.fieldLock(db, fieldLocked.getLessonId(), "Title", true);
+		LessonTestFixtures.lock(db, wholeLocked.getLessonId(), true);
+		LessonTestFixtures.edited(db, wholeLocked.getLessonId(), true);
 		LessonsLearnedList mine = LessonsLearnedList.loadForContributor(db, JSMITH);
 		LessonsLearned a = mine.findById(fieldLocked.getLessonId());
 		LessonsLearned b = mine.findById(wholeLocked.getLessonId());
@@ -692,18 +692,18 @@ public class LessonListTestingAutomation {
 		beginTest("LT-25", "LIST-8", "negative", "New and unlocked lessons report no lock");
 		Database db = freshDatabase();
 		LessonsLearned fresh = lesson(JSMITH, "Brand new lesson");
-		db.addLesson(fresh);
+		LessonTestFixtures.add(db, fresh);
 		LessonsLearned loaded =
 				LessonsLearnedList.loadForContributor(db, JSMITH).findById(fresh.getLessonId());
 		check("A new lesson has no lock and no curator edit",
 				!loaded.hasAnyLock() && !loaded.isCuratorEdited(), true);
-		db.setFieldLock(fresh.getLessonId(), "Title", true);
-		db.setFieldLock(fresh.getLessonId(), "Title", false);
+		LessonTestFixtures.fieldLock(db, fresh.getLessonId(), "Title", true);
+		LessonTestFixtures.fieldLock(db, fresh.getLessonId(), "Title", false);
 		check("After unlocking, the lesson reports no lock",
 				!LessonsLearnedList.loadForContributor(db, JSMITH).findById(fresh.getLessonId())
 				.hasAnyLock(), true);
 		check("Locking an unknown field is refused",
-				db.setFieldLock(fresh.getLessonId(), "Owner", true) == LessonResult.INVALID_INPUT, true);
+				LessonTestFixtures.fieldLock(db, fresh.getLessonId(), "Owner", true) == LessonResult.INVALID_INPUT, true);
 		endTest();
 	}
 
@@ -727,6 +727,7 @@ public class LessonListTestingAutomation {
 		String url = temporaryFileUrl();
 		Database first = new Database(url);
 		first.connectToDatabase();
+        LessonTestFixtures.prepare(first);
 		LessonsLearnedList mine = LessonsLearnedList.loadForContributor(first, JSMITH);
 		LessonsLearned kept = lesson(JSMITH, "Lesson before update");
 		LessonsLearned gone = lesson(JSMITH, "Lesson to delete");
@@ -739,6 +740,7 @@ public class LessonListTestingAutomation {
 		
 		Database second = new Database(url);						// "Start it again"
 		second.connectToDatabase();
+        LessonTestFixtures.prepare(second);
 		LessonsLearnedList reloaded = LessonsLearnedList.loadForContributor(second, JSMITH);
 		check("The updated lesson is there with its new title",
 				reloaded.size() == 1 && "Lesson after update".equals(reloaded.get(0).getTitle()),
@@ -761,6 +763,7 @@ public class LessonListTestingAutomation {
 		String url = temporaryFileUrl();
 		Database first = new Database(url);
 		first.connectToDatabase();
+        LessonTestFixtures.prepare(first);
 		LessonsLearnedList mine = LessonsLearnedList.loadForContributor(first, JSMITH);
 		LessonsLearned kept = lesson(JSMITH, "The only valid lesson");
 		mine.addLesson(first, kept);
@@ -770,6 +773,7 @@ public class LessonListTestingAutomation {
 		
 		Database second = new Database(url);
 		second.connectToDatabase();
+        LessonTestFixtures.prepare(second);
 		LessonsLearnedList reloaded = LessonsLearnedList.loadForContributor(second, JSMITH);
 		check("Exactly the one valid lesson is stored, unchanged",
 				reloaded.size() == 1 && "The only valid lesson".equals(reloaded.get(0).getTitle()),
@@ -791,6 +795,7 @@ public class LessonListTestingAutomation {
 		Database db = new Database("jdbc:h2:mem:lessonListTest" + (++databaseNumber)
 				+ ";DB_CLOSE_DELAY=-1");
 		db.connectToDatabase();
+        LessonTestFixtures.prepare(db);
 		return db;
 	}
 

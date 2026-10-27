@@ -1,0 +1,579 @@
+______________________________________________________________________
+
+Lessons Learned CRUD and Input Validation Testing Automation
+______________________________________________________________________
+
+Test case: 1 (TC-01)
+Testing: A valid lesson is added successfully
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 2 (TC-01)
+Testing: The new lesson has a database ID and is owned by jsmith
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 3 (TC-01)
+Testing: All four stored fields match what was entered
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 4 (TC-02)
+Testing: An empty title is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 5 (TC-02)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Title is required."
+Observed message: "Title is required."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 6 (TC-02)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 7 (TC-02)
+Testing: A title of only spaces is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 8 (TC-02)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Title is required."
+Observed message: "Title is required."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 9 (TC-02)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 10 (TC-03)
+Testing: A 4-character title is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 11 (TC-03)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Title must be at least 5 characters."
+Observed message: "Title must be at least 5 characters."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 12 (TC-03)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 13 (TC-03)
+Testing: A 101-character title is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 14 (TC-03)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Title must be 100 characters or fewer."
+Observed message: "Title must be 100 characters or fewer."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 15 (TC-03)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 16 (TC-04)
+Testing: A 5-character title is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 17 (TC-04)
+Testing: A 100-character title is accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 18 (TC-05)
+Testing: A lesson with no category selected is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 19 (TC-05)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Please select a category for this lesson."
+Observed message: "Please select a category for this lesson."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 20 (TC-05)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 21 (TC-05)
+Testing: The category "Misc" (not in the list) is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 22 (TC-05)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Please select a category for this lesson."
+Observed message: "Please select a category for this lesson."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 23 (TC-05)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 24 (TC-06)
+Testing: All 6 allowed categories are accepted and stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 25 (TC-07)
+Testing: An empty situation is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 26 (TC-07)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Describe the situation in at least 20 characters."
+Observed message: "Describe the situation in at least 20 characters."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 27 (TC-07)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 28 (TC-07)
+Testing: A 19-character situation is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 29 (TC-07)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Describe the situation in at least 20 characters."
+Observed message: "Describe the situation in at least 20 characters."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 30 (TC-07)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 31 (TC-07)
+Testing: A 2,001-character situation is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 32 (TC-07)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Situation must be 2,000 characters or fewer."
+Observed message: "Situation must be 2,000 characters or fewer."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 33 (TC-07)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 34 (TC-08)
+Testing: An empty lesson text is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 35 (TC-08)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Describe the lesson in at least 20 characters."
+Observed message: "Describe the lesson in at least 20 characters."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 36 (TC-08)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 37 (TC-08)
+Testing: A 19-character lesson text is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 38 (TC-08)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Describe the lesson in at least 20 characters."
+Observed message: "Describe the lesson in at least 20 characters."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 39 (TC-08)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 40 (TC-08)
+Testing: A 2,001-character lesson text is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 41 (TC-08)
+Testing: The error message is the one in Test Cases.pdf
+Expected message: "Lesson must be 2,000 characters or fewer."
+Observed message: "Lesson must be 2,000 characters or fewer."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 42 (TC-08)
+Testing: No lesson was stored
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 43 (TC-09)
+Testing: Situation and lesson text of 20 characters are accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 44 (TC-09)
+Testing: Situation and lesson text of 2,000 characters are accepted
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 45 (TC-09)
+Testing: The 2,000-character text is read back without being cut off
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 46 (TC-10)
+Testing: jsmith's list holds exactly 3 lessons, all owned by jsmith
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 47 (TC-10)
+Testing: akim's list holds exactly 2 lessons, all owned by akim
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 48 (TC-10)
+Testing: The full list holds all 5 lessons, and its jsmith subset holds 3
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 49 (TC-11)
+Testing: A contributor with no lessons gets an empty list (not null)
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 50 (TC-11)
+Testing: The empty-list message is the one in Test Cases.pdf
+Expected message: "You have not added any lessons yet."
+Observed message: "You have not added any lessons yet."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 51 (TC-12)
+Testing: All 1,000 lessons are returned in jsmith's list
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 52 (TC-13)
+Testing: Viewing a lesson returns every field and the owner
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 53 (TC-14)
+Testing: Viewing a nonexistent lesson returns no lesson
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 54 (TC-14)
+Testing: The not-found message is the one in Test Cases.pdf
+Expected message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+Observed message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 55 (TC-15)
+Testing: A valid update by the owner succeeds
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 56 (TC-15)
+Testing: The stored lesson has the new values, same ID and owner
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 57 (TC-16)
+Testing: An update with the title "Bug" is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 58 (TC-16)
+Testing: The error message names the title rule
+Expected message: "Title must be at least 5 characters."
+Observed message: "Title must be at least 5 characters."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 59 (TC-16)
+Testing: The stored title is unchanged
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 60 (TC-17)
+Testing: jsmith's update of akim's lesson is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 61 (TC-17)
+Testing: The ownership message is the one in Test Cases.pdf
+Expected message: "You can only edit or delete lessons that you added."
+Observed message: "You can only edit or delete lessons that you added."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 62 (TC-17)
+Testing: akim's lesson is unchanged
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 63 (TC-18)
+Testing: Updating a nonexistent lesson is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 64 (TC-18)
+Testing: The not-found message is the one in Test Cases.pdf
+Expected message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+Observed message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 65 (TC-18)
+Testing: No new lesson was created
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 66 (TC-19)
+Testing: Deleting jsmith's lesson after "Yes" succeeds
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 67 (TC-19)
+Testing: The deleted lesson is gone from the database and the list
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 68 (TC-19)
+Testing: The other lesson is unaffected
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 69 (TC-20)
+Testing: Answering "No" cancels the delete
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 70 (TC-20)
+Testing: The lesson is still in the database
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 71 (TC-21)
+Testing: jsmith's delete of akim's lesson is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 72 (TC-21)
+Testing: The ownership message is the one in Test Cases.pdf
+Expected message: "You can only edit or delete lessons that you added."
+Observed message: "You can only edit or delete lessons that you added."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 73 (TC-21)
+Testing: akim's lesson still exists
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 74 (TC-22)
+Testing: Deleting an already-deleted lesson is refused
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 75 (TC-22)
+Testing: The not-found message is the one in Test Cases.pdf
+Expected message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+Observed message: "That lesson could not be found. It may have been deleted. Please refresh your list."
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 76 (TC-22)
+Testing: No other lesson was affected
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 77 (TC-23)
+Testing: Lesson A is present and unchanged after reopening
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 78 (TC-23)
+Testing: Lesson B shows the updated title after reopening
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Test case: 79 (TC-23)
+Testing: Lesson C is still deleted after reopening
+Expected: true   Observed: true
+***Success*** The test case produced the expected result.
+
+______________________________________________________________________
+
+Number of tests passed: 79
+Number of tests failed: 0

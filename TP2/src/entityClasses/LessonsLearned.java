@@ -13,6 +13,7 @@ package entityClasses;
  * <p> Copyright: Joshua Luther © 2026 </p>
  * 
  * @author Joshua Luther
+ * @author Vishwam - persistent CRUD facade and timestamps
  * 
  * @version 1.00		2026-10-08 Initial version for HW2 (as Lesson), modeled on the User class
  * @version 1.01		2026-10-22 Renamed LessonsLearned for TP2; added lesson and field locks
@@ -34,6 +35,23 @@ package entityClasses;
  *     curator has edited it."
  */
 public class LessonsLearned {
+    /** VG08: database creation time; pre-TP2 records use schema migration time. */
+    public java.time.LocalDateTime getCreatedAt() { return createdAt; }
+    /** VG08: latest persisted core/lock/experience change; supports future curator auditing. */
+    public java.time.LocalDateTime getUpdatedAt() { return updatedAt; }
+    /** Persistence mapping only; save operations ignore caller-supplied timestamps. */
+    public void setCreatedAt(java.time.LocalDateTime value) { createdAt = value; }
+    /** Persistence mapping only; save operations assign their own database timestamp. */
+    public void setUpdatedAt(java.time.LocalDateTime value) { updatedAt = value; }
+    /** VG01: validate and persist this new lesson for the authenticated owner. */
+    public database.Database.LessonResult create(database.Database database) { return database.addLesson(this); }
+    /** VG02: read an authorized Contributor projection, without curator-private data. */
+    public static LessonsLearned read(database.Database database, int id) { return database.getLesson(id); }
+    /** VG03: save core fields; the database rechecks current ownership and all locks. */
+    public database.Database.LessonResult update(database.Database database, String actor) { return database.updateLesson(this, actor); }
+    /** VG04: remove this lesson and linked experiences only after explicit confirmation. */
+    public database.Database.LessonResult delete(database.Database database, String actor, boolean confirmed) { return database.deleteLesson(lessonId, actor, confirmed); }
+
 	
 	/** The categories a lesson may be assigned to.  The GUI uses this list to populate its
 	 *  category selector and the recognizer uses it to reject any other value, so both always
@@ -67,6 +85,8 @@ public class LessonsLearned {
 	private boolean categoryLocked;		// and the lesson cannot be deleted while any one of
 	private boolean situationLocked;	// them is set
 	private boolean lessonTextLocked;
+	private java.time.LocalDateTime createdAt; // VG08: creation/migration timestamp
+	private java.time.LocalDateTime updatedAt; // VG08: most recent persisted change
 	private boolean curatorEdited;		// A curator has edited this lesson (Contributor story 4)
 	
 	

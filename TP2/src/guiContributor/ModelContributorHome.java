@@ -1,21 +1,17 @@
 package guiContributor;
-
-public class ModelContributorHome {
-
-/*******
- * <p> Title: ModelContributorHome Class. </p>
- * 
- * <p> Description: The ContributorHome Page Model.  This class is a stub for future expansion.
- * 
- * This class is not used as there is no unique data manipulation for this GUI page.</p>
- * 
- * <p> Copyright: Lynn Robert Carter © 2025 </p>
- * 
- * @author Lynn Robert Carter
- * 
- * @version 1.00		2025-08-15 Initial version
- * @version 1.01		2025-09-13 Updated JavaDoc description
- *  
- */
-
+import database.Database;
+import entityClasses.LessonsLearnedList;
+/** K.G. integration model for Joshua's existing own-lesson list. The database reference is the
+ * Foundations instance. A stable authenticated Contributor identity, not the mutable account
+ * details cache or the displayed User object, determines whose list may be shown.
+ * @author Kanish Garg */
+public final class ModelContributorHome {
+    private final Database database;
+    public ModelContributorHome(Database database){this.database=database;}
+    /** KG02 read only the current Contributor's lessons; reject logout/role revocation. */
+    public LessonsLearnedList ownLessons()throws Exception{
+        String actor=database.getAuthenticatedContributorName();
+        if(actor==null)throw new IllegalStateException("Sign in with an active Contributor account, then reopen My Lessons.");
+        return database.getLessonsByOwner(actor);
+    }
 }

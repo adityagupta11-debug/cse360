@@ -53,7 +53,13 @@ public class ModelMyLessons {
 	 * 
 	 */
 	protected static void loadLessons(Database database, String username) {
-		myLessons = LessonsLearnedList.loadForContributor(database, username);
+		try {
+            String actor=database.getAuthenticatedContributorName();
+            myLessons = actor==null ? new LessonsLearnedList() : LessonsLearnedList.loadForContributor(database,actor);
+        } catch (java.sql.SQLException failure) {
+            myLessons=new LessonsLearnedList();
+            throw new IllegalStateException("Unable to verify your Contributor session. Sign in again.",failure);
+        }
 	}
 
 	

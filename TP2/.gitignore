@@ -2,3 +2,6 @@
 /build/
 /data/
 /lib/
+
+# Local Python runner caches.
+/__pycache__/

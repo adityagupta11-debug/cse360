@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-27",
+  "branch": "vishwam-tp2-backend",
+  "integrated_upstream": {
+    "main": "f5cb25ef35061e3a8dc081ff96563fa602ab8104",
+    "kanish-tp2-gui": "7bf72833690b96256c7f833828aa12193c234019"
+  },
+  "runtime": "macOS ARM64, JDK 26.0.1, JavaFX 21.0.8, H2 2.3.232; --release 21",
+  "suite_assertion_counts": {
+    "backendTests.BackendTests": 100,
+    "kanishTests.ModelTests": 23,
+    "kanishTests.CurrentRepoIntegrationTests": 14,
+    "kanishTests.CurrentRepoWindowTests": 27,
+    "testingAutomation.LessonTestingAutomation": 79,
+    "testingAutomation.LessonListTestingAutomation": 64,
+    "database.DeletionTests": 35,
+    "guiDeleteUser.DeletionViewTests": 19,
+    "guiUserLogin.LoginInputTests": 7,
+    "passwordPopUpWindow.DynamicPasswordViewTests": 6,
+    "guiUserUpdate.FirstUserReloginTests": 4,
+    "testingAutomation.TP1RegressionSuite": 152
+  },
+  "total_checks": 530,
+  "assertion_failures": 0,
+  "real_backend_gaps": [],
+  "scope": "Implemented Member 1 backend and integration; not the complete team submission. Model fixtures remain explicitly labeled; real backend and GUI checks are separate.",
+  "remaining_human_or_team_work": [
+    "Actual screencast narration/recording",
+    "Assigned genuine standup summary",
+    "Confirm other members epic-specific requirements",
+    "Confirm proposed AI field allocations and team report consolidation",
+    "Team submission verification and individual peer evaluation"
+  ],
+  "pushed": false
+}
