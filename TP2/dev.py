@@ -11,6 +11,8 @@ CLASSES = ROOT / 'build/classes'
 TESTS = ROOT / 'build/test-classes'
 REPORTS = ROOT / 'build/reports'
 SUITES = [
+    # Requirement-driven Contributor testbed (agupt515): every requirement, positive and negative.
+    'testingAutomation.ContributorRequirementsTestbed',
     'backendTests.BackendTests',
     'backendTests.ListSnapshotTests',
     'kanishTests.ModelTests',

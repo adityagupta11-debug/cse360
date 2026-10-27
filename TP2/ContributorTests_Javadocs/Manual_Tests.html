@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Contributor Manual Tests</title>
+<style>
+body{font:15px/1.5 system-ui,sans-serif;margin:32px;color:#111}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ccc;padding:8px;vertical-align:top;text-align:left}
+th{background:#eef1f5} td:nth-child(4),td:nth-child(5){min-width:110px}
+</style></head><body>
+<h1>TP2 Contributor Manual Tests</h1>
+<p>One manual procedure per Contributor requirement, run through the real GUI. Use the
+isolated demo database: from the TP2 folder run <code>python3 dev.py demo</code>, which
+creates Contributor accounts <code>jsmith</code>, <code>akim</code> and
+<code>newcontributor</code> and seeds unlocked, field-locked, whole-locked and curator-edited
+lessons (the demo-only password is printed on the first run and is listed in
+<code>README_VISHWAM_TP2.md</code>). Delete <code>data/TP2Demo.mv.db</code> to start fresh. Record Pass/Fail,
+the tester, and the date in the last two columns; the columns are blank until a person
+runs the procedure.</p>
+<p>Every requirement is also checked automatically; see
+<a href="Contributor_Requirements_and_Tests.html">requirements and tests</a>.</p>
+<table><tr><th>ID</th><th>Steps</th><th>Expected result</th><th>Pass / Fail</th>
+<th>Tester, date</th></tr>
+<tr><td><b>M-01</b><br>CR-01</td><td>Sign in as newcontributor, open My Lessons / Search, press Add lesson, fill all four fields with valid values, and press Create lesson.</td><td>View Lesson opens with &quot;Lesson created successfully.&quot; and the entered values; the lesson is listed in My Lessons.</td><td></td><td></td></tr>
+<tr><td><b>M-02</b><br>CR-02</td><td>As newcontributor press Add lesson, enter the title &quot;Plan&quot; (4 characters) with the other fields valid, and press Create lesson; then change the title to &quot;Plans&quot; and press Create lesson again.</td><td>The first save shows a title error, keeps the other inputs, and stores nothing; the second save succeeds.</td><td></td><td></td></tr>
+<tr><td><b>M-03</b><br>CR-03</td><td>Sign in as akim, open &quot;JavaFX scene does not update after a change&quot;, choose Edit lesson, change the Situation, and press Save changes.</td><td>View Lesson shows the new Situation with the same Lesson # and Author; the other fields are unchanged.</td><td></td><td></td></tr>
+<tr><td><b>M-04</b><br>CR-04</td><td>Sign in as jsmith, open &quot;Merge conflicts right before the deadline&quot; (Title and Lesson Text locked), choose Edit lesson, change only the Situation, and press Save changes.</td><td>Title and Lesson Text are labeled &quot;- Locked&quot; and cannot be changed; the Situation change saves.</td><td></td><td></td></tr>
+<tr><td><b>M-05</b><br>CR-05</td><td>Sign in as jsmith and open &quot;Record the screencast after the tests pass&quot; (whole lesson locked).</td><td>The note reads &quot;Lesson locked. Editing and deletion are unavailable.&quot;; Edit lesson, Add experience and Delete lesson are disabled.</td><td></td><td></td></tr>
+<tr><td><b>M-06</b><br>CR-06</td><td>Sign in as akim, open his lesson, press Delete lesson and answer No, keep lesson; then press Delete lesson again and answer Yes, delete lesson. (Run after M-03 and M-12.)</td><td>The confirmation names the lesson and No is the default; No, keep lesson returns to View Lesson and keeps the lesson; Yes, delete lesson returns to My Lessons, which no longer lists it.</td><td></td><td></td></tr>
+<tr><td><b>M-07</b><br>CR-07</td><td>Sign in as jsmith and open &quot;Merge conflicts right before the deadline&quot; (two locked fields).</td><td>Delete lesson is disabled and the note reads &quot;Locked fields are read-only. Delete is unavailable while any field is locked.&quot;</td><td></td><td></td></tr>
+<tr><td><b>M-08</b><br>CR-08</td><td>Sign in as jsmith and open &quot;Merge conflicts right before the deadline&quot; (edited by a curator); look through View Lesson and Edit lesson.</td><td>Only the four core fields, lock labels, timestamps and &quot;Edited by curator&quot; appear; there is no curator notes or search-terms field. (Hidden stored notes are checked by testbed CR-08 T2.)</td><td></td><td></td></tr>
+<tr><td><b>M-09</b><br>CR-09</td><td>Sign in as jsmith and open My Lessons.</td><td>Exactly jsmith's three lessons are listed; &quot;Merge conflicts right before the deadline&quot; is tagged Locked and Edited by curator; akim's lesson is not listed.</td><td></td><td></td></tr>
+<tr><td><b>M-10</b><br>CR-10</td><td>Sign in as jsmith, open &quot;Merge conflicts right before the deadline&quot;, and choose Edit lesson.</td><td>View Lesson says locked fields are read-only; in Edit, Title and Lesson Text end with &quot;- Locked&quot; and cannot be changed, while Category and Situation can.</td><td></td><td></td></tr>
+<tr><td><b>M-11</b><br>CR-11</td><td>Sign in as jsmith, search My Lessons for &quot;JavaFX&quot;, then search for &quot;runLater&quot; (a word only in akim's lesson).</td><td>The first search lists only &quot;JavaFX app fails to launch in Eclipse&quot; (not akim's JavaFX lesson); the second shows &quot;No lessons match your search.&quot;</td><td></td><td></td></tr>
+<tr><td><b>M-12</b><br>CR-12</td><td>Sign in as akim, open his lesson, choose Add experience, fill What and How, Duration 2.5, add members Ana 1.5 and Ben 1 with Add or update member, and press Save experience.</td><td>View Lesson opens with &quot;Experience #N saved for this lesson.&quot; (View Lesson does not list experiences; the stored hours are checked by testbed CR-12 T1).</td><td></td><td></td></tr>
+<tr><td><b>M-13</b><br>CR-13</td><td>In Add experience, press Save experience with How blank; then enter Duration 0; then add the member Ana twice.</td><td>Each attempt shows an error that names the problem, keeps the typed draft, and saves no experience.</td><td></td><td></td></tr>
+<tr><td><b>M-14</b><br>CR-14</td><td>Sign in as akim, open My Lessons, and search for &quot;Merge&quot;.</td><td>Only akim's own lesson is ever listed and the search shows &quot;No lessons match your search.&quot;; none of jsmith's lessons appear. (Opening another user's lesson by ID is checked by testbed CR-14 T2.)</td><td></td><td></td></tr>
+<tr><td><b>M-15</b><br>CR-15</td><td>Sign in as jsmith, open My Lessons, press Logout, then sign in as akim and open My Lessons.</td><td>Logout returns to the login screen; akim's My Lessons shows only akim's lessons, none of jsmith's.</td><td></td><td></td></tr>
+<tr><td><b>M-16</b><br>CR-16</td><td>After M-01, press Quit, start the demo again with python3 dev.py demo (it reopens without reseeding), and sign in as newcontributor, then as jsmith.</td><td>newcontributor's new lesson is still listed; jsmith's lessons keep their Locked and Edited by curator tags. (Stored experience hours after a restart are checked by testbed CR-16 T1.)</td><td></td><td></td></tr>
+<tr><td><b>M-17</b><br>CR-17</td><td>On a fresh demo database, before M-01, sign in as newcontributor and open My Lessons; then do M-01.</td><td>First the list shows &quot;You have not added any lessons yet.&quot; and &quot;0 lessons&quot;; after M-01 the count reads &quot;1 lesson&quot;.</td><td></td><td></td></tr>
+<tr><td><b>M-18</b><br>CR-18</td><td>No GUI procedure: the assigned GUI exposes only Add experience. Run the testbed and read the CR-18 lines.</td><td>CR-18 T1 to T3 print PASS.</td><td></td><td></td></tr>
+</table></body></html>
