@@ -1,6 +1,6 @@
 package lessonRecognizer;
 
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 
 public class LessonRecognizer {
 	/**
@@ -102,7 +102,7 @@ public class LessonRecognizer {
 		// The category list lives in the Lesson class so the GUI and this recognizer can never
 		// disagree about which categories are allowed
 		if (input != null) {
-			for (String category : Lesson.CATEGORIES) {
+			for (String category : LessonsLearned.CATEGORIES) {
 				if (category.equals(input)) return setValid(input);
 			}
 		}
@@ -151,7 +151,7 @@ public class LessonRecognizer {
 	 * @param lesson	The lesson to be checked
 	 * @return			An empty string if every field is valid, else the first error message
 	 */
-	public static String checkForValidLesson(Lesson lesson) {
+	public static String checkForValidLesson(LessonsLearned lesson) {
 		if (lesson == null)
 			return setError("Lesson", null, 0, "No lesson was provided.");
 		

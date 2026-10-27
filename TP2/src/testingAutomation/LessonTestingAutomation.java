@@ -4,8 +4,8 @@ import java.io.File;
 
 import database.Database;
 import database.Database.LessonResult;
-import entityClasses.Lesson;
-import entityClasses.LessonList;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import lessonRecognizer.LessonRecognizer;
 
 /*******
@@ -67,10 +67,10 @@ public class LessonTestingAutomation {
 
 		// TC-01: A valid lesson is stored with a new ID, the right owner, and the entered values
 		Database db = freshDatabase("create");
-		Lesson sample = sampleLesson(JSMITH);
+		LessonsLearned sample = sampleLesson(JSMITH);
 		performTestCase("TC-01", "A valid lesson is added successfully",
 				db.addLesson(sample) == LessonResult.SUCCESS, true);
-		Lesson stored = db.getLesson(sample.getLessonId());
+		LessonsLearned stored = db.getLesson(sample.getLessonId());
 		performTestCase("TC-01", "The new lesson has a database ID and is owned by jsmith",
 				sample.getLessonId() > 0 && stored != null && JSMITH.equals(stored.getOwner()),
 				true);
@@ -85,27 +85,27 @@ public class LessonTestingAutomation {
 		// TC-02: An empty title and a title of only spaces are refused, and nothing is stored
 		db = freshDatabase("title");
 		checkRejectedAdd("TC-02", db, "An empty title is refused",
-				new Lesson(JSMITH, "", SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON),
+				new LessonsLearned(JSMITH, "", SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON),
 				"Title is required.");
 		checkRejectedAdd("TC-02", db, "A title of only spaces is refused",
-				new Lesson(JSMITH, "     ", SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON),
+				new LessonsLearned(JSMITH, "     ", SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON),
 				"Title is required.");
 
 		// TC-03: Titles one character outside each limit are refused
 		checkRejectedAdd("TC-03", db, "A 4-character title is refused",
-				new Lesson(JSMITH, "abcd", SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON),
+				new LessonsLearned(JSMITH, "abcd", SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON),
 				"Title must be at least 5 characters.");
 		checkRejectedAdd("TC-03", db, "A 101-character title is refused",
-				new Lesson(JSMITH, "t".repeat(101), SAMPLE_CATEGORY, SAMPLE_SITUATION,
+				new LessonsLearned(JSMITH, "t".repeat(101), SAMPLE_CATEGORY, SAMPLE_SITUATION,
 						SAMPLE_LESSON),
 				"Title must be 100 characters or fewer.");
 
 		// TC-04: Titles exactly at each limit are accepted
 		performTestCase("TC-04", "A 5-character title is accepted",
-				db.addLesson(new Lesson(JSMITH, "abcde", SAMPLE_CATEGORY, SAMPLE_SITUATION,
+				db.addLesson(new LessonsLearned(JSMITH, "abcde", SAMPLE_CATEGORY, SAMPLE_SITUATION,
 						SAMPLE_LESSON)) == LessonResult.SUCCESS, true);
 		performTestCase("TC-04", "A 100-character title is accepted",
-				db.addLesson(new Lesson(JSMITH, "t".repeat(100), SAMPLE_CATEGORY,
+				db.addLesson(new LessonsLearned(JSMITH, "t".repeat(100), SAMPLE_CATEGORY,
 						SAMPLE_SITUATION, SAMPLE_LESSON)) == LessonResult.SUCCESS, true);
 
 		/************** Category validation (US-V2) ********************************************/
@@ -113,21 +113,21 @@ public class LessonTestingAutomation {
 		// TC-05: No selection and a value outside the list are both refused
 		db = freshDatabase("category");
 		checkRejectedAdd("TC-05", db, "A lesson with no category selected is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, null, SAMPLE_SITUATION, SAMPLE_LESSON),
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, null, SAMPLE_SITUATION, SAMPLE_LESSON),
 				"Please select a category for this lesson.");
 		checkRejectedAdd("TC-05", db, "The category \"Misc\" (not in the list) is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, "Misc", SAMPLE_SITUATION, SAMPLE_LESSON),
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, "Misc", SAMPLE_SITUATION, SAMPLE_LESSON),
 				"Please select a category for this lesson.");
 
 		// TC-06: Every allowed category is accepted and stored correctly
 		boolean allAccepted = true;
-		for (String category : Lesson.CATEGORIES) {
-			Lesson lesson = new Lesson(JSMITH, SAMPLE_TITLE, category, SAMPLE_SITUATION,
+		for (String category : LessonsLearned.CATEGORIES) {
+			LessonsLearned lesson = new LessonsLearned(JSMITH, SAMPLE_TITLE, category, SAMPLE_SITUATION,
 					SAMPLE_LESSON);
 			allAccepted &= db.addLesson(lesson) == LessonResult.SUCCESS
 					&& category.equals(db.getLesson(lesson.getLessonId()).getCategory());
 		}
-		performTestCase("TC-06", "All " + Lesson.CATEGORIES.length +
+		performTestCase("TC-06", "All " + LessonsLearned.CATEGORIES.length +
 				" allowed categories are accepted and stored", allAccepted, true);
 
 		/************** Situation and lesson text validation (US-V3, US-V4) ********************/
@@ -135,38 +135,38 @@ public class LessonTestingAutomation {
 		// TC-07: Situations that are empty, too short, or too long are refused
 		db = freshDatabase("text");
 		checkRejectedAdd("TC-07", db, "An empty situation is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "", SAMPLE_LESSON),
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "", SAMPLE_LESSON),
 				"Describe the situation in at least 20 characters.");
 		checkRejectedAdd("TC-07", db, "A 19-character situation is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(19), SAMPLE_LESSON),
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(19), SAMPLE_LESSON),
 				"Describe the situation in at least 20 characters.");
 		checkRejectedAdd("TC-07", db, "A 2,001-character situation is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(2001),
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(2001),
 						SAMPLE_LESSON),
 				"Situation must be 2,000 characters or fewer.");
 
 		// TC-08: Lesson texts that are empty, too short, or too long are refused
 		checkRejectedAdd("TC-08", db, "An empty lesson text is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION, ""),
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION, ""),
 				"Describe the lesson in at least 20 characters.");
 		checkRejectedAdd("TC-08", db, "A 19-character lesson text is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION,
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION,
 						"l".repeat(19)),
 				"Describe the lesson in at least 20 characters.");
 		checkRejectedAdd("TC-08", db, "A 2,001-character lesson text is refused",
-				new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION,
+				new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION,
 						"l".repeat(2001)),
 				"Lesson must be 2,000 characters or fewer.");
 
 		// TC-09: Both text fields exactly at each limit are accepted, and long text is not cut off
 		performTestCase("TC-09", "Situation and lesson text of 20 characters are accepted",
-				db.addLesson(new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(20),
+				db.addLesson(new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(20),
 						"l".repeat(20))) == LessonResult.SUCCESS, true);
-		Lesson longest = new Lesson(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(2000),
+		LessonsLearned longest = new LessonsLearned(JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY, "s".repeat(2000),
 				"l".repeat(2000));
 		performTestCase("TC-09", "Situation and lesson text of 2,000 characters are accepted",
 				db.addLesson(longest) == LessonResult.SUCCESS, true);
-		Lesson readBack = db.getLesson(longest.getLessonId());
+		LessonsLearned readBack = db.getLesson(longest.getLessonId());
 		performTestCase("TC-09", "The 2,000-character text is read back without being cut off",
 				readBack != null && readBack.getSituation().length() == 2000
 				&& readBack.getLessonText().length() == 2000, true);
@@ -177,8 +177,8 @@ public class LessonTestingAutomation {
 		db = freshDatabase("read");
 		for (int i = 0; i < 3; i++) db.addLesson(sampleLesson(JSMITH));
 		for (int i = 0; i < 2; i++) db.addLesson(sampleLesson(AKIM));
-		LessonList jsmithList = db.getLessonsByOwner(JSMITH);
-		LessonList akimList = db.getLessonsByOwner(AKIM);
+		LessonsLearnedList jsmithList = db.getLessonsByOwner(JSMITH);
+		LessonsLearnedList akimList = db.getLessonsByOwner(AKIM);
 		performTestCase("TC-10", "jsmith's list holds exactly 3 lessons, all owned by jsmith",
 				jsmithList.size() == 3 && jsmithList.filterByOwner(JSMITH).size() == 3, true);
 		performTestCase("TC-10", "akim's list holds exactly 2 lessons, all owned by akim",
@@ -188,11 +188,11 @@ public class LessonTestingAutomation {
 				&& db.getAllLessons().filterByOwner(JSMITH).size() == 3, true);
 
 		// TC-11: A contributor with no lessons gets an empty list, not null or an error
-		LessonList emptyList = db.getLessonsByOwner("newcontributor");
+		LessonsLearnedList emptyList = db.getLessonsByOwner("newcontributor");
 		performTestCase("TC-11", "A contributor with no lessons gets an empty list (not null)",
 				emptyList != null && emptyList.isEmpty() && emptyList.size() == 0, true);
 		performMessageTestCase("TC-11", "The empty-list message is the one in Test Cases.pdf",
-				LessonList.EMPTY_LIST_MESSAGE, "You have not added any lessons yet.");
+				LessonsLearnedList.EMPTY_LIST_MESSAGE, "You have not added any lessons yet.");
 
 		// TC-12: There is no fixed upper limit on the number of lessons in a list
 		Database bigDb = freshDatabase("large");
@@ -202,9 +202,9 @@ public class LessonTestingAutomation {
 		bigDb.closeConnection();
 
 		// TC-13: A single lesson can be retrieved and examined in detail
-		Lesson toView = sampleLesson(JSMITH);
+		LessonsLearned toView = sampleLesson(JSMITH);
 		db.addLesson(toView);
-		Lesson viewed = db.getLesson(toView.getLessonId());
+		LessonsLearned viewed = db.getLesson(toView.getLessonId());
 		performTestCase("TC-13", "Viewing a lesson returns every field and the owner",
 				viewed != null && SAMPLE_TITLE.equals(viewed.getTitle())
 				&& SAMPLE_CATEGORY.equals(viewed.getCategory())
@@ -223,22 +223,22 @@ public class LessonTestingAutomation {
 
 		// TC-15: A valid edit is saved, keeping the same ID and owner
 		db = freshDatabase("update");
-		Lesson toEdit = sampleLesson(JSMITH);
+		LessonsLearned toEdit = sampleLesson(JSMITH);
 		db.addLesson(toEdit);
 		int editId = toEdit.getLessonId();
-		Lesson edited = new Lesson(editId, JSMITH, "JavaFX VM arguments in Eclipse",
+		LessonsLearned edited = new LessonsLearned(editId, JSMITH, "JavaFX VM arguments in Eclipse",
 				SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON + " Uncheck -XstartOnFirstThread "
 				+ "on a Mac.");
 		performTestCase("TC-15", "A valid update by the owner succeeds",
 				db.updateLesson(edited, JSMITH) == LessonResult.SUCCESS, true);
-		Lesson afterEdit = db.getLesson(editId);
+		LessonsLearned afterEdit = db.getLesson(editId);
 		performTestCase("TC-15", "The stored lesson has the new values, same ID and owner",
 				afterEdit != null && "JavaFX VM arguments in Eclipse".equals(afterEdit.getTitle())
 				&& afterEdit.getLessonText().endsWith("on a Mac.")
 				&& afterEdit.getLessonId() == editId && JSMITH.equals(afterEdit.getOwner()), true);
 
 		// TC-16: An invalid edit is refused and the stored lesson is left unchanged
-		Lesson badEdit = new Lesson(editId, JSMITH, "Bug", SAMPLE_CATEGORY, SAMPLE_SITUATION,
+		LessonsLearned badEdit = new LessonsLearned(editId, JSMITH, "Bug", SAMPLE_CATEGORY, SAMPLE_SITUATION,
 				SAMPLE_LESSON);
 		performTestCase("TC-16", "An update with the title \"Bug\" is refused",
 				db.updateLesson(badEdit, JSMITH) == LessonResult.INVALID_INPUT, true);
@@ -249,9 +249,9 @@ public class LessonTestingAutomation {
 				"JavaFX VM arguments in Eclipse".equals(db.getLesson(editId).getTitle()), true);
 
 		// TC-17: A contributor cannot edit another contributor's lesson
-		Lesson akimLesson = sampleLesson(AKIM);
+		LessonsLearned akimLesson = sampleLesson(AKIM);
 		db.addLesson(akimLesson);
-		Lesson hijack = new Lesson(akimLesson.getLessonId(), AKIM, "Changed by jsmith",
+		LessonsLearned hijack = new LessonsLearned(akimLesson.getLessonId(), AKIM, "Changed by jsmith",
 				SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON);
 		LessonResult result = db.updateLesson(hijack, JSMITH);
 		performTestCase("TC-17", "jsmith's update of akim's lesson is refused",
@@ -263,7 +263,7 @@ public class LessonTestingAutomation {
 
 		// TC-18: Updating a lesson that does not exist is reported, and no lesson is created
 		int countBefore = db.getNumberOfLessons();
-		Lesson ghost = new Lesson(999999, JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY,
+		LessonsLearned ghost = new LessonsLearned(999999, JSMITH, SAMPLE_TITLE, SAMPLE_CATEGORY,
 				SAMPLE_SITUATION, SAMPLE_LESSON);
 		result = db.updateLesson(ghost, JSMITH);
 		performTestCase("TC-18", "Updating a nonexistent lesson is refused",
@@ -278,8 +278,8 @@ public class LessonTestingAutomation {
 
 		// TC-19: Deleting after answering "Yes" removes only that lesson
 		db = freshDatabase("delete");
-		Lesson toDelete = sampleLesson(JSMITH);
-		Lesson toKeep = sampleLesson(JSMITH);
+		LessonsLearned toDelete = sampleLesson(JSMITH);
+		LessonsLearned toKeep = sampleLesson(JSMITH);
 		db.addLesson(toDelete);
 		db.addLesson(toKeep);
 		performTestCase("TC-19", "Deleting jsmith's lesson after \"Yes\" succeeds",
@@ -299,7 +299,7 @@ public class LessonTestingAutomation {
 				db.getLesson(toKeep.getLessonId()) != null, true);
 
 		// TC-21: A contributor cannot delete another contributor's lesson
-		Lesson akimKeeps = sampleLesson(AKIM);
+		LessonsLearned akimKeeps = sampleLesson(AKIM);
 		db.addLesson(akimKeeps);
 		result = db.deleteLesson(akimKeeps.getLessonId(), JSMITH, true);
 		performTestCase("TC-21", "jsmith's delete of akim's lesson is refused",
@@ -331,11 +331,11 @@ public class LessonTestingAutomation {
 		
 		Database firstRun = new Database(fileUrl);
 		firstRun.connectToDatabase();
-		Lesson lessonA = new Lesson(JSMITH, "Lesson A kept as is", SAMPLE_CATEGORY,
+		LessonsLearned lessonA = new LessonsLearned(JSMITH, "Lesson A kept as is", SAMPLE_CATEGORY,
 				SAMPLE_SITUATION, SAMPLE_LESSON);
-		Lesson lessonB = new Lesson(JSMITH, "Lesson B before update", SAMPLE_CATEGORY,
+		LessonsLearned lessonB = new LessonsLearned(JSMITH, "Lesson B before update", SAMPLE_CATEGORY,
 				SAMPLE_SITUATION, SAMPLE_LESSON);
-		Lesson lessonC = new Lesson(JSMITH, "Lesson C to be deleted", SAMPLE_CATEGORY,
+		LessonsLearned lessonC = new LessonsLearned(JSMITH, "Lesson C to be deleted", SAMPLE_CATEGORY,
 				SAMPLE_SITUATION, SAMPLE_LESSON);
 		firstRun.addLesson(lessonA);
 		firstRun.addLesson(lessonB);
@@ -347,8 +347,8 @@ public class LessonTestingAutomation {
 		
 		Database secondRun = new Database(fileUrl);			// "Run HW2 again"
 		secondRun.connectToDatabase();
-		Lesson aAgain = secondRun.getLesson(lessonA.getLessonId());
-		Lesson bAgain = secondRun.getLesson(lessonB.getLessonId());
+		LessonsLearned aAgain = secondRun.getLesson(lessonA.getLessonId());
+		LessonsLearned bAgain = secondRun.getLesson(lessonB.getLessonId());
 		performTestCase("TC-23", "Lesson A is present and unchanged after reopening",
 				aAgain != null && "Lesson A kept as is".equals(aAgain.getTitle()), true);
 		performTestCase("TC-23", "Lesson B shows the updated title after reopening",
@@ -376,8 +376,8 @@ public class LessonTestingAutomation {
 	}
 
 	// Builds a new copy of the valid sample lesson from Test Cases.pdf for the given owner
-	private static Lesson sampleLesson(String owner) {
-		return new Lesson(owner, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON);
+	private static LessonsLearned sampleLesson(String owner) {
+		return new LessonsLearned(owner, SAMPLE_TITLE, SAMPLE_CATEGORY, SAMPLE_SITUATION, SAMPLE_LESSON);
 	}
 
 	/*
@@ -386,7 +386,7 @@ public class LessonTestingAutomation {
 	 * not change.  Checking the count proves the invalid lesson never reached the database.
 	 */
 	private static void checkRejectedAdd(String testCaseId, Database db, String description,
-			Lesson lesson, String expectedMessage) {
+			LessonsLearned lesson, String expectedMessage) {
 		int countBefore = db.getNumberOfLessons();
 		performTestCase(testCaseId, description,
 				db.addLesson(lesson) == LessonResult.INVALID_INPUT, true);

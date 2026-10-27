@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.UUID;
 
 import entityClasses.Invitation;
-import entityClasses.Lesson;
-import entityClasses.LessonList;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import entityClasses.User;
 import lessonRecognizer.LessonRecognizer;
 
@@ -43,6 +43,8 @@ import lessonRecognizer.LessonRecognizer;
  * @version 2.05		2026-09-23 Deletion-block attribution documented only; no behavior changed
  * 							(Vishwam)
  * @version 2.06		2026-10-08 Lessons learned table and lesson CRUD for HW2 (Joshua Luther)
+ * @version 2.07		2026-10-22 Lesson and field locks and the curator-edited flag for TP2
+ * 							(Joshua Luther)
  */
 
 /*
@@ -195,6 +197,18 @@ public class Database {
 	    		+ "situation VARCHAR(2000), "
 	    		+ "lessonText VARCHAR(2000))";
 	    statement.execute(lessonTable);
+	    
+	    // TP2: the curator-controlled state the Contributor stories require the contributor to
+	    // see (locked lesson, locked fields, curator-edited).  These use the same ADD COLUMN IF
+	    // NOT EXISTS pattern as the role and one-time password columns above, so a lessonDB
+	    // created by HW2 is upgraded in place.  DEFAULT FALSE means every existing lesson starts
+	    // unlocked and unedited, which is the correct state for a lesson no curator has touched.
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS lessonLocked BOOL DEFAULT FALSE");
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS titleLocked BOOL DEFAULT FALSE");
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS categoryLocked BOOL DEFAULT FALSE");
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS situationLocked BOOL DEFAULT FALSE");
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS lessonTextLocked BOOL DEFAULT FALSE");
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS curatorEdited BOOL DEFAULT FALSE");
 	}
 
 
@@ -1679,7 +1693,7 @@ public class Database {
 	}
 
 
-	// J.L.: lessons learned CRUD for HW2 begins here.
+	// J.L.: lessons learned CRUD (HW2) and lock state (TP2) begin here.
 	
 	/**
 	 * <p> Enum: LessonResult </p>
@@ -1710,10 +1724,10 @@ public class Database {
 	
 	
 	/*******
-	 * <p> Method: LessonResult addLesson(Lesson lesson) </p>
+	 * <p> Method: LessonResult addLesson(LessonsLearned lesson) </p>
 	 * 
 	 * <p> Description: Validates a new lesson and, if it is valid, adds it to the lessonDB table.
-	 * On success, the ID the database assigned is stored back into the Lesson object so the
+	 * On success, the ID the database assigned is stored back into the LessonsLearned object so the
 	 * caller can refer to it.  Leading and trailing spaces are removed before storing, because the
 	 * recognizer ignores them when it checks the lengths.</p>
 	 * 
@@ -1723,7 +1737,7 @@ public class Database {
 	 * 
 	 */
 	// Create: add a new lesson
-	public LessonResult addLesson(Lesson lesson) {
+	public LessonResult addLesson(LessonsLearned lesson) {
 		// Validate here as well as in the GUI so invalid data can never reach the database,
 		// even if a caller forgets to validate first
 		if (!LessonRecognizer.checkForValidLesson(lesson).isEmpty()) 
@@ -1755,7 +1769,7 @@ public class Database {
 	
 	
 	/*******
-	 * <p> Method: Lesson getLesson(int lessonId) </p>
+	 * <p> Method: LessonsLearned getLesson(int lessonId) </p>
 	 * 
 	 * <p> Description: Reads a single lesson from the database by its ID.</p>
 	 * 
@@ -1766,7 +1780,7 @@ public class Database {
 	 * 
 	 */
 	// Read: one lesson by ID
-	public Lesson getLesson(int lessonId) {
+	public LessonsLearned getLesson(int lessonId) {
 		String query = "SELECT * FROM lessonDB WHERE id = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setInt(1, lessonId);
@@ -1781,20 +1795,20 @@ public class Database {
 	
 	
 	/*******
-	 * <p> Method: LessonList getLessonsByOwner(String owner) </p>
+	 * <p> Method: LessonsLearnedList getLessonsByOwner(String owner) </p>
 	 * 
 	 * <p> Description: Reads every lesson added by one contributor, in title order.  This is the
 	 * subset a contributor sees, since contributors cannot see other contributors' lessons.</p>
 	 * 
 	 * @param owner is the username of the contributor
 	 * 
-	 * @return a LessonList of that contributor's lessons; empty (never null) if there are none
+	 * @return a LessonsLearnedList of that contributor's lessons; empty (never null) if there are none
 	 * 		or an error occurs
 	 * 
 	 */
 	// Read: the subset of lessons owned by one contributor
-	public LessonList getLessonsByOwner(String owner) {
-		LessonList lessons = new LessonList();
+	public LessonsLearnedList getLessonsByOwner(String owner) {
+		LessonsLearnedList lessons = new LessonsLearnedList();
 		if (owner == null) return lessons;
 		String query = "SELECT * FROM lessonDB WHERE owner = ? ORDER BY title";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -1810,18 +1824,18 @@ public class Database {
 	
 	
 	/*******
-	 * <p> Method: LessonList getAllLessons() </p>
+	 * <p> Method: LessonsLearnedList getAllLessons() </p>
 	 * 
 	 * <p> Description: Reads every lesson in the database, in title order.  This supports the
 	 * requirement to store all current lessons, and later roles (Viewer, Curator) that can see
 	 * every lesson.</p>
 	 * 
-	 * @return a LessonList of all lessons; empty (never null) if there are none or an error occurs
+	 * @return a LessonsLearnedList of all lessons; empty (never null) if there are none or an error occurs
 	 * 
 	 */
 	// Read: all lessons
-	public LessonList getAllLessons() {
-		LessonList lessons = new LessonList();
+	public LessonsLearnedList getAllLessons() {
+		LessonsLearnedList lessons = new LessonsLearnedList();
 		String query = "SELECT * FROM lessonDB ORDER BY title";
 		try (PreparedStatement pstmt = connection.prepareStatement(query);
 				ResultSet rs = pstmt.executeQuery()) {
@@ -1834,7 +1848,7 @@ public class Database {
 	
 	
 	/*******
-	 * <p> Method: LessonResult updateLesson(Lesson lesson, String actingUser) </p>
+	 * <p> Method: LessonResult updateLesson(LessonsLearned lesson, String actingUser) </p>
 	 * 
 	 * <p> Description: Validates the edited lesson and, if it is valid and owned by the acting
 	 * user, replaces the stored core information.  If anything is wrong, the stored lesson is left
@@ -1848,7 +1862,7 @@ public class Database {
 	 * 
 	 */
 	// Update: change the core information of a lesson
-	public LessonResult updateLesson(Lesson lesson, String actingUser) {
+	public LessonResult updateLesson(LessonsLearned lesson, String actingUser) {
 		// Check the input first, so an invalid edit never reaches the database
 		if (!LessonRecognizer.checkForValidLesson(lesson).isEmpty()) 
 			return LessonResult.INVALID_INPUT;
@@ -1955,14 +1969,112 @@ public class Database {
 	}
 	
 	
-	// Builds a Lesson object from the current row of a result set, so every read method converts
+	// Builds a LessonsLearned object from the current row of a result set, so every read method converts
 	// rows the same way
-	private Lesson lessonFromRow(ResultSet rs) throws SQLException {
-		return new Lesson(rs.getInt("id"), rs.getString("owner"), rs.getString("title"),
-				rs.getString("category"), rs.getString("situation"), rs.getString("lessonText"));
+	private LessonsLearned lessonFromRow(ResultSet rs) throws SQLException {
+		LessonsLearned lesson = new LessonsLearned(rs.getInt("id"), rs.getString("owner"),
+				rs.getString("title"), rs.getString("category"), rs.getString("situation"),
+				rs.getString("lessonText"));
+		lesson.setLessonLocked(rs.getBoolean("lessonLocked"));
+		lesson.setTitleLocked(rs.getBoolean("titleLocked"));
+		lesson.setCategoryLocked(rs.getBoolean("categoryLocked"));
+		lesson.setSituationLocked(rs.getBoolean("situationLocked"));
+		lesson.setLessonTextLocked(rs.getBoolean("lessonTextLocked"));
+		lesson.setCuratorEdited(rs.getBoolean("curatorEdited"));
+		return lesson;
 	}
 	
-	// J.L.: lessons learned CRUD for HW2 ends here.
+	/*******
+	 * <p> Method: LessonResult setLessonLock(int lessonId, boolean locked) </p>
+	 * 
+	 * <p> Description: Locks or unlocks an entire lesson.  A locked lesson cannot be edited or
+	 * deleted by its contributor (Contributor story 2, Curator locking epic).  In TP2 this is
+	 * used by the automated tests and to prepare demonstration data; the Curator GUI that calls
+	 * it, and the check that the caller plays the Curator role, are added in TP3.</p>
+	 * 
+	 * @param lessonId is the database ID of the lesson
+	 * 
+	 * @param locked is true to lock the lesson, false to unlock it
+	 * 
+	 * @return SUCCESS, NOT_FOUND, or DATABASE_ERROR
+	 * 
+	 */
+	// Lock or unlock a whole lesson
+	public LessonResult setLessonLock(int lessonId, boolean locked) {
+		return setLessonFlag(lessonId, "lessonLocked", locked);
+	}
+	
+	
+	/*******
+	 * <p> Method: LessonResult setFieldLock(int lessonId, String fieldName, boolean locked) </p>
+	 * 
+	 * <p> Description: Locks or unlocks one field of a lesson.  The field name must be one of
+	 * LessonsLearned.LOCKABLE_FIELDS.  The name is translated to a column name here, rather
+	 * than placed into the SQL directly, so that no caller-supplied text can ever become part
+	 * of an SQL statement.  The Curator role check is added in TP3 (see setLessonLock).</p>
+	 * 
+	 * @param lessonId is the database ID of the lesson
+	 * 
+	 * @param fieldName is "Title", "Category", "Situation", or "Lesson"
+	 * 
+	 * @param locked is true to lock the field, false to unlock it
+	 * 
+	 * @return SUCCESS, INVALID_INPUT (unknown field name), NOT_FOUND, or DATABASE_ERROR
+	 * 
+	 */
+	// Lock or unlock one field of a lesson
+	public LessonResult setFieldLock(int lessonId, String fieldName, boolean locked) {
+		String column;
+		if ("Title".equals(fieldName)) column = "titleLocked";
+		else if ("Category".equals(fieldName)) column = "categoryLocked";
+		else if ("Situation".equals(fieldName)) column = "situationLocked";
+		else if ("Lesson".equals(fieldName)) column = "lessonTextLocked";
+		else return LessonResult.INVALID_INPUT;
+		return setLessonFlag(lessonId, column, locked);
+	}
+	
+	
+	/*******
+	 * <p> Method: LessonResult setCuratorEdited(int lessonId, boolean edited) </p>
+	 * 
+	 * <p> Description: Records whether a curator has edited a lesson, so the contributor's
+	 * list can mark it "Edited by curator" (Contributor story 4).  The lesson's owner does not
+	 * change, which is why the contributor still sees it.  In TP3 the curator's edit operation
+	 * sets this automatically; in TP2 it is used by the tests and to prepare demonstration
+	 * data.</p>
+	 * 
+	 * @param lessonId is the database ID of the lesson
+	 * 
+	 * @param edited is true if a curator has edited the lesson
+	 * 
+	 * @return SUCCESS, NOT_FOUND, or DATABASE_ERROR
+	 * 
+	 */
+	// Mark a lesson as edited (or not) by a curator
+	public LessonResult setCuratorEdited(int lessonId, boolean edited) {
+		return setLessonFlag(lessonId, "curatorEdited", edited);
+	}
+	
+	
+	/*
+	 * Sets one boolean column of one lesson.  The column name always comes from the fixed
+	 * choices in the methods above, never from a caller, which is why it is safe to place it in
+	 * the SQL text (the same approach userHasRole uses for role columns).
+	 */
+	private LessonResult setLessonFlag(int lessonId, String column, boolean value) {
+		if (lessonId <= 0) return LessonResult.NOT_FOUND;
+		String query = "UPDATE lessonDB SET " + column + " = ? WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setBoolean(1, value);
+			pstmt.setInt(2, lessonId);
+			return (pstmt.executeUpdate() == 1) ? LessonResult.SUCCESS : LessonResult.NOT_FOUND;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return LessonResult.DATABASE_ERROR;
+		}
+	}
+	
+	// J.L.: lessons learned CRUD (HW2) and lock state (TP2) end here.
 
 
 	// Attribute getters for the current user
