@@ -13,7 +13,7 @@ CP=os.pathsep.join([str(dev.TESTS),str(dev.CLASSES),str(dev.LIB/'h2.jar')])
 GROUPS={
  'Lessons_Learned_Javadocs': ['src/entityClasses/LessonsLearned.java','src/entityClasses/LessonsLearnedList.java','src/entityClasses/LessonExperience.java','src/database/Database.java','src/database/LessonStore.java','src/experienceRecognizer/ExperienceRecognizer.java'],
  'Contributor_Javadocs': [str(p.relative_to(ROOT)) for folder in ['guiContributor','guiMyLessons','guiAddLesson','guiLessonDetail','guiLessonSupport','guiLessonCreate','guiLessonDetails','guiLessonEdit','guiLessonDelete','guiExperienceAdd'] for p in (ROOT/'src'/folder).glob('*.java')],
- 'ContributorTests_Javadocs': [str(p.relative_to(ROOT)) for folder in ['kanishTests','backendTests'] for p in (ROOT/'tests'/folder).glob('*.java')]+['src/testingAutomation/LessonTestingAutomation.java','src/testingAutomation/LessonListTestingAutomation.java','src/testingAutomation/LessonTestFixtures.java','src/testingAutomation/MyLessonsManualTests.java'],
+ 'ContributorTests_Javadocs': [str(p.relative_to(ROOT)) for folder in ['kanishTests','backendTests'] for p in (ROOT/'tests'/folder).glob('*.java')]+['src/testingAutomation/ContributorRequirementsTestbed.java','src/testingAutomation/ContributorRequirement.java','src/testingAutomation/RequirementTest.java','src/testingAutomation/LessonTestingAutomation.java','src/testingAutomation/LessonListTestingAutomation.java','src/testingAutomation/LessonTestFixtures.java','src/testingAutomation/MyLessonsManualTests.java'],
 }
 
 
@@ -75,7 +75,7 @@ def generate():
  for folder in GROUPS:
   capture_folder=ROOT/folder/'source-screenshots'
   if capture_folder.exists(): shutil.rmtree(capture_folder)
- for tool in ['kanishTests.SourceEvidence','backendTests.BackendEvidence']:
+ for tool in ['kanishTests.SourceEvidence','backendTests.BackendEvidence','contributorTestEvidence.ContributorTestEvidence']:
   subprocess.run(dev.java(tool),cwd=ROOT,check=True,timeout=150)
  results=ROOT/'ContributorTests_Javadocs/results';results.mkdir(exist_ok=True)
  for report in dev.REPORTS.glob('*.txt'):

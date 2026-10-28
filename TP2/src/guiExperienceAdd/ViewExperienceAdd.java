@@ -24,7 +24,9 @@ public final class ViewExperienceAdd {
   private final TextField member = new TextField(), hours = new TextField();
   private final TableView<String[]> effort = new TableView<>();
   private final Label parent = WindowLayout.note("");
-  private final Button save;
+  // DEF-03: keep direct references; Scene.lookup cannot see into the ScrollPane before its
+  // skin exists, which left a locked lesson's member buttons enabled.
+  private final Button save, add, remove, clear;
 
   @SuppressWarnings("unchecked")
   private ViewExperienceAdd(WindowContext c, long id) {
@@ -61,8 +63,8 @@ public final class ViewExperienceAdd {
                 hours.setText(b[1]);
               }
             });
-    Button add = WindowLayout.button("Add or update member", "effort-add", this::addRow);
-    Button remove =
+    add = WindowLayout.button("Add or update member", "effort-add", this::addRow);
+    remove =
         WindowLayout.button(
             "Remove selected member",
             "effort-remove",
@@ -80,7 +82,7 @@ public final class ViewExperienceAdd {
               WindowLayout.success(
                   status, "Member row removed. Save the experience when finished.");
             });
-    Button clear =
+    clear =
         WindowLayout.button(
             "Clear member inputs",
             "effort-clear",
@@ -144,8 +146,7 @@ public final class ViewExperienceAdd {
     duration.setEditable(!locked);
     member.setDisable(locked);
     hours.setDisable(locked);
-    for (String action : new String[] {"effort-add", "effort-remove", "effort-clear"})
-      context.stage().getScene().lookup("#" + action).setDisable(locked);
+    for (Button action : new Button[] {add, remove, clear}) action.setDisable(locked);
     if (!context.gateway().supportsExperiences())
       status.setText(
           "Experience saving is not connected in this backend. Ask the team to connect the"
