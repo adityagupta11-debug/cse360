@@ -34,6 +34,16 @@ public final class CurrentRepoWindowTests {
     return r;
   }
 
+  /** Allow the real native window resize and JavaFX layout pulse to complete before capture. */
+  private static void waitForResize() {
+    Object key = new Object();
+    javafx.animation.PauseTransition pause =
+        new javafx.animation.PauseTransition(javafx.util.Duration.millis(200));
+    pause.setOnFinished(e -> Platform.exitNestedEventLoop(key, null));
+    pause.play();
+    Platform.enterNestedEventLoop(key);
+  }
+
   private static Button button(String id) {
     return (Button) root().lookup("#" + id);
   }
@@ -122,7 +132,55 @@ public final class CurrentRepoWindowTests {
     text("effort-member").setText("Kanish");
     text("effort-hours").setText("1.25");
     button("effort-add").fire();
+    @SuppressWarnings("unchecked")
+    TableView<String[]> effort = (TableView<String[]>) root().lookup("#effort-table");
+    text("effort-member").setText("kanish");
+    text("effort-hours").setText("1");
+    button("effort-add").fire();
+    check(
+        "KG04_UI_DuplicateMemberRejected",
+        effort.getItems().size() == 1 && status().getText().contains("already"));
+    button("experience-save").fire();
+    check(
+        "KG04_UI_PendingRowPreventsSave",
+        db.getExperiences((int) parentId).isEmpty()
+            && status().getText().contains("before saving"));
+    button("effort-clear").fire();
+    text("effort-member").setText("Joshua");
+    text("effort-hours").setText("1.0001");
+    button("effort-add").fire();
+    check(
+        "KG04_UI_PrecisionRejectedBeforeRowAdded",
+        effort.getItems().size() == 1 && status().getText().contains("three decimal"));
+    text("effort-hours").setText("0.5");
+    button("effort-add").fire();
+    effort.getSelectionModel().select(1);
+    text("effort-hours").setText("0.75");
+    button("effort-add").fire();
+    check(
+        "KG04_UI_SelectedRowUpdated",
+        effort.getItems().size() == 2 && effort.getItems().get(1)[1].equals("0.75"));
+    effort.getSelectionModel().select(1);
+    button("effort-remove").fire();
+    check(
+        "KG04_UI_SelectedRowRemoved",
+        effort.getItems().size() == 1 && text("effort-member").getText().isEmpty());
+    stage.setWidth(740);
+    stage.setHeight(600);
+    waitForResize();
+    root();
+    check(
+        "KG06_UI_ExperienceScrollableAtMinimumSize",
+        root().getLayoutBounds().getWidth() < 750
+            && root().lookup(".card-scroll") instanceof ScrollPane
+            && root().lookup("#nav-back").isVisible());
+    snapshot("KG04_Real_Experience_Minimum_Size.png");
+    stage.setWidth(1000);
+    stage.setHeight(760);
+    waitForResize();
     snapshot("VG10_Real_Experience_Entry.png");
+    ((ScrollPane) root().lookup(".card-scroll")).setVvalue(1);
+    snapshot("KG04_Real_Experience_Actions.png");
     button("experience-save").fire();
     check(
         "VG10_UI_ExperienceActuallyPersisted",
@@ -218,9 +276,29 @@ public final class CurrentRepoWindowTests {
         "VG10_UI_RealFieldLockDisablesDelete",
         button("details-delete").isDisabled() && !button("details-edit").isDisabled());
     check("VG10_UI_RealCuratorEditedFlag", new CurrentRepoGateway(db).read(id).curatorEdited());
+    ContributorWindows.experience(c, id);
+    check("KG04_UI_FieldLockStillAllowsExperience", !button("experience-save").isDisabled());
+    text("experience-what").setText("A draft entered before a curator locked the lesson");
+    text("experience-how").setText("Verified that current storage state wins over stale widgets");
+    text("experience-duration").setText("1");
+    text("effort-member").setText("Kanish");
+    text("effort-hours").setText("1");
+    button("effort-add").fire();
     db.authenticateSession("curatorDemo", "DemoPass1!");
     db.setLessonLock(id, true);
     db.authenticateSession("kanishDemo", "DemoPass1!");
+    button("experience-save").fire();
+    check(
+        "KG04_UI_LockAppliedAfterOpeningRejectsSave",
+        db.getExperiences(id).isEmpty()
+            && status().getText().contains("locked")
+            && !text("experience-what").getText().isBlank());
+    ContributorWindows.experience(c, id);
+    check(
+        "KG04_UI_LockedExperienceIsReadOnly",
+        button("experience-save").isDisabled()
+            && !text("experience-what").isEditable()
+            && button("effort-add").isDisabled());
     ContributorWindows.details(c, id);
     check(
         "VG10_UI_RealWholeLockDisablesActions",
@@ -291,69 +369,71 @@ public final class CurrentRepoWindowTests {
   public static void main(String[] args) throws Exception {
     var done = new CompletableFuture<Void>();
     Platform.startup(
-        () -> {
-          try {
-            Platform.setImplicitExit(false);
-            db = new Database("jdbc:h2:mem:kgLiveWindows;DB_CLOSE_DELAY=-1");
-            db.connectToDatabase();
-            FoundationsMain.database = db;
-            actor =
-                new User(
-                    "kanishDemo",
-                    "DemoPass1!",
-                    "Kanish",
-                    "",
-                    "Demo",
-                    "",
-                    "kg@example.test",
-                    false,
-                    true,
-                    false,
-                    false);
-            db.register(actor);
-            db.register(
-                new User(
-                    "otherDemo",
-                    "DemoPass1!",
-                    "Other",
-                    "",
-                    "Demo",
-                    "",
-                    "other@example.test",
-                    false,
-                    true,
-                    false,
-                    false));
-            db.authenticateSession("kanishDemo", "DemoPass1!");
-            db.addLesson(
-                new LessonsLearned(
-                    "kanishDemo",
-                    "Seed own lesson",
-                    "Testing",
-                    "A seed lesson provides a selection in the own list.",
-                    "Use isolated fixtures when testing a Contributor workflow."));
-            db.authenticateSession("otherDemo", "DemoPass1!");
-            db.addLesson(
-                new LessonsLearned(
-                    "otherDemo",
-                    "Other user lesson",
-                    "Testing",
-                    "Another owner's lesson must not be exposed by the own list.",
-                    "Check ownership before showing any selected record text."));
-            db.authenticateSession("kanishDemo", "DemoPass1!");
-            stage = new Stage();
-            testLiveCrud();
-            testRealStorageLocks();
-            testMissingBackendContracts();
-            stage.close();
-            db.closeConnection();
-            done.complete(null);
-          } catch (Throwable e) {
-            if (stage != null) stage.close();
-            if (db != null) db.closeConnection();
-            done.completeExceptionally(e);
-          }
-        });
+        () ->
+            Platform.runLater(
+                () -> {
+                  try {
+                    Platform.setImplicitExit(false);
+                    db = new Database("jdbc:h2:mem:kgLiveWindows;DB_CLOSE_DELAY=-1");
+                    db.connectToDatabase();
+                    FoundationsMain.database = db;
+                    actor =
+                        new User(
+                            "kanishDemo",
+                            "DemoPass1!",
+                            "Kanish",
+                            "",
+                            "Demo",
+                            "",
+                            "kg@example.test",
+                            false,
+                            true,
+                            false,
+                            false);
+                    db.register(actor);
+                    db.register(
+                        new User(
+                            "otherDemo",
+                            "DemoPass1!",
+                            "Other",
+                            "",
+                            "Demo",
+                            "",
+                            "other@example.test",
+                            false,
+                            true,
+                            false,
+                            false));
+                    db.authenticateSession("kanishDemo", "DemoPass1!");
+                    db.addLesson(
+                        new LessonsLearned(
+                            "kanishDemo",
+                            "Seed own lesson",
+                            "Testing",
+                            "A seed lesson provides a selection in the own list.",
+                            "Use isolated fixtures when testing a Contributor workflow."));
+                    db.authenticateSession("otherDemo", "DemoPass1!");
+                    db.addLesson(
+                        new LessonsLearned(
+                            "otherDemo",
+                            "Other user lesson",
+                            "Testing",
+                            "Another owner's lesson must not be exposed by the own list.",
+                            "Check ownership before showing any selected record text."));
+                    db.authenticateSession("kanishDemo", "DemoPass1!");
+                    stage = new Stage();
+                    testLiveCrud();
+                    testRealStorageLocks();
+                    testMissingBackendContracts();
+                    stage.close();
+                    db.closeConnection();
+                    done.complete(null);
+                  } catch (Throwable e) {
+                    if (stage != null) stage.close();
+                    if (db != null) db.closeConnection();
+                    done.completeExceptionally(e);
+                  }
+                }));
     try {
       done.get(90, TimeUnit.SECONDS);
     } finally {

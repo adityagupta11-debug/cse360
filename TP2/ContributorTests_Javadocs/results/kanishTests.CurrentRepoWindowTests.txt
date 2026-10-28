@@ -2,7 +2,7 @@ KG02_UI_HomeOnlyOwnLessons | PASS
 KG06_UI_RealHomeRoutes | PASS
 VG10_UI_BrowseDoesNotCoverLessonRows | PASS
 WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
-WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/Users/wishhh/Desktop/HW2CSE360/TP%20PHASE%202/cse360/TP2/lib/javafx-graphics.jar)
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/asus/Documents/Codex/2026-10-21/yo/work/tp2-current-repo/TP2/lib/javafx-graphics.jar)
 WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
 WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
 Contributor window request failed: IllegalArgumentException
@@ -11,6 +11,15 @@ KG01_UI_RealCreate | PASS
 KG04_UI_RealBackendEnabled | PASS
 Contributor window request failed: IllegalArgumentException
 VG10_UI_EmptyExperienceRowsRejected | PASS
+Contributor window request failed: IllegalArgumentException
+KG04_UI_DuplicateMemberRejected | PASS
+Contributor window request failed: IllegalArgumentException
+KG04_UI_PendingRowPreventsSave | PASS
+Contributor window request failed: IllegalArgumentException
+KG04_UI_PrecisionRejectedBeforeRowAdded | PASS
+KG04_UI_SelectedRowUpdated | PASS
+KG04_UI_SelectedRowRemoved | PASS
+KG06_UI_ExperienceScrollableAtMinimumSize | PASS
 VG10_UI_ExperienceActuallyPersisted | PASS
 KG01_UI_RealEdit | PASS
 KG06_UI_BackReloadsRealHome | PASS
@@ -26,6 +35,10 @@ KG02_UI_RealLogoutClearsSession | PASS
 VG10_UI_RealStoredFieldReadOnly | PASS
 VG10_UI_RealFieldLockDisablesDelete | PASS
 VG10_UI_RealCuratorEditedFlag | PASS
+KG04_UI_FieldLockStillAllowsExperience | PASS
+Contributor window request failed: IllegalArgumentException
+KG04_UI_LockAppliedAfterOpeningRejectsSave | PASS
+KG04_UI_LockedExperienceIsReadOnly | PASS
 VG10_UI_RealWholeLockDisablesActions | PASS
 KG03_FIXTURE_TitleCategoryReadOnly | PASS
 KG03_FIXTURE_SituationTextReadOnly | PASS
@@ -33,4 +46,4 @@ KG03_FIXTURE_FullLockActionsDisabled | PASS
 Contributor window request failed: IllegalArgumentException
 KG04_FIXTURE_EmptyRowsRejected | PASS
 KG04_FIXTURE_SaveDelegates | PASS
-RESULT: 28 passed; 0 failed. Real persistent app navigation plus explicitly marked model fixtures.
+RESULT: 37 passed; 0 failed. Real persistent app navigation plus explicitly marked model fixtures.

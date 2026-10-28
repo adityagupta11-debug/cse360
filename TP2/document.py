@@ -5,6 +5,7 @@ import html
 import os
 import shutil
 import subprocess
+import re
 import dev
 
 ROOT=Path(__file__).resolve().parent
@@ -59,9 +60,16 @@ def refresh_contributor_matrix():
 
 def generate():
  dev.build();dev.compile_tests()
+ doc_exe=shutil.which('javadoc')
+ if not doc_exe:
+  settings=subprocess.run(['java','-XshowSettings:properties','-version'],capture_output=True,text=True,check=True)
+  home=re.search(r'java.home = (.+)',settings.stderr)
+  candidate=Path(home.group(1).strip())/'bin'/('javadoc.exe' if os.name=='nt' else 'javadoc') if home else None
+  if not candidate or not candidate.exists(): raise SystemExit('Install a full JDK with javadoc.')
+  doc_exe=str(candidate)
  for folder,sources in GROUPS.items():
-  result=subprocess.run(['javadoc','-quiet','-Xdoclint:none','-private','-notimestamp','-encoding','UTF-8','-charset','UTF-8','-d',str(ROOT/folder),'--module-path',str(dev.LIB),'--add-modules','javafx.controls','-classpath',CP]+sources,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
-  (ROOT/'build'/('javadoc-'+folder+'.log')).write_text(result.stdout)
+  result=subprocess.run([doc_exe,'-quiet','-Xdoclint:none','-private','-notimestamp','-encoding','UTF-8','-charset','UTF-8','-d',str(ROOT/folder),'--module-path',str(dev.LIB),'--add-modules','javafx.controls','-classpath',CP]+sources,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+  (ROOT/'build'/('javadoc-'+folder+'.log')).write_text(result.stdout,encoding='utf-8')
   if result.returncode: raise SystemExit(result.stdout)
   print('Generated',folder,flush=True)
  for folder in GROUPS:
@@ -70,29 +78,29 @@ def generate():
  for tool in ['kanishTests.SourceEvidence','backendTests.BackendEvidence']:
   subprocess.run(dev.java(tool),cwd=ROOT,check=True,timeout=150)
  results=ROOT/'ContributorTests_Javadocs/results';results.mkdir(exist_ok=True)
- for report in dev.REPORTS.glob('*.txt'):shutil.copy2(report,results/report.name)
+ for report in dev.REPORTS.glob('*.txt'):
+  if not report.name.startswith('window-rerun'):shutil.copy2(report,results/report.name)
  # Replace inherited aliases so they do not show stale pre-integration results.
  aliases={'database-tests.txt':'database.DeletionTests.txt','view-tests.txt':'guiDeleteUser.DeletionViewTests.txt','invitation-tests.txt':'guiUserLogin.LoginInputTests.txt','password-view-tests.txt':'passwordPopUpWindow.DynamicPasswordViewTests.txt','first-user-relogin-tests.txt':'guiUserUpdate.FirstUserReloginTests.txt','lesson-regression.txt':'testingAutomation.LessonTestingAutomation.txt','team-regression.txt':'testingAutomation.TP1RegressionSuite.txt'}
  for old,new in aliases.items():shutil.copy2(dev.REPORTS/new,results/old)
  for folder in GROUPS:
   screenshots=sorted((ROOT/folder/'source-screenshots').glob('*.png'))
   links=''.join(f'<li><a href="source-screenshots/{html.escape(p.name)}">{html.escape(p.name)}</a></li>' for p in screenshots)
-  page=f'''<!doctype html><html lang="en"><meta charset="utf-8"><title>TP2 evidence index</title><style>body{{font:16px system-ui;max-width:1100px;margin:40px auto;line-height:1.6}}li{{margin:6px 0}}</style><h1>{html.escape(folder)}</h1><p>Source-viewer captures are generated from the actual delivered files with original line numbers. They are source evidence, not a substitute for execution tests.</p><p><a href="index.html">Generated Javadoc</a> · <a href="../Backend_Requirements.md">Backend requirement mapping</a></p><ul>{links}</ul></html>'''
-  (ROOT/folder/'Evidence_Index.html').write_text(page)
- report=(dev.REPORTS/'backendTests.BackendTests.txt').read_text()
+  page=f'''<!doctype html><html lang="en"><meta charset="utf-8"><title>TP2 evidence index</title><style>body{{font:16px system-ui;max-width:1100px;margin:40px auto;line-height:1.6}}li{{margin:6px 0}}</style><h1>{html.escape(folder)}</h1><p>Source-viewer captures are generated from the actual delivered files with original line numbers. They are source evidence, not a substitute for execution tests.</p><p><a href="index.html">Generated Javadoc</a> | <a href="../Backend_Requirements.md">Backend requirement mapping</a></p><ul>{links}</ul></html>'''
+  (ROOT/folder/'Evidence_Index.html').write_text(page,encoding='utf-8')
+ report=(dev.REPORTS/'backendTests.BackendTests.txt').read_text(encoding='utf-8')
  names=[line.split(' | PASS')[0] for line in report.splitlines() if ' | PASS' in line]
- with (ROOT/'ContributorTests_Javadocs/Backend_Requirements_Test_Evidence.csv').open('w',newline='') as f:
+ with (ROOT/'ContributorTests_Javadocs/Backend_Requirements_Test_Evidence.csv').open('w',newline='',encoding='utf-8') as f:
   writer=csv.writer(f,lineterminator="\n");writer.writerow(['Requirement','Test assertion','Javadoc HTML','Source screenshot prefix','Expected output'])
   for name in names:writer.writerow([name.split('_')[0],name,'backendTests/BackendTests.html','source-screenshots/VG01-VG10_7.4_tests_BackendTests_','PASS only when its checked stored/rejected outcome is true; otherwise nonzero assertion failure'])
  rows=''.join(f'<tr><td>{html.escape(name.split("_")[0])}</td><td>{html.escape(name)}</td><td>PASS</td></tr>' for name in names)
- (ROOT/'ContributorTests_Javadocs/Backend_Test_Index.html').write_text(f'''<!doctype html><html lang="en"><meta charset="utf-8"><title>Backend test mapping</title><style>body{{font:16px system-ui;margin:40px}}td,th{{border:1px solid #ddd;padding:8px}}table{{border-collapse:collapse}}</style><h1>Backend requirement-to-test evidence</h1><p>Each identifier is a local traceability ID, not an official course story number. See <a href="../Backend_Requirements.md">requirements and expected behavior</a>, <a href="backendTests/BackendTests.html">test Javadoc</a>, <a href="Evidence_Index.html">source screenshots</a>, and <a href="results/backendTests.BackendTests.txt">actual execution output</a>.</p><table><tr><th>Requirement</th><th>Executed assertion</th><th>Observed</th></tr>{rows}</table></html>''')
+ (ROOT/'ContributorTests_Javadocs/Backend_Test_Index.html').write_text(f'''<!doctype html><html lang="en"><meta charset="utf-8"><title>Backend test mapping</title><style>body{{font:16px system-ui;margin:40px}}td,th{{border:1px solid #ddd;padding:8px}}table{{border-collapse:collapse}}</style><h1>Backend requirement-to-test evidence</h1><p>Each identifier is a local traceability ID, not an official course story number. See <a href="../Backend_Requirements.md">requirements and expected behavior</a>, <a href="backendTests/BackendTests.html">test Javadoc</a>, <a href="Evidence_Index.html">source screenshots</a>, and <a href="results/backendTests.BackendTests.txt">actual execution output</a>.</p><table><tr><th>Requirement</th><th>Executed assertion</th><th>Observed</th></tr>{rows}</table></html>''',encoding='utf-8')
  for folder in GROUPS:
   for page in (ROOT/folder).rglob('*.html'):
-   content=page.read_text()
-   import re
+   content=page.read_text(encoding='utf-8')
    # Preserve HTML's whitespace between adjacent inline text across line breaks.
    content=re.sub(r'[ \t]+\n', '\n ',content)
-   page.write_text(content)
+   page.write_text(content,encoding='utf-8')
  refresh_contributor_matrix()
  print('Evidence indexes and actual test reports updated.',flush=True)
 
