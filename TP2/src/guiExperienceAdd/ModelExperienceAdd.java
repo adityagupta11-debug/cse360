@@ -4,13 +4,10 @@ import guiLessonSupport.*;
 import java.util.List;
 
 /**
- * KG04 validates linked experience input, including the member-and-hours table. The UI cannot
- * manufacture a saved identity when experience storage is not connected.
+ * Validates what/how, duration and member effort for KG04 using the shared experience rules. The
+ * session-bound gateway rechecks ownership and current locks before the persistent write.
  *
- * @author Kanish Garg *
- *     <p>Attribute and rationale: gateway is the session-bound interface supplied by the data
- *     owner. It lets GUI validation and lock checks be exercised separately while keeping
- *     persistence/authorization in Vishwam's methods, as required by TP2 Work Split.
+ * @author Kanish Garg
  */
 public final class ModelExperienceAdd {
   private final LessonGateway gateway;

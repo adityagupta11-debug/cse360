@@ -7,19 +7,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 /**
- * KG04 experience window: what, how, duration and a real member-and-hours TableView. Add/update
- * rows with labeled inputs; selecting a row loads it for correction. This avoids silently losing an
- * uncommitted in-cell edit when Save is clicked.
+ * Add Experience form for Contributor story 3 and work-split task KG04. Uses the shared lesson page
+ * styling and session-bound WindowContext. The selected lesson ID links the experience to its
+ * parent; the member table holds the draft effort rows until Save. Selecting a row loads it for
+ * correction. Uncommitted member input blocks Save so edits are never silently discarded.
+ * Validation and persistent ownership/lock checks run again on Save.
  *
- * @author Kanish Garg *
- *     <p>Attributes and rationale: context retains the existing stage, authorized service and
- *     navigation callbacks so the screen shares the Foundations session. The stored id, where
- *     present, identifies the selected lesson independently of its editable title. JavaFX text
- *     controls hold the current draft so rejected requests do not discard input. Labels expose
- *     metadata, field names, lock explanations and corrective status. Buttons expose only the
- *     actions appropriate to the loaded lock/capability state. All values originate in the Kanish
- *     Garg GUI row of TP2 Work Split, the shared UX rules, or the authorized service response. No
- *     author input or curator-only field is retained in the view.
+ * @author Kanish Garg
  */
 public final class ViewExperienceAdd {
   final WindowContext context;
@@ -75,13 +69,26 @@ public final class ViewExperienceAdd {
             () -> {
               String[] selected = effort.getSelectionModel().getSelectedItem();
               if (selected == null) {
-                status.setText("Select a member row before removing it.");
+                WindowLayout.failure(
+                    status,
+                    new IllegalArgumentException("Select a member row before removing it."));
                 return;
               }
               effort.getItems().remove(selected);
               member.clear();
               hours.clear();
-              WindowLayout.success(status, "Member row removed. Save the experience when finished.");
+              WindowLayout.success(
+                  status, "Member row removed. Save the experience when finished.");
+            });
+    Button clear =
+        WindowLayout.button(
+            "Clear member inputs",
+            "effort-clear",
+            () -> {
+              effort.getSelectionModel().clearSelection();
+              member.clear();
+              hours.clear();
+              status.setText("");
             });
     ControllerExperienceAdd controller =
         new ControllerExperienceAdd(new ModelExperienceAdd(c.gateway()), this);
@@ -91,7 +98,10 @@ public final class ViewExperienceAdd {
             "experience-save",
             () -> {
               if (!member.getText().isBlank() || !hours.getText().isBlank()) {
-                status.setText("Add or update the member row before saving the experience.");
+                WindowLayout.failure(
+                    status,
+                    new IllegalArgumentException(
+                        "Add or update the member row before saving the experience."));
                 return;
               }
               controller.save();
@@ -102,17 +112,19 @@ public final class ViewExperienceAdd {
         new VBox(
             10,
             parent,
-            WindowLayout.field("What was done (required)", what),
-            WindowLayout.field("How it was done (required)", how),
+            WindowLayout.field("What was done (required, up to 2,000 characters)", what),
+            WindowLayout.field("How it was done (required, up to 2,000 characters)", how),
             WindowLayout.field("Duration in hours (required)", duration),
             WindowLayout.note(
-                "Member effort is time spent by each person; it can differ from elapsed duration."),
+                "Use up to three decimal places for hours. Member effort is time spent by each"
+                    + " person; it can differ from elapsed duration. Select a row to edit it, then"
+                    + " choose Add or update member."),
             effort,
             new HBox(
                 10,
-                WindowLayout.field("Member name", member),
+                WindowLayout.field("Member name (up to 100 characters)", member),
                 WindowLayout.field("Effort in hours", hours)),
-            new HBox(10, add, remove),
+            new FlowPane(10, 10, add, remove, clear),
             save);
     WindowLayout.show(c, "Add Experience", card, status, () -> ContributorWindows.details(c, id));
     controller.load();
@@ -125,7 +137,15 @@ public final class ViewExperienceAdd {
 
   void populate(LessonGateway.Lesson s) {
     parent.setText("Experience for lesson #" + s.id() + ": " + s.title());
-    save.setDisable(s.lessonLocked() || !context.gateway().supportsExperiences());
+    boolean locked = s.lessonLocked() || !context.gateway().supportsExperiences();
+    save.setDisable(locked);
+    what.setEditable(!locked);
+    how.setEditable(!locked);
+    duration.setEditable(!locked);
+    member.setDisable(locked);
+    hours.setDisable(locked);
+    for (String action : new String[] {"effort-add", "effort-remove", "effort-clear"})
+      context.stage().getScene().lookup("#" + action).setDisable(locked);
     if (!context.gateway().supportsExperiences())
       status.setText(
           "Experience saving is not connected in this backend. Ask the team to connect the"
@@ -137,8 +157,9 @@ public final class ViewExperienceAdd {
   private void addRow() {
     try {
       String n = member.getText().trim();
-      Rules.text("Member name", n);
-      Rules.hours("Member effort", hours.getText(), false);
+      experienceRecognizer.ExperienceRecognizer.text("Member name", n, 100);
+      experienceRecognizer.ExperienceRecognizer.hours(
+          "Member effort", Rules.hours("Member effort", hours.getText(), false), false);
       String[] selected = effort.getSelectionModel().getSelectedItem();
       for (String[] row : effort.getItems())
         if (row != selected && row[0].equalsIgnoreCase(n))

@@ -3,12 +3,10 @@ package guiExperienceAdd;
 import guiLessonSupport.*;
 
 /**
- * KG04 handles table row entry and persistent experience submission. @author Kanish Garg *
+ * Loads the authorized parent lesson and submits the experience draft through the model (KG04). The
+ * view retains rejected input; success returns to lesson details only after storage succeeds.
  *
- * <p>Attributes and rationale: model is the persistence/validation boundary; view is the current
- * window whose draft and status are updated. This separation follows Foundations MVC and the Kanish
- * Garg GUI assignment in TP2 Work Split. Controllers do not store a SQL connection, edit the
- * authenticated identity, or modify another member's data implementation.
+ * @author Kanish Garg
  */
 public final class ControllerExperienceAdd {
   private final ModelExperienceAdd model;

@@ -1,32 +1,20 @@
-> **Historical pre-integration contribution notes.** The missing-backend statements and suggested progress below describe Kanish's earlier branch, not the integrated TP2 build. Use `MANUAL_GUI_CHECKS_INTEGRATED.md`, `README_VISHWAM_TP2.md`, current generated evidence, and actual test reports for current behavior. Real locks and experience persistence are now connected. Do not read the historical standup wording as a current progress report or a record of a meeting.
+# Kanish GUI recording outline
 
-# Current repository GUI recording notes
+Coordinate a roughly five-minute segment within the team's 5-10 minute GUI screencast.
+Show readable Javadoc pages and source screenshots as well as the running application.
 
-Your work-split segment is about five minutes of the shared 5-10 minute PhaseTwoGUIScreencast.
-Coordinate with the other presenter so every relevant Javadoc HTML page and required source
-capture is shown and explained; this outline is not permission to omit any pages.
+1. Show the Contributor requirement/evidence index and MVC packages.
+2. From My Lessons open a lesson; show its title, lock information and edit/delete actions.
+3. Open Add Experience. Explain what/how, elapsed duration and per-member effort.
+4. Enter valid text, duration 2.5, and member effort. Add another row, select it, update hours,
+   and remove it. Explain Clear member inputs and the pending-row safeguard.
+5. Demonstrate an invalid duration or duplicate member. Correct it; show the preserved draft.
+6. Save through the real backend and show the saved confirmation. Explain that a whole-lesson
+   lock prevents adding experience and is checked again by storage.
+7. Show the current test report and source/Javadoc pages for ViewExperienceAdd,
+   ControllerExperienceAdd, ModelExperienceAdd, Rules and PersistentAdditionalAccess.
 
-- 0:00-0:40: Show Evidence_Index.html and package/class layout. Explain the five separate MVC
-  window packages, common field/layout helpers and real Home/list navigation.
-- 0:40-1:35: Show Create Javadocs/source, then create a real four-field lesson. Show an invalid
-  title retaining other values. Explain that the current repository's LessonRecognizer is reused.
-- 1:35-2:30: Show View/Edit Javadocs/source and edit the actual four fields. Explain stable IDs,
-  authenticated actor lookup and ownership. Do not call absent metadata an unlocked lesson.
-- 2:30-3:15: Show Delete Javadocs/source and named confirmation. No is default; demonstrate No
-  preserving data and Yes removing it from the real own-lesson list.
-- 3:15-4:10: Show Add Experience Javadocs/source and effort-table design. In the current real
-  app saving is unavailable because storage is absent. If showing fixture screenshots, say so.
-  Ideally record this section after Vishwam's real methods have been integrated and retested.
-- 4:10-5:00: Explain shared layout/navigation and CurrentRepoGateway, then show requirement/test
-  links and the current results. Coordinate coverage of Home and remaining helper pages.
-
-Keep text readable and audio clear. The final shared video must be MP4 or MOV, 5-10 minutes
-and below 100 MB. You must present your actual part; this document is not a voice recording.
-
-For your real standup slide:
-Done: four-field current-repo GUI, actual Home routing, session-safe adapter, tests and evidence.
-Next: integrate real lock/experience methods, reconcile official stories and record the GUI segment.
-Blocker: current main does not contain the full TP2 data APIs/metadata.
-
-Your assigned 3-5 minute status-summary video must use the actual meeting date, slides and
-progress. No meeting history or other member's accomplishments should be inferred from this code.
+Rehearse on the isolated demo database, not another teammate's saved data. Keep the final
+shared video below 100 MB, in MP4 or MOV. Both presenters should agree coverage and timing.
+Your assigned status-summary video must describe a real standup with its actual date.
+Recordings and meeting evidence have not been produced by these scripts.

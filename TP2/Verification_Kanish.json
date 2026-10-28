@@ -1,22 +1,36 @@
 {
-  "base_commit": "67bd0a9381128225911936171046b123b7b17085",
-  "model_checks": 23,
-  "real_integration_checks": 14,
-  "desktop_checks": 18,
-  "inherited_checks": 302,
-  "total_checks": 357,
+  "date": "2026-10-28",
+  "integrated_sources": {
+    "joshua_main": "f5cb25e",
+    "vishwam_backend": "85cff20"
+  },
+  "runtime": "Windows x64, JDK 25, JavaFX 21.0.8, H2 2.3.232; --release 21",
+  "suite_assertion_counts": {
+    "backendTests.BackendTests": 116,
+    "backendTests.ListSnapshotTests": 13,
+    "kanishTests.ModelTests": 23,
+    "kanishTests.CurrentRepoIntegrationTests": 14,
+    "kanishTests.CurrentRepoWindowTests": 37,
+    "testingAutomation.LessonTestingAutomation": 79,
+    "testingAutomation.LessonListTestingAutomation": 64,
+    "database.DeletionTests": 35,
+    "guiDeleteUser.DeletionViewTests": 19,
+    "guiUserLogin.LoginInputTests": 7,
+    "passwordPopUpWindow.DynamicPasswordViewTests": 6,
+    "guiUserUpdate.FirstUserReloginTests": 4,
+    "testingAutomation.TP1RegressionSuite": 152
+  },
+  "total_checks": 569,
   "assertion_failures": 0,
-  "real_backend_gaps": [
-    "experience storage",
-    "full and per-field lock metadata/enforcement",
-    "curator-edited flag",
-    "lesson timestamps"
+  "real_backend_gaps": [],
+  "scope": "Kanish GUI integrated with the shared backend; not the entire team submission. Model fixtures are labeled separately from real database/UI checks.",
+  "remaining_human_work": [
+    "Actual GUI screencast narration and recording",
+    "Assigned genuine standup summary",
+    "Individual peer evaluation",
+    "Team Canvas submission and receipt verification"
   ],
-  "gui_screenshots": 7,
-  "gui_source_captures": 63,
-  "test_source_captures": 24,
-  "verification_scope": "Test snapshot; repository publication status is recorded by Git.",
-  "latest_rerun_note": "55 assertions passed, exit 0; JavaFX shutdown thread printed NullPointerException after results.",
-  "historical_snapshot": true,
-  "superseded_by": "Verification_Vishwam.json"
+  "runtime_notes": [
+    "JavaFX deprecation warning on JDK 25; no shutdown exception in this run."
+  ]
 }

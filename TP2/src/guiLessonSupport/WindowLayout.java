@@ -20,7 +20,9 @@ public final class WindowLayout {
 
   /** Construct a window around a scrollable, labeled content card. */
   public static void show(WindowContext c, String title, VBox card, Label status, Runnable back) {
-    Label crumb = new Label("Contributor Home  >  My Lessons  >  " + title);
+    Label crumb =
+        new Label(
+            "TEAM 53 / CONTRIBUTOR / MY LESSONS / " + title.toUpperCase(java.util.Locale.ROOT));
     crumb.getStyleClass().add("breadcrumb");
     Label heading = new Label(title);
     heading.getStyleClass().add("page-heading");
@@ -43,7 +45,7 @@ public final class WindowLayout {
     HBox footer = new HBox(12, b, space, out, q);
     footer.getStyleClass().add("window-footer");
     VBox root = new VBox(12, crumb, heading, scroll, status, footer);
-    root.setPadding(new Insets(24));
+    root.setPadding(new Insets(30));
     Scene scene = new Scene(root, 1000, 760);
     URL css = WindowLayout.class.getResource("windows.css");
     if (css != null) scene.getStylesheets().add(css.toExternalForm());
@@ -66,6 +68,7 @@ public final class WindowLayout {
   public static VBox field(String text, Control control) {
     Label l = new Label(text);
     l.setLabelFor(control);
+    l.getStyleClass().add("field-label");
     return new VBox(5, l, control);
   }
 
