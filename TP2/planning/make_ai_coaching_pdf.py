@@ -147,10 +147,10 @@ FIELDS = [
                 'Missing members are listed as a question.'),
                ('P3', 'Keep the existing rules: each member once, non-negative hours, positive '
                 'total.', 'ExperienceRecognizer accepts every accepted suggestion.')],
-         tools='Duckling (BSD), an open-source parser that turns text such as "3 mins" into '
-               'structured durations [S13], and a local Ollama model with a JSON schema for the '
-               'consistency questions [S4].',
-         sources=['S13', 'S4']),
+         tools='A local Ollama model with a JSON schema (free; runtime MIT) for the consistency '
+               'and missing-member questions [S4][S7], with Duckling (BSD), a rule-based parser '
+               'rather than AI, turning text such as "3 mins" into structured durations [S13].',
+         sources=['S4', 'S7', 'S13']),
     dict(field='durationHours', label='Duration in hours (experience)',
          table='lessonExperienceDB', owner=A515, story='Contributor C3',
          why='Elapsed time, separate from effort, shows how long reuse really takes.',
@@ -160,8 +160,10 @@ FIELDS = [
                 'author enters the same value in both.', 'An explanation appears; values stay.'),
                ('P3', 'Keep the positive, three-decimal limit.',
                 'ExperienceRecognizer accepts every accepted value.')],
-         tools='Duckling duration parsing (BSD) [S13].',
-         sources=['S13']),
+         tools='A local Ollama model with a JSON schema (free; runtime MIT) drafts the '
+               'explanation and the confirmation question [S4][S7]. Duckling (BSD), a rule-based '
+               'parser rather than AI, converts the typed amount to hours [S13].',
+         sources=['S4', 'S7', 'S13']),
     dict(field='aggregateSummary', label='Aggregate time-and-effort summary (curator only)',
          table='lessonCuratorDB', owner=A545,
          story='Curator epics: merge time and effort data; make it visible or not',

@@ -1,6 +1,6 @@
 TP2 Contributor Requirements Testbed
 Every Contributor requirement is tested by at least one positive and one negative test.
-Temporary database: /var/folders/fz/tghy5s0s51q0yz8_2xx18qyr0000gn/T/tp2-contributor-testbed-9576192420901108576
+Temporary database: /var/folders/fz/tghy5s0s51q0yz8_2xx18qyr0000gn/T/tp2-contributor-testbed-6208038437615818157
 ==============================================================================
 
 CR-01 T1 [POSITIVE] A valid lesson is stored for its author
@@ -98,11 +98,8 @@ CR-04 T2 [NEGATIVE] A locked Category cannot be changed
 
 CR-04 T3 [NEGATIVE] The Edit window refuses a changed locked field
     Rules.editable with changed Lesson Text
-        expected: refused, naming Lesson text
+        expected: refused, message contains "Lesson text is locked"
         observed: refused: Lesson text is locked. Reload the lesson.   ok
-    message names the locked field
-        expected: contains "Lesson text"
-        observed: Lesson text is locked. Reload the lesson.   ok
     PASS
 
 CR-05 T1 [NEGATIVE] A locked lesson refuses any core edit
@@ -116,7 +113,7 @@ CR-05 T1 [NEGATIVE] A locked lesson refuses any core edit
 
 CR-05 T2 [NEGATIVE] A locked lesson refuses new experience
     addExperience on a locked lesson
-        expected: refused (lesson is locked)
+        expected: refused, message contains "locked"
         observed: refused: This lesson is locked. Experience changes are unavailable.   ok
     experiences stored
         expected: 0
@@ -130,15 +127,18 @@ CR-05 T3 [POSITIVE] After unlocking, the same edit succeeds
     PASS
 
 CR-06 T1 [POSITIVE] Yes deletes the lesson and its experience
+    linked rows before delete
+        expected: 1 experience, 2 effort rows
+        observed: 1 experience, 2 effort rows   ok
     ModelLessonDelete.remove(id, Yes)
         expected: true
         observed: true   ok
     lesson after delete
         expected: null (gone)
         observed: null   ok
-    reading the deleted lesson's experiences
-        expected: refused (lesson unavailable)
-        observed: refused: Lesson is unavailable. Refresh your own lesson list.   ok
+    linked rows after delete
+        expected: 0 experience, 0 effort rows
+        observed: 0 experience, 0 effort rows   ok
     PASS
 
 CR-06 T2 [NEGATIVE] No (the default) keeps the lesson
@@ -167,7 +167,7 @@ CR-07 T2 [NEGATIVE] The Delete window refuses a locked lesson
         expected: true
         observed: true   ok
     ModelLessonDelete.remove(id, Yes)
-        expected: refused (locked)
+        expected: refused, message contains "locked"
         observed: refused: Delete is unavailable because this lesson or one of its fields is locked.   ok
     PASS
 
@@ -188,7 +188,7 @@ CR-08 T1 [POSITIVE] A Curator can store and read private notes
 
 CR-08 T2 [NEGATIVE] The Contributor cannot see curator notes
     Contributor calls getCuratorNotes
-        expected: refused (Curator or Admin only)
+        expected: refused, message contains "Curator or Administrator"
         observed: refused: A Curator or Administrator session is required.   ok
     private text in the Contributor's view
         expected: not found
@@ -197,7 +197,7 @@ CR-08 T2 [NEGATIVE] The Contributor cannot see curator notes
 
 CR-08 T3 [NEGATIVE] The Contributor cannot change curator notes
     Contributor calls setCuratorData
-        expected: refused (Curator or Admin only)
+        expected: refused, message contains "Curator or Administrator"
         observed: refused: A Curator or Administrator session is required.   ok
     notes after the attempt
         expected: ORIGINAL-NOTE
@@ -263,10 +263,10 @@ CR-12 T1 [POSITIVE] An experience with member hours is stored
 
 CR-12 T2 [NEGATIVE] Experience on a missing or foreign lesson is refused
     addExperience to lesson 999999
-        expected: refused (unavailable)
+        expected: refused, message contains "unavailable"
         observed: refused: Lesson is unavailable. Refresh your own lesson list.   ok
     addExperience to Bob's lesson
-        expected: refused (unavailable)
+        expected: refused, message contains "unavailable"
         observed: refused: Lesson is unavailable. Refresh your own lesson list.   ok
     PASS
 
@@ -278,11 +278,8 @@ CR-12 T3 [POSITIVE] The Add Experience form builds the record
 
 CR-13 T1 [NEGATIVE] A blank How is refused and nothing is stored
     addExperience with a blank How
-        expected: refused naming How it was done
+        expected: refused, message contains "How it was done is required"
         observed: refused: How it was done is required.   ok
-    message names the field
-        expected: contains "How it was done"
-        observed: How it was done is required.   ok
     experiences stored
         expected: 0
         observed: 0   ok
@@ -290,10 +287,10 @@ CR-13 T1 [NEGATIVE] A blank How is refused and nothing is stored
 
 CR-13 T2 [NEGATIVE] A zero duration is refused by form and database
     form duration "0"
-        expected: refused (greater than zero)
+        expected: refused, message contains "greater than zero"
         observed: refused: Duration must be greater than zero hours.   ok
     database duration 0
-        expected: refused (greater than zero)
+        expected: refused, message contains "greater than zero"
         observed: refused: Duration must be greater than zero hours.   ok
     experiences stored
         expected: 0
@@ -302,10 +299,10 @@ CR-13 T2 [NEGATIVE] A zero duration is refused by form and database
 
 CR-13 T3 [NEGATIVE] Duplicate members and zero total effort are refused
     members Ana and ana
-        expected: refused (each member once)
+        expected: refused, message contains "appear once"
         observed: refused: Each member must appear once. Combine duplicate hours.   ok
     one member with 0 hours
-        expected: refused (positive total effort)
+        expected: refused, message contains "positive effort"
         observed: refused: Enter positive effort for at least one member.   ok
     experiences stored
         expected: 0
@@ -329,10 +326,10 @@ CR-14 T2 [NEGATIVE] Another Contributor's lesson cannot be read
         expected: null
         observed: null   ok
     Bob opens it through the GUI gateway
-        expected: refused (unavailable)
+        expected: refused, message contains "unavailable"
         observed: refused: Lesson is unavailable. Refresh your own lesson list and select it again.   ok
     Bob reads its experiences
-        expected: refused (unavailable)
+        expected: refused, message contains "unavailable"
         observed: refused: Lesson is unavailable. Refresh your own lesson list.   ok
     PASS
 
@@ -413,7 +410,7 @@ CR-18 T2 [NEGATIVE] Unconfirmed delete and locked update change nothing
         expected: false, 1 kept
         observed: false, 1 kept   ok
     update while the lesson is locked
-        expected: refused (lesson is locked)
+        expected: refused, message contains "locked"
         observed: refused: This lesson is locked. Experience changes are unavailable.   ok
     PASS
 
@@ -447,6 +444,6 @@ CR-18        Vishwam Gupta                    2         1       0
 Requirements: 18
 Tests passed: 50
 Tests failed: 0
-Checks passed: 90
+Checks passed: 89
 Requirement coverage: complete
 ==============================================================================

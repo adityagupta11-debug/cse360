@@ -53,7 +53,7 @@ public enum ContributorRequirement {
 			"A Contributor can update the unlocked core fields of a lesson they added. The change "
 			+ "is stored; the lesson ID and owner do not change.",
 			"Vishwam Gupta",
-			"KG01_UpdateValid; VG03 unlocked-field acceptance; LT-12 (LIST-5)",
+			"testKG01_UpdateValid; VG03 unlocked-field acceptance; LT-12 (LIST-5)",
 			"Sign in as akim, open \"JavaFX scene does not update after a change\", choose "
 			+ "Edit lesson, change the Situation, and press Save changes.",
 			"View Lesson shows the new Situation with the same Lesson # and Author; the other "
@@ -134,7 +134,7 @@ public enum ContributorRequirement {
 			"When a Contributor examines a lesson, they can see which fields they can alter and "
 			+ "which are locked (the lock state is part of what they receive).",
 			"Kanish Garg",
-			"KG03 (ModelTests); CurrentRepoWindowTests.testRealStorageLocks; LT-21+ (LIST-8)",
+			"KG03 (ModelTests); CurrentRepoWindowTests.testRealStorageLocks; LT-24, LT-25 (LIST-8)",
 			"Sign in as jsmith, open \"Merge conflicts right before the deadline\", and choose "
 			+ "Edit lesson.",
 			"View Lesson says locked fields are read-only; in Edit, Title and Lesson Text end "
@@ -145,7 +145,7 @@ public enum ContributorRequirement {
 			"A Contributor can search their own list by keywords; the result is the subset of their "
 			+ "lessons containing every keyword (it may be empty), never another Contributor's.",
 			"Joshua Luther",
-			"LT-18, LT-19, LT-20 (LIST-7); CurrentRepoWindowTests search checks",
+			"LT-18 to LT-23 (LIST-7); CurrentRepoWindowTests search checks",
 			"Sign in as jsmith, search My Lessons for \"JavaFX\", then search for \"runLater\" "
 			+ "(a word only in akim's lesson).",
 			"The first search lists only \"JavaFX app fails to launch in Eclipse\" (not akim's "
@@ -204,7 +204,7 @@ public enum ContributorRequirement {
 			"Lessons, lock state, the curator-edited flag, and experience records (with exact member "
 			+ "hours) persist after the application is closed and restarted.",
 			"Aditya Gupta (agupt515)",
-			"VG08 reopen tests; LT-25, LT-26 (LIST-9); LessonTestingAutomation restart test",
+			"VG08 reopen tests; LT-26, LT-27 (LIST-9); TC-23 (LessonTestingAutomation)",
 			"After M-01, press Quit, start the demo again with python3 dev.py demo (it reopens "
 			+ "without reseeding), and sign in as newcontributor, then as jsmith.",
 			"newcontributor's new lesson is still listed; jsmith's lessons keep their Locked "

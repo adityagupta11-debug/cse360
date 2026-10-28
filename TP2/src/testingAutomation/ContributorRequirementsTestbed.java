@@ -6,6 +6,10 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -234,15 +238,22 @@ public final class ContributorRequirementsTestbed {
 		if (ok) checksPassed++; else failedChecksInTest++;
 	}
 
-	/** Checks that an operation is refused with an exception; returns the refusal message. */
-	private static String refused(String what, String expected, Action action) {
+	/**
+	 * Checks that an operation is refused with an exception whose message gives the expected
+	 * reason, so a refusal for some other reason (for example a validation error in a lock test)
+	 * cannot pass.  Returns the refusal message.
+	 */
+	private static String refused(String what, String reason, Action action) {
+		String expected = "refused, message contains \"" + reason + "\"";
 		try {
 			action.run();
 			check(what, expected, "no exception (the operation was allowed)", false);
 			return "";
 		} catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
-			check(what, expected, "refused: " + e.getMessage(), true);
-			return e.getMessage();
+			String message = String.valueOf(e.getMessage());
+			check(what, expected, "refused: " + message,
+					message.toLowerCase().contains(reason.toLowerCase()));
+			return message;
 		} catch (Exception e) {
 			check(what, expected, "wrong exception: " + e, false);
 			return "";
@@ -308,6 +319,21 @@ public final class ContributorRequirementsTestbed {
 	private static LessonsLearned withSituation(LessonsLearned stored, String situation) {
 		return new LessonsLearned(stored.getLessonId(), stored.getOwner(), stored.getTitle(),
 				stored.getCategory(), situation, stored.getLessonText());
+	}
+
+	/**
+	 * Counts rows directly in the temporary database file with one numeric key.  Used only to see
+	 * linked records that no Contributor session can read any more (CR-06 cascade check).
+	 */
+	private static long countRows(String sql, long key) throws Exception {
+		try (Connection connection = DriverManager.getConnection(url, "sa", "");
+				PreparedStatement query = connection.prepareStatement(sql)) {
+			query.setLong(1, key);
+			try (ResultSet result = query.executeQuery()) {
+				result.next();
+				return result.getLong(1);
+			}
+		}
 	}
 
 	/** Deletes the temporary database folder; leftovers in the temp folder are harmless. */
@@ -644,10 +670,8 @@ public final class ContributorRequirementsTestbed {
 		LessonGateway.Lesson shown = new CurrentRepoGateway(db).read(id);
 		LessonGateway.Draft draft = new LessonGateway.Draft(shown.title(), shown.category(),
 				shown.situation(), "A completely different lesson text for this test.");
-		String message = refused("Rules.editable with changed Lesson Text",
-				"refused, naming Lesson text", () -> Rules.editable(shown, draft));
-		check("message names the locked field", "contains \"Lesson text\"", message,
-				message.contains("Lesson text"));
+		refused("Rules.editable with changed Lesson Text", "Lesson text is locked",
+				() -> Rules.editable(shown, draft));
 	}
 
 
@@ -698,7 +722,7 @@ public final class ContributorRequirementsTestbed {
 		String alice = newContributor("alice");
 		int id = addLesson(alice, "Merge daily");
 		asCurator(alice, () -> db.setLessonLock(id, true));
-		refused("addExperience on a locked lesson", "refused (lesson is locked)",
+		refused("addExperience on a locked lesson", "locked",
 				() -> db.addExperience(id, experience(id)));
 		int count = db.getExperiences(id).size();
 		check("experiences stored", 0, count, count == 0);
@@ -739,23 +763,34 @@ public final class ContributorRequirementsTestbed {
 	 * <p> <b>Requirement tested:</b> CR-06, a confirmed delete removes an unlocked lesson and its
 	 * linked experience records. </p>
 	 *
-	 * <p> <b>How it is checked:</b> Alice adds a lesson and an experience, then the Delete window's
-	 * model (ModelLessonDelete) is called with confirmed = true (the user answered Yes). </p>
+	 * <p> <b>How it is checked:</b> Alice adds a lesson and an experience with two member rows,
+	 * then the Delete window's model (ModelLessonDelete) is called with confirmed = true (the
+	 * user answered Yes).  The experience and member-effort rows are counted directly in the
+	 * database file before and after, because no session can read them once the lesson is gone.
+	 * </p>
 	 *
-	 * <p> <b>How to read the output:</b> expect true from the model, the lesson no longer readable,
-	 * and its experiences no longer available. </p>
+	 * <p> <b>How to read the output:</b> expect 1 experience and 2 effort rows before, true from
+	 * the model, the lesson no longer readable, and 0 experience and 0 effort rows after. </p>
 	 */
 	@RequirementTest(requirement = ContributorRequirement.CR06, number = 1,
 			kind = RequirementTest.Kind.POSITIVE, title = "Yes deletes the lesson and its experience")
 	private static void cr06ConfirmedDeleteRemovesLesson() throws Exception {
 		String alice = newContributor("alice");
 		int id = addLesson(alice, "Merge daily");
-		db.addExperience(id, experience(id));
+		long experienceId = db.addExperience(id, experience(id));
+		String experiences = "SELECT COUNT(*) FROM lessonExperienceDB WHERE lessonId=?";
+		String efforts = "SELECT COUNT(*) FROM lessonEffortDB WHERE experienceId=?";
+		long before = countRows(experiences, id), effortsBefore = countRows(efforts, experienceId);
+		check("linked rows before delete", "1 experience, 2 effort rows",
+				before + " experience, " + effortsBefore + " effort rows",
+				before == 1 && effortsBefore == 2);
 		boolean deleted = new ModelLessonDelete(new CurrentRepoGateway(db)).remove(id, true);
 		check("ModelLessonDelete.remove(id, Yes)", true, deleted, deleted);
 		check("lesson after delete", "null (gone)", db.getLesson(id), db.getLesson(id) == null);
-		refused("reading the deleted lesson's experiences", "refused (lesson unavailable)",
-				() -> db.getExperiences(id));
+		long after = countRows(experiences, id), effortsAfter = countRows(efforts, experienceId);
+		check("linked rows after delete", "0 experience, 0 effort rows",
+				after + " experience, " + effortsAfter + " effort rows",
+				after == 0 && effortsAfter == 0);
 	}
 
 	/*****
@@ -833,7 +868,7 @@ public final class ContributorRequirementsTestbed {
 		CurrentRepoGateway gateway = new CurrentRepoGateway(db);
 		boolean locked = gateway.read(id).deletionLocked();
 		check("gateway reports deletionLocked", true, locked, locked);
-		refused("ModelLessonDelete.remove(id, Yes)", "refused (locked)",
+		refused("ModelLessonDelete.remove(id, Yes)", "locked",
 				() -> new ModelLessonDelete(gateway).remove(id, true));
 	}
 
@@ -909,7 +944,7 @@ public final class ContributorRequirementsTestbed {
 			db.setCuratorData(id, "PRIVATE-NOTE-CR08", "hidden-search-term");
 			return LessonResult.SUCCESS;
 		});
-		refused("Contributor calls getCuratorNotes", "refused (Curator or Admin only)",
+		refused("Contributor calls getCuratorNotes", "Curator or Administrator",
 				() -> db.getCuratorNotes(id));
 		LessonsLearned lesson = db.getLesson(id);
 		String visible = lesson.getTitle() + lesson.getCategory() + lesson.getSituation()
@@ -939,7 +974,7 @@ public final class ContributorRequirementsTestbed {
 			db.setCuratorData(id, "ORIGINAL-NOTE", "terms");
 			return LessonResult.SUCCESS;
 		});
-		refused("Contributor calls setCuratorData", "refused (Curator or Admin only)",
+		refused("Contributor calls setCuratorData", "Curator or Administrator",
 				() -> db.setCuratorData(id, "OVERWRITTEN", "terms"));
 		signIn(CURATOR);
 		String notes = db.getCuratorNotes(id);
@@ -1176,9 +1211,9 @@ public final class ContributorRequirementsTestbed {
 		String alice = newContributor("alice"), bob = newContributor("bob");
 		int bobs = addLesson(bob, "Bob's lesson");
 		signIn(alice);
-		refused("addExperience to lesson 999999", "refused (unavailable)",
+		refused("addExperience to lesson 999999", "unavailable",
 				() -> db.addExperience(999999, experience(999999)));
-		refused("addExperience to Bob's lesson", "refused (unavailable)",
+		refused("addExperience to Bob's lesson", "unavailable",
 				() -> db.addExperience(bobs, experience(bobs)));
 	}
 
@@ -1229,11 +1264,9 @@ public final class ContributorRequirementsTestbed {
 	private static void cr13BlankHowIsRefused() throws Exception {
 		String alice = newContributor("alice");
 		int id = addLesson(alice, "Merge daily");
-		String message = refused("addExperience with a blank How", "refused naming How it was done",
+		refused("addExperience with a blank How", "How it was done is required",
 				() -> db.addExperience(id, new LessonExperience(id, "Merged", "   ",
 						BigDecimal.ONE, List.of(new LessonExperience.Effort("Ana", BigDecimal.ONE)))));
-		check("message names the field", "contains \"How it was done\"", message,
-				message.contains("How it was done"));
 		check("experiences stored", 0, db.getExperiences(id).size(),
 				db.getExperiences(id).isEmpty());
 	}
@@ -1254,10 +1287,10 @@ public final class ContributorRequirementsTestbed {
 	private static void cr13ZeroDurationIsRefused() throws Exception {
 		String alice = newContributor("alice");
 		int id = addLesson(alice, "Merge daily");
-		refused("form duration \"0\"", "refused (greater than zero)",
+		refused("form duration \"0\"", "greater than zero",
 				() -> Rules.experience("Merged", "Daily", "0",
 						List.<String[]>of(new String[] {"Ana", "1"})));
-		refused("database duration 0", "refused (greater than zero)",
+		refused("database duration 0", "greater than zero",
 				() -> db.addExperience(id, new LessonExperience(id, "Merged", "Daily",
 						BigDecimal.ZERO, List.of(new LessonExperience.Effort("Ana", BigDecimal.ONE)))));
 		check("experiences stored", 0, db.getExperiences(id).size(),
@@ -1280,11 +1313,11 @@ public final class ContributorRequirementsTestbed {
 	private static void cr13BadMemberRowsAreRefused() throws Exception {
 		String alice = newContributor("alice");
 		int id = addLesson(alice, "Merge daily");
-		refused("members Ana and ana", "refused (each member once)",
+		refused("members Ana and ana", "appear once",
 				() -> db.addExperience(id, new LessonExperience(id, "Merged", "Daily", BigDecimal.ONE,
 						List.of(new LessonExperience.Effort("Ana", BigDecimal.ONE),
 								new LessonExperience.Effort("ana", BigDecimal.ONE)))));
-		refused("one member with 0 hours", "refused (positive total effort)",
+		refused("one member with 0 hours", "positive effort",
 				() -> db.addExperience(id, new LessonExperience(id, "Merged", "Daily", BigDecimal.ONE,
 						List.of(new LessonExperience.Effort("Ana", BigDecimal.ZERO)))));
 		check("experiences stored", 0, db.getExperiences(id).size(),
@@ -1367,9 +1400,9 @@ public final class ContributorRequirementsTestbed {
 		db.addExperience(id, experience(id));
 		signIn(bob);
 		check("Bob calls getLesson on Alice's ID", "null", db.getLesson(id), db.getLesson(id) == null);
-		refused("Bob opens it through the GUI gateway", "refused (unavailable)",
+		refused("Bob opens it through the GUI gateway", "unavailable",
 				() -> new CurrentRepoGateway(db).read(id));
-		refused("Bob reads its experiences", "refused (unavailable)", () -> db.getExperiences(id));
+		refused("Bob reads its experiences", "unavailable", () -> db.getExperiences(id));
 	}
 
 	/*****
@@ -1705,7 +1738,7 @@ public final class ContributorRequirementsTestbed {
 				deleted + ", " + db.getExperiences(id).size() + " kept",
 				!deleted && db.getExperiences(id).size() == 1);
 		asCurator(alice, () -> db.setLessonLock(id, true));
-		refused("update while the lesson is locked", "refused (lesson is locked)",
+		refused("update while the lesson is locked", "locked",
 				() -> db.updateExperience(experienceId, id, experience(id)));
 	}
 
