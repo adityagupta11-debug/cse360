@@ -16,19 +16,14 @@ from reportlab.platypus import (KeepTogether, Paragraph, SimpleDocTemplate, Spac
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / 'AICoaching.PDF'
-COMPILED = '2026-10-27'
+COMPILED = '2026-10-28'
 
 KANISH, VISHWAM, JOSHUA = 'Kanish Garg', 'Vishwam Gupta', 'Joshua Luther'
 A515, A545 = 'Aditya Gupta (agupt515)', 'Aditya Gupta (agupt545)'
 
 # Where each member's two sections came from; shown in 5.3 so readers know what is confirmed.
-SECTION_STATUS = {
-    KANISH: 'Kanish Garg AI Coaching Current Fields.pdf (researched 2026-10-25)',
-    VISHWAM: 'AI_Coaching_Vishwam.md (researched 2026-10-27)',
-    JOSHUA: 'Drafted by agupt545 on 2026-10-27; Joshua to confirm or replace',
-    A515: 'Researched 2026-10-27',
-    A545: 'Researched 2026-10-27',
-}
+SECTION_STATUS = {owner: 'Supplied team AICoaching compilation, reviewed 2026-10-28'
+                  for owner in (KANISH, VISHWAM, JOSHUA, A515, A545)}
 
 # Priority order: fields every Contributor fills in every lesson come first, because the
 # Contributor Phase Three epic coaches lesson writing; experience text next; numeric experience
@@ -140,9 +135,9 @@ FIELDS = [
          reqs=[('P1', 'Turn typed amounts such as "90 min" or "half a day" into decimal hours and '
                 'show the converted value for the author to confirm.',
                 '"90 min" is shown as 1.5 hours before saving.'),
-               ('P1', 'Ask when the effort total looks inconsistent with the duration (for '
-                'example one member\'s effort is far above the elapsed time).',
-                'A question is asked; nothing is changed automatically.'),
+               ('P1', 'Explain person-hours separately from elapsed duration; ask only when an individual value '
+                'is implausible for the described work, not merely because totals differ.',
+                'Four members working three hours can legitimately total 12 person-hours; no false mismatch.'),
                ('P2', 'Ask about team members named in What or How who have no effort row.',
                 'Missing members are listed as a question.'),
                ('P3', 'Keep the existing rules: each member once, non-negative hours, positive '
@@ -157,31 +152,40 @@ FIELDS = [
          reqs=[('P1', 'Convert typed durations ("2 days", "45 minutes") to hours and show the '
                 'result for confirmation.', '"45 minutes" is shown as 0.75 hours.'),
                ('P2', 'Explain the difference between elapsed duration and member effort when the '
-                'author enters the same value in both.', 'An explanation appears; values stay.'),
+                'author appears to confuse them. Ask whether a day means calendar time or working time.', 'No eight-hour or 24-hour assumption is silently applied; values need confirmation.'),
                ('P3', 'Keep the positive, three-decimal limit.',
                 'ExperienceRecognizer accepts every accepted value.')],
          tools='A local Ollama model with a JSON schema (free; runtime MIT) drafts the '
                'explanation and the confirmation question [S4][S7]. Duckling (BSD), a rule-based '
                'parser rather than AI, converts the typed amount to hours [S13].',
          sources=['S4', 'S7', 'S13']),
-    dict(field='aggregateSummary', label='Aggregate time-and-effort summary (curator only)',
-         table='lessonCuratorDB', owner=A545,
-         story='Curator epics: merge time and effort data; make it visible or not',
-         why='Turns many experience records into numbers a future team can plan with.',
-         reqs=[('P1', 'Compute the statistics (count, mean, median, minimum, maximum, standard '
-                'deviation) with ordinary code, not with AI.',
-                'Numbers match a hand calculation on sample data.'),
-               ('P1', 'Let AI only draft a plain-language summary of those computed numbers, '
-                'returned in a fixed JSON structure.', 'The draft contains no number that was not '
-                'computed.'),
-               ('P2', 'Warn when there are too few records for a meaningful summary.',
-                'Fewer than three records shows a warning.'),
-               ('P3', 'Show the summary to the Contributor only when summaryVisible is true.',
-                'With summaryVisible false the Contributor sees nothing.')],
-         tools='Apache Commons Math DescriptiveStatistics for the statistics (not AI) [S14], '
-               'with a local Ollama model using a JSON schema for the narrative draft [S4][S7].',
-         sources=['S14', 'S4', 'S7']),
+    dict(field='notes', label='Curator notes (curator only)', table='lessonCuratorDB',
+         owner=A545, story='Contributor C1 private curator information; Curator Phase 3 refinement',
+         why='Records private review context without exposing it to Contributors.',
+         reqs=[('P1', 'Ask what was changed or needs to change, and why; never invent a review decision.',
+                'A vague note produces a focused question, not an invented decision.'),
+               ('P1', 'Never show these notes or their coaching output to a Contributor.',
+                'Contributor projections and search results contain no private note text.'),
+               ('P2', 'Flag blaming language and offer constructive alternatives.',
+                'The Curator chooses whether to accept each revision.'),
+               ('P2', 'Flag spelling, grammar and accidental personal information.',
+                'Corrections are suggestions and private text stays on the local computer.')],
+         tools='A local Ollama model with structured output for tone and completeness [S4][S7], '
+               'with a self-hosted LanguageTool server for spelling and grammar [S5][S6].',
+         sources=['S4', 'S7', 'S5', 'S6']),
 ]
+
+# The supplied October 28 team compilation is the authority for final field allocation.
+by_field = {field['field']: field for field in FIELDS}
+for name, owner in [('lessonText', JOSHUA), ('title', JOSHUA), ('situation', KANISH), ('category', KANISH)]:
+    by_field[name]['owner'] = owner
+for name in ('lessonText', 'title'):
+    by_field[name]['tools'] = ('A local Ollama model with schema-constrained feedback for clarity, '
+                              'completeness and alternatives [S4][S7]; self-hosted LanguageTool '
+                              'for spelling/grammar [S5][S6]. Each model license must be checked separately.')
+    by_field[name]['sources'] = ['S4', 'S7', 'S5', 'S6']
+FIELDS = [by_field[name] for name in ('lessonText', 'situation', 'title', 'whatDone', 'howDone',
+                                    'searchTerms', 'category', 'effortHours', 'durationHours', 'notes')]
 
 SOURCES = {
     'S1': ('Google, Gemini Apps limits and feature availability',
@@ -203,6 +207,7 @@ SOURCES = {
     'S12': ('Sentence Transformers repository (Apache-2.0)',
             'https://github.com/UKPLab/sentence-transformers'),
     'S13': ('Duckling repository (BSD)', 'https://github.com/facebook/duckling'),
+    'S15': ('Course-provided LessonShare v3a: BrainstormService chat(), coachEntry(), extractTakeaways(), summarizeLesson() and suggestKeywords(); supplied team HW2 evaluation and October 28 coaching compilation', None),
     'S14': ('Apache Commons Math 3.6.1, DescriptiveStatistics',
             'https://commons.apache.org/proper/commons-math/javadocs/api-3.6.1/org/apache/'
             'commons/math3/stat/descriptive/DescriptiveStatistics.html'),
@@ -225,14 +230,15 @@ def build():
         return Paragraph(text, style)
 
     story = [Paragraph('AI Coaching for Lesson Input Fields', h1),
-             p('CSE 360 Team Project Phase Two, Team 53. Compiled by Aditya Gupta (agupt545) on '
+             p('CSE 360 Team Project Phase Two, Team 53. Team research compiled and integrated on '
                f'{COMPILED}. Field names are the stored attribute names in Member 1\'s schema '
-               '(Vishwam Gupta), so this report matches the code. This is planning research for '
+               '(Vishwam Gupta). Assignments follow the supplied October 28 team compilation. This is planning research for '
                'the Phase Three AI epics; no AI feature is claimed as implemented in TP2.', body),
+             p('The team’s HW2 evaluation of the course-provided LessonShare v3a supplies the starting points: brainstorming questions, writing feedback, summarization, keyword suggestions and takeaway extraction [S15]. The external tools below are proposed alternatives or complements to those coaching functions; each suggestion still requires human acceptance.', body),
              Paragraph('5.2 Prioritized field list', h2),
-             p('Priority 1 is the field where coaching helps the most people most often. Fields '
-               'every Contributor fills in every lesson come first, then experience text, then '
-               'numeric experience fields, then Curator-only fields that serve the Curator epics.',
+             p('Priority 1 is the field where coaching most directly improves reuse. Fields '
+               'are ordered as agreed in the supplied team compilation: lesson, situation and title first, '
+               'followed by experience actions, search support, classification, effort, duration and private review.',
                body), Spacer(1, 4)]
     rows = [[p('<b>#</b>'), p('<b>Field (stored name)</b>'), p('<b>Table</b>'), p('<b>Owner</b>'),
              p('<b>Story / epic</b>'), p('<b>Why this priority</b>')]]
@@ -249,7 +255,7 @@ def build():
     rows = [[p('<b>Member</b>'), p('<b>Fields researched</b>'), p('<b>Section source</b>')]]
     for owner in [KANISH, VISHWAM, JOSHUA, A515, A545]:
         rows.append([p(owner), p(', '.join(owners[owner])), p(SECTION_STATUS[owner])])
-    t = Table(rows, colWidths=[1.6 * inch, 2.6 * inch, 3.1 * inch])
+    t = Table(rows, colWidths=[1.6 * inch, 2.6 * inch, 3.1 * inch], repeatRows=1)
     t.setStyle(grid)
     story += [t, Paragraph('Rules for every field', h3),
               p('AI output is a suggestion: the author (or Curator) must accept it, nothing is saved '
@@ -259,7 +265,7 @@ def build():
                 'existing validation (LessonRecognizer or ExperienceRecognizer). If the AI service '
                 'is unavailable, the form keeps the typed draft. Evaluate each tool on '
                 'non-confidential sample lessons before choosing it; free availability and limits '
-                'must be rechecked before implementation.', body),
+                'must be rechecked before implementation. Application requests must use a self-hosted LanguageTool server: the free public endpoint prohibits automated requests. Total person-hours can exceed elapsed time; four people working three hours legitimately produce twelve person-hours. AI may ask about implausible entries but must not require those totals to match.', body),
               Paragraph('5.4 Coaching requirements, free AI tools and citations', h2)]
     for i, f in enumerate(FIELDS, 1):
         rows = [[p('<b>Priority</b>'), p('<b>Coaching requirement</b>'), p('<b>Acceptance check</b>')]]
@@ -268,11 +274,12 @@ def build():
         t.setStyle(grid)
         cites = '; '.join(f"[{s}] {SOURCES[s][1]}" for s in f['sources'])
         story.append(KeepTogether([
-            Paragraph(f"{i}. {f['field']} \u2013 {f['label']} \u2013 owner: {f['owner']}", h3), t, Spacer(1, 3),
+            Paragraph(f"{i}. {f['field']} - {f['label']} - owner: {f['owner']}", h3), t, Spacer(1, 3),
             p(f"<b>Free AI tool:</b> {f['tools']}"), p(f"<b>Citations:</b> {cites}")]))
-    story.append(Paragraph(f'Sources (URLs checked {COMPILED})', h2))
+    story.append(Paragraph(f'Sources for proposed tools', h2))
     for key, (title, url) in SOURCES.items():
-        story.append(p(f'[{key}] {title}. <link href="{url}" color="blue">{url}</link>'))
+        if key not in {'S15'} | {source for field in FIELDS for source in field['sources']}: continue
+        story.append(p(f'[{key}] {title}.' + (f' <link href="{url}" color="blue">{url}</link>' if url else ' (Course-provided; no public URL required.)')))
     doc = SimpleDocTemplate(str(OUTPUT), pagesize=letter, leftMargin=0.6 * inch,
                             rightMargin=0.6 * inch, topMargin=0.6 * inch, bottomMargin=0.6 * inch,
                             title='AICoaching', author='Team 53')

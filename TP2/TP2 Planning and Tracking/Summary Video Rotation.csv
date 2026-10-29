@@ -1,6 +1,7 @@
-Member,Assigned standup date,File name to submit,Status
-Vishwam Gupta,2026-10-28,Status Summary 2026-10-28.mp4,Not recorded
-Kanish Garg,2026-10-29,Status Summary 2026-10-29.mp4,Not recorded
-Joshua Luther,2026-10-30,Status Summary 2026-10-30.mp4,Not recorded
-Aditya Gupta (agupt515),2026-10-31,Status Summary 2026-10-31.mp4,Not recorded
-Aditya Gupta (agupt545),2026-11-01,Status Summary 2026-11-01.mp4,Not recorded
+Date label in supplied records,Presenter,Required filename,Current review status
+2026-10-21,Vishwam Gupta,Status Summary 2026-10-21.mov,1:08; expand genuine whole-team summary and confirm actual meeting time
+2026-10-22,Joshua Luther,Status Summary 2026-10-22.mp4,3:52; review whole-team done/next/blockers coverage
+2026-10-24,Kanish Garg,Status Summary 2026-10-24.mp4,2:14; expand whole-team summary
+2026-10-25,Aditya Gupta (agupt515),Status Summary 2026-10-25.mp4,2:42; replace individual contribution overview with dated team summary
+2026-10-27,Aditya Gupta (agupt545),Status Summary 2026-10-27.mp4,2:31; add dated status visuals and whole-team coverage
+2026-10-28,Joshua Luther,Status Summary 2026-10-28.mp4,3:02; review whole-team done/next/blockers coverage

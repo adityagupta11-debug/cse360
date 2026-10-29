@@ -1,6 +1,6 @@
 # Local TP2 integration - Vishwam
 
-Integrated locally from Joshua's `main` commit `f5cb25e` and Kanish's `kanish-tp2-gui` commit `7bf7283`. No push is part of this work.
+Integrated Joshua, Kanish, Vishwam and Aditya's work through fetched `main` c552860, `kanish-tp2-gui` 20744f9 and `aditya-tp2` 148f470. The October 28 submission preparation adds current evidence, tracked norms, corrected coaching research and stricter packaging checks. See Verification_Integrated.json for current test totals; member-specific earlier files are historical snapshots.
 
 ## Implemented
 
@@ -30,7 +30,7 @@ python3 dev.py test
 python3 document.py
 ```
 
-Verification: **560 passing assertions across 13 suites**, including 116 backend checks, 13 list-snapshot checks and 28 GUI checks. Actual per-suite output is included with the test Javadoc. JavaFX on the installed JDK prints an inherited deprecation warning; no shutdown exception occurred in the current runs.
+Verification: **658 passing checks across 14 suites**, including 116 backend checks, 13 list-snapshot checks and 37 GUI checks, plus 89 checks in the 50-test Contributor requirements testbed. Actual per-suite output is included with the test Javadoc. JavaFX on the installed JDK prints an inherited deprecation warning; no shutdown exception occurred in the current runs.
 
 Read `Backend_Requirements.md` for the contracts, validation rules, rationale and per-requirement evidence. Generated evidence is in the three assignment-named Javadoc folders.
 
@@ -52,10 +52,14 @@ This explicit action creates sample Contributor accounts `jsmith`, `akim`, and `
 
 ## Remaining team/human deliverables
 
-Record the actual lesson screencast segment and assigned standup summary. `RECORDING_NOTES_VISHWAM.md` is an outline, not a recording. Member 5 must incorporate the proposed What/How coaching research into the team report after confirming field allocations. Confirm other members' TP3 epic-specific attributes and complete team packaging, peer evaluation and Canvas verification. This code integration is not a claim that the entire graded submission is ready.
+Record the actual lesson screencast segment and assigned standup summary. `RECORDING_NOTES_VISHWAM.md` is an outline, not a recording. Member 5 must incorporate the proposed What/How coaching research into the team report after confirming field allocations. Complete the required recordings, team packaging, peer evaluation and Canvas verification. This code integration is not a claim that the entire graded submission is ready.
 
 ## Readiness audit fixes
 
 A fresh independent audit found and corrected gaps not covered by the first 530 checks: stable owner IDs now protect account rename/reuse; both normal launchers use the same project-local database; the home Browse button no longer overlaps rows; list CRUD retains canonical stored snapshots; all delivered lesson/list/manual test sources now have generated evidence. The isolated demo is distinct from normal application data, and the old contribution matrix no longer claims that connected backend features are missing.
 
 Complete code verification is local to this Mac. A separate Windows/Eclipse execution and the human manual checklist/recordings are still unverified. This is ready for the team's code review and recording workflow, not a completed Canvas submission.
+
+## Submission preparation on October 28
+
+The three Javadoc folders now document the current integrated implementation and include all current test reports. Superseded guiAddLesson/guiLessonDetail packages are marked clearly in their package documentation; normal routing uses Kanish's active windows. TP2 Team Norms.docx retains actual Word revisions and its PDF shows them. AICoaching.PDF uses the supplied team compilation's field allocations, self-hosted LanguageTool and correct person-hour semantics. The package checker requires six matching dated PDF/video pairs, handles MP4/MOV durations and records subjective review in Media_Review.json. It intentionally reports NOT READY while recordings or their required content remain incomplete.

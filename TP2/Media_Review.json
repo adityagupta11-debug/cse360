@@ -1,0 +1,91 @@
+{
+  "balanced_presentation_reviewed": false,
+  "instructions": "Set review flags only after watching the actual final recording. Dates/times must describe actual meetings, not export times. Do not infer or invent missing history.",
+  "files": {
+    "TP2 Planning and Tracking/Status Summary 2026-10-21.mov": {
+      "presenters": [
+        "Vishwam Gupta"
+      ],
+      "meeting_at": null,
+      "covers_all_members": false,
+      "content_reviewed": false,
+      "text_readable": true,
+      "audio_clear": true,
+      "notes": "Original supplied candidate: requires full-team status coverage review; short candidates need additional real content. Confirm actual meeting timestamp."
+    },
+    "TP2 Planning and Tracking/Status Summary 2026-10-22.mp4": {
+      "presenters": [
+        "Joshua Luther"
+      ],
+      "meeting_at": null,
+      "covers_all_members": false,
+      "content_reviewed": false,
+      "text_readable": true,
+      "audio_clear": true,
+      "notes": "Original supplied candidate: requires full-team status coverage review; short candidates need additional real content. Confirm actual meeting timestamp."
+    },
+    "TP2 Planning and Tracking/Status Summary 2026-10-24.mp4": {
+      "presenters": [
+        "Kanish Garg"
+      ],
+      "meeting_at": null,
+      "covers_all_members": false,
+      "content_reviewed": false,
+      "text_readable": true,
+      "audio_clear": true,
+      "notes": "Original supplied candidate: requires full-team status coverage review; short candidates need additional real content. Confirm actual meeting timestamp."
+    },
+    "TP2 Planning and Tracking/Status Summary 2026-10-25.mp4": {
+      "presenters": [
+        "Aditya Gupta (agupt515)"
+      ],
+      "meeting_at": null,
+      "covers_all_members": false,
+      "content_reviewed": false,
+      "text_readable": true,
+      "audio_clear": true,
+      "notes": "Original supplied candidate: requires full-team status coverage review; short candidates need additional real content. Confirm actual meeting timestamp."
+    },
+    "TP2 Planning and Tracking/Status Summary 2026-10-27.mp4": {
+      "presenters": [
+        "Aditya Gupta (agupt545)"
+      ],
+      "meeting_at": null,
+      "covers_all_members": false,
+      "content_reviewed": false,
+      "text_readable": false,
+      "audio_clear": true,
+      "notes": "Original supplied candidate: requires full-team status coverage review; short candidates need additional real content. Confirm actual meeting timestamp."
+    },
+    "TP2 Planning and Tracking/Status Summary 2026-10-28.mp4": {
+      "presenters": [
+        "Joshua Luther"
+      ],
+      "meeting_at": null,
+      "covers_all_members": false,
+      "content_reviewed": false,
+      "text_readable": true,
+      "audio_clear": true,
+      "notes": "Original supplied candidate: requires full-team status coverage review; short candidates need additional real content. Confirm actual meeting timestamp."
+    },
+    "LessonsLearnedScreencast.mp4": {
+      "presenters": [],
+      "content_reviewed": false,
+      "text_readable": false,
+      "audio_clear": false
+    },
+    "PhaseTwoGUIScreencast.mp4": {
+      "presenters": [],
+      "content_reviewed": false,
+      "text_readable": false,
+      "audio_clear": false
+    },
+    "TestingScreencast.mp4": {
+      "presenters": [],
+      "content_reviewed": false,
+      "text_readable": false,
+      "audio_clear": false,
+      "actual_test_execution_shown": false
+    }
+  }
+}

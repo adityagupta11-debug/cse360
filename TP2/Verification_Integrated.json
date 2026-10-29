@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-28",
+  "integrated_sources": {
+    "main": "c552860",
+    "kanish-tp2-gui": "20744f9",
+    "aditya-tp2": "148f470",
+    "vishwam-backend": "85cff20"
+  },
+  "runtime": "macOS ARM64, JDK 26.0.1, JavaFX 21.0.8, H2 2.3.232; compilation --release 21",
+  "suites": 14,
+  "checks_passed": 658,
+  "checks_failed": 0,
+  "requirements_testbed": {
+    "requirements": 18,
+    "test_methods": 50,
+    "checks": 89
+  },
+  "scope": "Contributor TP2 application and integrated evidence. Recording and submission requirements remain separate.",
+  "package_copy_test": "See build/reports/packaged-project.txt after final packaging.",
+  "windows_evidence": "Kanish supplied successful Windows x64 verification; not independently run on this Mac."
+}

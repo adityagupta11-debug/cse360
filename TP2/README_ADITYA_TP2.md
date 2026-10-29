@@ -1,5 +1,7 @@
 # TP2: Aditya Gupta (agupt515 and agupt545)
 
+> October 28 integration update: this contribution log describes earlier snapshots. Current documents, six supplied status PDFs, tracked norms and packaging checks are assembled in the integration branch. Use Verification_Integrated.json and README_VISHWAM_TP2.md for current totals and Media_Review.json for outstanding recording checks.
+
 ## agupt515: requirements coverage, integration, testing
 
 | Output | Where |
@@ -30,7 +32,7 @@ Run it:
 
 | ID | Found | Defect | Owner | Status |
 |---|---|---|---|---|
-| DEF-01 | 2026-10-27 | `guiAddLesson` and `guiLessonDetail` (Joshua's first Add/Detail windows) are never opened. My Lessons now opens Kanish's `guiLessonCreate` and `guiLessonDetails` windows. Both sets appear in `Contributor_Javadocs`, so graders see two View Lesson implementations. | Joshua Luther (decide with Kanish) | Open: remove the unused packages, or document them as superseded before packaging |
+| DEF-01 | 2026-10-27 | `guiAddLesson` and `guiLessonDetail` (Joshua's first Add/Detail windows) are never opened. My Lessons now opens Kanish's `guiLessonCreate` and `guiLessonDetails` windows. Both sets appear in `Contributor_Javadocs`, so graders see two View Lesson implementations. | Joshua Luther (decide with Kanish) | Resolved October 28: package Javadoc explicitly marks these as superseded and names the active routes |
 | DEF-02 | 2026-10-27 | View Lesson never lists the experience records a Contributor added, so the only GUI evidence of a save is the "Experience #N saved" message. Story C3 asks only to add experience, so this is a usability gap, not a failed requirement. | Kanish Garg | Open, for team decision |
 | DEF-03 | 2026-10-28 | Add Experience did not lock its form on a whole-locked lesson on macOS. `ViewExperienceAdd.populate` found the member buttons with `Scene.lookup`, which returns null inside a `ScrollPane` before its skin exists. The NullPointerException skipped the code that locks the form. Fixed by keeping direct references to the three buttons. | Kanish Garg | Fixed by agupt515 (integration) on 2026-10-28; Kanish to review |
 
